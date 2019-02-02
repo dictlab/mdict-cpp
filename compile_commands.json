@@ -1,0 +1,42 @@
+[
+    {
+        "arguments": [
+            "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++", 
+            "-c", 
+            "--std=c++11", 
+            "mdict.cc"
+        ], 
+        "directory": "/Users/chenquan/Workspace/cpp/libmdict", 
+        "file": "mdict.cc"
+    }, 
+    {
+        "arguments": [
+            "/Applications/Xcode.app/Contents/Developer/usr/bin/g++", 
+            "-c", 
+            "--std=c++11", 
+            "mdict.cc"
+        ], 
+        "directory": "/Users/chenquan/Workspace/cpp/libmdict", 
+        "file": "mdict.cc"
+    },
+{
+        "arguments": [
+            "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++", 
+            "-c", 
+            "--std=c++11", 
+            "binutils.cc"
+        ], 
+        "directory": "/Users/chenquan/Workspace/cpp/libmdict", 
+        "file": "binutils.cc"
+    }, 
+    {
+        "arguments": [
+            "/Applications/Xcode.app/Contents/Developer/usr/bin/g++", 
+            "-c", 
+            "--std=c++11", 
+            "mdict.cc"
+        ], 
+        "directory": "/Users/chenquan/Workspace/cpp/libmdict", 
+        "file": "binutils.cc"
+    }
+]

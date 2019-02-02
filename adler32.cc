@@ -124,7 +124,7 @@ void Adler32::TruncatedFinal(byte *hash, size_t size) {
 	Reset();
 }
 
-uint32_t alder32chksum(const char* data, uint32_t len) {
+uint32_t adler32chksum(const unsigned char* data, uint32_t len) {
   Adler32 adler32hasher;
 //  char* str = const_cast<char *>("helloworld");
   adler32hasher.Update(reinterpret_cast<const byte *>(data), len);
@@ -133,22 +133,8 @@ uint32_t alder32chksum(const char* data, uint32_t len) {
 //  for (int i = 0; i < 4; i++) {
 //    printf("%x ", hash[i]);
 //  }
-  
-  uint32_t chksum = be_bin_to_u32(hash);
+
+  uint32_t chksum = be_bin_to_u32((unsigned char*)hash);
   if(hash) free(hash);
   return chksum;
 }
-
-
-#ifdef ADLER32_TEST
-int main() {
-  Adler32 adler32hasher;
-  char* str = const_cast<char *>("helloworld");
-  adler32hasher.Update(reinterpret_cast<const byte *>(str), 10);
-  char* hash = (char*)calloc(4, sizeof(char));
-  adler32hasher.Final(reinterpret_cast<byte *>(hash));
-  for (int i = 0; i < 4; i++) {
-    printf("%x ", hash[i]);
-  }
-}
-#endif

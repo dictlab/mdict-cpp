@@ -11,8 +11,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(CMAKE_CXX_COMPILER "g++")
 #设置构建类型，及相应的编译选项
 SET(CMAKE_BUILD_TYPE "Debug")
-SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb --std=c++11")
-SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall --std=c++11")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb --std=c++11 ")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall --std=c++11 ")
 
 #设置执行文件输出目录
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -23,7 +23,7 @@ MESSAGE("++++++++++++++Start Build+++++++++++++++++")
 
 #当前目录的文件
 #添加子目录
-#ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(deps)
 
 #头文件搜索目录
 #INCLUDE_DIRECTORIES(inc)
@@ -39,5 +39,10 @@ MESSAGE("++++++++++++++Start Build+++++++++++++++++")
 
 
 #执行文件链接属性
-ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cpp)
-# TARGET_LINK_LIBRARIES(${MY_TARGET} ${EXTRA_LIBS})
+ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cpp ripemd128.c adler32.cc)
+TARGET_LINK_LIBRARIES(mdict z)
+
+
+ADD_EXECUTABLE(adler32_test adler32.cc adler32_test.cc binutils.cc)
+
+ADD_EXECUTABLE(ripemd128_test ripemd128_test.c ripemd128.c)

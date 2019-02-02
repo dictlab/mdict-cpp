@@ -21,9 +21,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "rmd128.h"
+#include "ripemd128.h"
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /********************************************************************/
 
@@ -40,7 +42,7 @@ void ripemd128Init(dword32 *digest)
 
 /********************************************************************/
 
-void compress(dword32 *digest, dword32 *X)
+void ripemd128compress(dword32 *digest, dword32 *X)
 {
   dword32 aa,aaa,bb,bbb,cc,ccc,dd,ddd;
   aa = aaa = digest[0];
@@ -291,19 +293,19 @@ byte *ripemd128(const byte *message, int len)
 //         printf("%ld ", X[i]);
          message += 4;
       }
-//      printf("\nX[i] ");
-//      for(int j = 0; j < 16; j++) {
-//         printf("%ld ", X[j]);
-//      }
+      printf("\nX[i] ");
+      for(int j = 0; j < 16; j++) {
+         printf("%ld ", X[j]);
+      }
 
-//      printf("\n");
-//      printf("\nMDBUFFER[i] ");
-//      for(int j = 0; j < 4; j++) {
-//         printf("%lx ", digest[j]);
-//      }
-//      printf("\n");
+      printf("\n");
+      printf("\nMDBUFFER[i] ");
+      for(int j = 0; j < 4; j++) {
+         printf("%lx ", digest[j]);
+      }
+      printf("\n");
 
-      compress(digest, X);
+      ripemd128compress(digest, X);
 
 // printf("\nMDBuffer: ");
 //      for(int j = 0; j < 4; j++) {
@@ -323,11 +325,19 @@ byte *ripemd128(const byte *message, int len)
 //      printf("\n");
 
    for (i=0; i<RMDsize/8; i+=4) {
-      hashcode[i]   = (byte) digest[i >> 2];         /* implicit cast to byte  */
-      hashcode[i+1] = (byte) (digest[i >> 2] >> 8);  /*  extracts the 8 least  */
-      hashcode[i+2] = (byte) (digest[i >> 2] >> 16);  /*  significant bits.     */
-      hashcode[i+3] = (byte) (digest[i >> 2] >> 24);
+      hashcode[i]   = (byte) (digest[i >> 2] & 0x000000ff);         /* implicit cast to byte  */
+      hashcode[i+1] = (byte) ((digest[i >> 2] >> 8 ) & 0x000000ff);  /*  extracts the 8 least  */
+      hashcode[i+2] = (byte) ((digest[i >> 2] >> 16) & 0x000000ff);  /*  significant bits.     */
+      hashcode[i+3] = (byte) ((digest[i >> 2] >> 24) & 0x000000ff);
    }
+   printf("\nAAAAAAAAAAAA---------\n");
+   for (i=0; i<RMDsize/8; i+=4) {
+     printf("%02x(%d)",hashcode[i]  ,hashcode[i]);         /* implicit cast to byte  */
+     printf("%02x(%d)",hashcode[i+1],hashcode[i+1]);  /*  extracts the 8 least  */
+     printf("%02x(%d)",hashcode[i+2],hashcode[i+2]);  /*  significant bits.     */
+     printf("%02x(%d)",hashcode[i+3],hashcode[i+3]);
+   }
+  printf("\nAAAAAAAAAAAA---------\n");
 
    return (byte *)hashcode;
 }
@@ -347,10 +357,11 @@ byte* ripemd128bytes(uint8_t *message, int length)
 
    byte* hashcode = ripemd128(message, rlen);
 
-//   for (i=0; i< RMDsize/8 /*ripemd size / 8 = 128 / 8*/; i++) {
-//      printf("%d ", hashcode[i] & 255);
-//   }
-//   printf("\n");
+   for (int i=0; i< RMDsize/8 /*ripemd size / 8 = 128 / 8*/; i++) {
+     hashcode[i] = (byte)(hashcode[i] & 255);
+     printf("%d ", hashcode[i]);
+   }
+   printf("\n");
 //   for (i=0; i< RMDsize/8; i++) {
 //      printf("%02x ", hashcode[i] );
 //   }
@@ -361,3 +372,6 @@ byte* ripemd128bytes(uint8_t *message, int length)
 
 /************************ end of file rmd128.c **********************/
 
+#ifdef __cplusplus
+}
+#endif

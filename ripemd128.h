@@ -26,6 +26,10 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /********************************************************************/
 
 /* typedef 8, 16 and 32 bit types, resp.  */
@@ -117,7 +121,7 @@ void ripemd128Init(dword32 *digest);
  *  the compression function.
  *  transforms MDbuf using message bytes X[0] through X[15]
  */
-void compress(dword32 *digest, dword32 *X);
+void ripemd128compress(dword32 *digest, dword32 *X);
 
 /*
  * ISO7816 message padding
@@ -137,4 +141,8 @@ byte* ripemd128bytes(uint8_t *message, int length);
 #endif  /* RMD128H */
 
 /*********************** end of file rmd128.h ***********************/
+
+#ifdef __cplusplus
+}
+#endif
 

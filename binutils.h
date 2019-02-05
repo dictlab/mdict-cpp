@@ -23,6 +23,11 @@
  * convert BigEndian 4 bytes unsigned char array to uint32 integer
  *
  **/
+
+uint8_t be_bin_to_u8(const unsigned char* bin /* 8 bytes char array*/);
+
+uint16_t be_bin_to_u16(const unsigned char* bin /* 4 bytes char array  */);
+
 uint32_t be_bin_to_u32(const unsigned char* bin /* 4 bytes char array  */);
 
 uint64_t be_bin_to_u64(const unsigned char* bin /* 8 bytes char array*/);
@@ -34,17 +39,10 @@ int bin_slice(const char* srcByte, int srcByteLen, int offset, int len, char* di
 
 void putbytes(const char* bytes,int len, bool hex);
 
-int gzDecompress(const char *src, int srcLen, const char *dst, int dstLen);
-
-int gzipDecompress(const char *src, unsigned int srcLen, const char *dst, unsigned int dstLen);
-
-int UncompressData( const char* abSrc, int nLenSrc, char* abDst, int nLenDst );
-
-int zipUncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen);
-
-
 // ================================================
 // code convert part
 // ===============================================
 std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len);
+
+std::string be_bin_to_utf8(const char* bytes, int offset, unsigned long len);
 

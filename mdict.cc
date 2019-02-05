@@ -24,7 +24,8 @@
 #include "ripemd128.h"
 
 //#include "deps/miniz/miniz.h"
-#include <zlib.h>
+//#include <zlib.h>
+#include "zlib_wrapper.h"
 #include "adler32.h"
 
 #define ENCRYPT_NO_ENC 0
@@ -141,10 +142,32 @@
 
 namespace jsmdict {
 
+    class key_block_info{
+    public:
+       std::string first_key;
+       std::string last_key;
+       unsigned long key_block_start_offset;
+       unsigned long key_block_comp_size;
+       unsigned long key_block_decomp_size;
+       key_block_info(std::string first_key, std::string last_key, unsigned long kb_start_ofset, unsigned long kb_comp_size,
+                      unsigned long kb_decomp_size){
+         this->key_block_comp_size = kb_comp_size;
+         this->key_block_decomp_size = kb_decomp_size;
+         this->key_block_start_offset = kb_start_ofset;
+         this->first_key = first_key;
+         this->last_key = last_key;
+       }
+       ~key_block_info(){
+         delete this;
+       }
+    };
+
     class Mdict{
     public:
         Mdict(std::string fn) noexcept;
         ~Mdict();
+
+
         std::string lookup(const std::string word, int word_len);
         std::vector<std::string> prefix(const std::string prefix, int prefix_len);
 
@@ -156,6 +179,8 @@ namespace jsmdict {
         void read_key_block_info();
 
         int decode_key_block_info(char* key_block_info_buffer, unsigned long kb_info_buff_len ,int key_block_num, int entries_num);
+
+        int decode_key_block(unsigned char* key_block_buffer, unsigned long kb_buff_len);
 
         void printhead() {
           std::cout<<"version: "<<this->version<<std::endl<<"encoding: "<<this->encoding<<std::endl;
@@ -204,6 +229,11 @@ namespace jsmdict {
         uint64_t key_block_info_size = 0;
         uint64_t key_block_size = 0;
 
+        // ---------------------
+        //  key block body offset
+        // ---------------------
+
+        uint64_t key_block_body_start = 0;
 
         // head info part
         int encrypt = 0;
@@ -219,6 +249,13 @@ namespace jsmdict {
 
         // contains key or not
         bool contains(char* word, int word_len);
+
+
+        void split_key_block(unsigned char* key_block, unsigned long key_block_len);
+
+
+        // key block info list
+        std::vector<key_block_info*> key_block_info_list;
 
 
     };
@@ -459,6 +496,7 @@ namespace jsmdict {
         if (this->number_width == 8) key_block_info_decompress_size = be_bin_to_u64((const unsigned char*)key_block_info_decompress_size_bytes);
         else if(this->number_width == 4) key_block_info_decompress_size = be_bin_to_u32((const unsigned char*)key_block_info_decompress_size_bytes);
         std::cout<<"keyblockcompress size:"<< key_block_info_decompress_size <<std::endl;
+        this->key_block_info_decompress_size = key_block_info_decompress_size;
         // TODO PASSED
         if (key_block_info_decompress_size_bytes) std::free(key_block_info_decompress_size_bytes);
         // key block info size (number) start at 24 ([24:32])
@@ -514,7 +552,6 @@ namespace jsmdict {
       this->key_block_size = key_block_size;
       if (this->version >= 2.0) {
         this->key_block_info_start_offset = this->key_block_start_offset + 40 + 4;
-        this->key_block_info_decompress_size = 0;
       }else{
         this->key_block_info_start_offset = this->key_block_start_offset + 16;
       }
@@ -538,12 +575,27 @@ namespace jsmdict {
       // key block compressed start offset = this->key_block_info_start_offset + key_block_info_size
       this->key_block_compressed_start_offset = static_cast<uint32_t>(this->key_block_info_start_offset + this->key_block_info_size);
 
-      char * key_block_compressed_buffer = (char*)calloc(static_cast<size_t>(this->key_block_size), sizeof(char));
-      readfile(this->key_block_compressed_start_offset, static_cast<int>(this->key_block_info_size), key_block_compressed_buffer);
+      std::cout<<"key block compressed start offset" << this->key_block_compressed_start_offset <<std::endl;
+      // here passed
+
+      char* key_block_compressed_buffer = (char*) calloc(static_cast<size_t>(this->key_block_size), sizeof(char));
+
+      readfile(this->key_block_compressed_start_offset, static_cast<int>(this->key_block_size), key_block_compressed_buffer);
+
+      std::cout<<"&X&X&X&X&X&X&X&"<<this->key_block_size<<std::endl;
+      putbytes(key_block_compressed_buffer, 3010, true);
 
       // ------------------------------------
       // TODO decode key_block_compressed
       // ------------------------------------
+      unsigned  long kb_len = this->key_block_size;
+
+      int err = decode_key_block((unsigned char*) key_block_compressed_buffer ,kb_len);
+      if (err != 0) {
+        throw std::runtime_error("decode key block error");
+      }
+
+
 
 
       if (key_block_info_buffer != nullptr) std::free(key_block_info_buffer);
@@ -604,12 +656,127 @@ namespace jsmdict {
       /// passed
     }
 
+    void Mdict::split_key_block(unsigned char* key_block, unsigned long key_block_len){
+      int key_start_idx = 0;
+      int key_end_idx = 0;
+
+      while(key_start_idx < key_block_len){
+        // # the corresponding record's offset in record block
+        unsigned long key_id = 0;
+        int width = 0;
+        if(this->version >= 2.0) {
+          key_id = be_bin_to_u64(key_block + key_start_idx);
+          width = 2;
+        }else{
+          key_id = be_bin_to_u32(key_block + key_start_idx);
+          width = 1;
+        }
+       // key text ends with '\x00'
+       // version >= 2.0 delimiter == '0x0000'
+       // else delimiter == '0x00'  (< 2.0)
+//       std::cout<<"AAASSSFFFF"<<number_width<<std::endl;
+       int i = key_start_idx + number_width;// ver > 2.0, move 8, else move 4
+       while(i< key_block_len){
+         if(version >= 2.0){
+          if (key_block[i] == 0 && key_block[i+1] == 0 /* delimiter = '0000' */){
+            key_end_idx = i;
+            break;
+          }
+         }else{
+           if (key_block[i] == 0 /* delimiter == '0' */){
+            key_end_idx = i;
+            break;
+          }
+         }
+
+         i += 1;
+
+       }
+
+       std::string key_text = "";
+       if (this->encoding == 1 /* ENCODING_UTF16 */){
+         // TODO
+         throw std::runtime_error("error");
+       }else if (this->encoding == 0 /* ENCODING_UTF8 */){
+//         std::cout<<"start_idx"<<key_start_idx<<"number width"<<this->number_width<<std::endl;
+//         std::cout<<"==> len"<<key_end_idx - key_start_idx - this->number_width<<std::endl;
+         key_text = be_bin_to_utf8(
+           (const char*)key_block,
+           (key_start_idx + this->number_width),
+           static_cast<unsigned long>(key_end_idx - key_start_idx - this->number_width));
+       }
+
+       // next round
+       key_start_idx = key_end_idx + width;
+//       std::cout<<"key id: " << key_id << "  key_text: "<<key_text<<std::endl;
+
+//       break;
+
+      }
+
+    }
+
+
+    int Mdict::decode_key_block(unsigned char* key_block_buffer, unsigned long kb_buff_len) {
+      std::vector<char*> key_list;
+      int i = 0;
+      for (; i < this->key_block_info_list.size(); i++){
+        unsigned long comp_size = this->key_block_info_list[i]->key_block_comp_size;
+        unsigned long decomp_size = this->key_block_info_list[i]->key_block_decomp_size;
+        unsigned long start_ofset = i;
+        unsigned long end_ofset = i + comp_size;
+        // 4 bytes comp type
+        char* key_block_comp_type = (char*) calloc(4 , sizeof(char));
+        memcpy(key_block_comp_type, key_block_buffer, 4 * sizeof(char));
+        // 4 bytes adler checksum of decompressed key block
+        // TODO  adler32 = unpack('>I', key_block_compressed[start + 4:start + 8])[0]
+        unsigned char* key_block = nullptr;
+        if((key_block_comp_type[0] & 255) == 0) {
+          // none compressed
+          key_block = key_block_buffer + 8 * sizeof(char);
+        }else if((key_block_comp_type[0] & 255) == 1) {
+          // 01000000
+          // TODO lzo decompress
+
+        }else if((key_block_comp_type[0] & 255) == 2){
+          // zlib compress
+          std::cout<<"---------------------AA"<<std::endl;
+          putbytes((char*)key_block_buffer + 8, static_cast<int>(comp_size - 8), true);
+          std::cout<<start_ofset<<","<<comp_size - 8<<std::endl;
+
+          std::vector<uint8_t> kb_uncompressed = zlib_mem_uncompress(key_block_buffer + start_ofset + 8, comp_size - 8 );
+          key_block = kb_uncompressed.data();
+        }else{
+          std::cout<<"cannot determine the key block compress type"<<std::endl;
+          throw std::runtime_error("cannot determine the key block compress type");
+        }
+
+//        std::cout<<"AAAAAAAAAACBBBBBBBBBB"<<std::endl;
+//        putbytes((char*)(key_block_buffer + start_ofset + 8), static_cast<int>(comp_size - 8), true);
+//        putbytes((char*)key_block, static_cast<int>(comp_size - 8), true);
+        // split key
+        split_key_block(key_block, decomp_size);
+        // TODO HERE append keys
+
+
+
+        // next round
+        i += comp_size;
+
+
+      }
+      return 0;
+    }
+
 
     // note: kb_info_buff_len == key_block_info_compressed_size
     int Mdict::decode_key_block_info(char* key_block_info_buffer, unsigned long kb_info_buff_len, int key_block_num, int entries_num){
         char* kb_info_buff = key_block_info_buffer;
         std::cout<<"-----------\n kb_info_buffer [02 00 00 00 e7 a4 02 e4 a2 e4 b8 b9 e4 dd d1 71 5e a2 7f 0c ](1508)"<<std::endl;
         putbytes(kb_info_buff, kb_info_buff_len, true);
+
+      // key block info offset indicator
+      unsigned long data_offset = 0;
 
         if (this->version >= 2.0) {
           // if version >= 2.0, use zlib compression
@@ -657,74 +824,162 @@ namespace jsmdict {
           // we malloc 8 size of source data len, we cannot estimate the original data size
           // but currently, we know the size of key_block_info decompress size, so we use this
 
-          auto * key_block_info_uncomp = (unsigned char*) calloc(this->key_block_info_decompress_size * 2 , sizeof(char));
-
-          if (!key_block_info_uncomp) {
-            std::cout<<"key_block_info_uncomp failed"<<std::endl;
-            return EXIT_FAILURE;
-          }
-          unsigned long key_block_info_uncomp_len = 0;
-
-          std::cout<<"<BBBBBBBBB"<<std::endl;
-          putbytes((char*)(kb_info_decrypted + 8 * sizeof(char)), kb_info_buff_len - 8, false);
-
-//          int uncpm_status = gzipDecompress((const char*)(kb_info_decrypted +8 * sizeof(char)), (int)(kb_info_buff_len - 8), (const char*)key_block_info_uncomp, this->key_block_info_decompress_size);
-//          int uncpm_status = gzipDecompress((const char*)(kb_info_decrypted +8 * sizeof(char)), (int)(kb_info_buff_len - 8), (char*) key_block_info_uncomp, this->key_block_info_decompress_size);
-          int uncpm_status = zipUncompress((Bytef*)key_block_info_uncomp, (uLongf*) &key_block_info_uncomp_len, (Bytef*)(kb_info_decrypted + 8), (uLongf)(kb_info_buff_len - 8));
-          std::cout<<"<CCCCCCCCC"<<std::endl;
-          putbytes((char*)kb_info_decrypted, (int)this->key_block_info_decompress_size,true);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           // note: we should uncompress key_block_info_buffer[8:] data, so we need (decrypted + 8, and length -8)
-//          int uncpm_status = uncompress(key_block_info_uncomp, &key_block_info_uncomp_len, kb_info_decrypted + 8 * sizeof(char), kb_info_buff_len - 8);
-//          int uncpm_status = 0;
-          if (uncpm_status != 0) {
-            std::cout<<"key_block_info_uncmp uncompress failed, exit code: "<<uncpm_status<<std::endl;
-            return EXIT_FAILURE;
+          std::vector<uint8_t> decompress_buff = zlib_mem_uncompress(kb_info_decrypted+8, kb_info_buff_len - 8, this->key_block_info_decompress_size);
+          std::cout<<"HAHAHAHAHAHAHAHA"<<std::endl;
+          std::cout<<decompress_buff.size()<<", "<<this->key_block_info_decompress_size<<std::endl;
+          std::cout<<decompress_buff.data()<<std::endl;
+          /// uncompress successed
+          assert(decompress_buff.size() == this->key_block_info_decompress_size);
+
+          // get key block info list
+//          std::vector<key_block_info*> key_block_info_list;
+          /// entries summary, every block has a lot of entries, the sum of entries should equals entries_number
+          unsigned long num_entries_counter = 0;
+          // key number counter
+          unsigned long counter = 0;
+
+          // current block entries
+          unsigned long current_entries = 0;
+
+          unsigned long previous_start_offset = 0;
+
+
+          int byte_width = 1;
+          int text_term = 0;
+          if (this->version >= 2.0) {
+            byte_width = 2;
+            text_term = 1;
           }
 
-          std::cout<<"key_block_info_uncmp decompress success, exit code: "<<uncpm_status<<std::endl;
+          while(counter < this->key_block_num){
+            if (this->version >= 2.0) {
+              current_entries = be_bin_to_u64(decompress_buff.data() + data_offset * sizeof(uint8_t));
+            }else{
+              current_entries = be_bin_to_u32(decompress_buff.data() + data_offset * sizeof(uint8_t));
+            }
+            num_entries_counter += current_entries;
+            std::cout<<"current entries:"<<current_entries<<std::endl;
+
+            // move offset
+            // if version>= 2.0 move forward 8 bytes
+
+            data_offset += this->number_width * sizeof(uint8_t);
+
+            std::cout<<"number width:"<<number_width<<" "<<this->number_width * sizeof(uint8_t)<<std::endl;
+            // first key size
+            unsigned long first_key_size = 0;
+
+            if (this->version >= 2.0) {
+              first_key_size = be_bin_to_u16(decompress_buff.data() + data_offset * sizeof(uint8_t));
+            }else{
+              first_key_size = be_bin_to_u8(decompress_buff.data() + data_offset * sizeof(uint8_t));
+            }
+            data_offset += byte_width;
+            std::cout<<"first key size: "<<first_key_size<<std::endl;
+            std::cout<<"data offset: "<<data_offset<<std::endl;
+
+            // step_gap means first key start offset to first key end;
+            int step_gap = 0;
+
+            if ( this->encoding == 1 /* encoding utf16 equals 1*/ ) {
+              step_gap = (first_key_size + text_term) * 2;
+            } else {
+              step_gap = first_key_size + text_term;
+            }
+
+            // DECODE first CODE
+            // TODO here minus the terminal character size(1), but we still not sure should minus this or not
+            std::string fkey = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
+            std::cout<<"first key: "<<fkey<<std::endl;
+            // move forward
+            data_offset += step_gap;
 
 
+            // the last key
+            unsigned long last_key_size = 0;
+
+            if (this->version >= 2.0) {
+              last_key_size = be_bin_to_u16(decompress_buff.data() + data_offset * sizeof(uint8_t));
+            }else{
+              last_key_size = be_bin_to_u8(decompress_buff.data() + data_offset * sizeof(uint8_t));
+            }
+            data_offset += byte_width;
+
+            if (this->encoding == 1 /* ENCODING_UTF16 */) {
+              step_gap = (last_key_size + text_term) * 2;
+            } else {
+              step_gap = last_key_size + text_term;
+            }
+
+            std::string last_key = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
+            std::cout<<"last key: "<<last_key<<std::endl;
+
+            // move forward
+            data_offset += step_gap;
 
 
+            // ------------
+            // key block part
+            // ------------
 
+            uint64_t key_block_compress_size = 0;
+            if (version >= 2.0) {
+              key_block_compress_size = be_bin_to_u64(decompress_buff.data() + data_offset);
+            }else{
+              key_block_compress_size = be_bin_to_u32(decompress_buff.data() + data_offset);
+            }
 
+            data_offset += this->number_width;
 
+            uint64_t key_block_decompress_size = 0;
 
+            if (version >= 2.0) {
+              key_block_decompress_size = be_bin_to_u64(decompress_buff.data() + data_offset);
+            }else{
+              key_block_decompress_size = be_bin_to_u32(decompress_buff.data() + data_offset);
+            }
 
+            // entries offset move forward
+            data_offset += this->number_width;
 
-//      key_block_info = new BufferList(pako.inflate(key_block_info_compressed.slice(
-//            8,
-//            key_block_info_compressed.length,
-//          )));
+            std::cout<< "compress_size:" << key_block_compress_size<<std::endl;
+            std::cout<< "decompress_size:" << key_block_decompress_size<<std::endl;
 
+            key_block_info* kbinfo = new key_block_info(fkey, last_key, previous_start_offset, key_block_compress_size, key_block_decompress_size);
+            // adjust ofset
+            previous_start_offset += key_block_compress_size;
+            key_block_info_list.push_back(kbinfo);
+
+            // key block counter
+            counter += 1;
+//          break;
+
+          }
+          std::cout<< "counter: " <<counter<<std::endl;
+          assert(counter == this->key_block_num);
+          assert(num_entries_counter == this->entries_num);
+
+//          std::vector<key_block_info*>::iterator it;
+
+          for (auto it = key_block_info_list.begin(); it != key_block_info_list.end(); it++){
+            std::cout<<"fkey : "<<(*it)->first_key<<std::endl;
+            std::cout<<"lkey : "<<(*it)->last_key<<std::endl;
+            std::cout<<"comp_size : "<<(*it)->key_block_comp_size<<std::endl;
+            std::cout<<"decomp_size : "<<(*it)->key_block_decomp_size<<std::endl;
+            std::cout<<"offset : "<<(*it)->key_block_start_offset<<std::endl;
+          }
 
         }else {
           // doesn't compression
         }
+
+        std::cout<<"data offset: " << data_offset<<std::endl;
+        assert(data_offset == this->key_block_info_decompress_size);
+        this->key_block_body_start = this->key_block_info_start_offset + this->key_block_info_size;
+        std::cout<<"key_block_body offset: " << this->key_block_body_start<<std::endl;
+        /// here passed
 
 
       }

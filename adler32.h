@@ -2,7 +2,16 @@
 #define MDICT_ADLER32_H_
 
 #include <stdint.h>
+#include <assert.h>
+#include <stddef.h>
 
-uint32_t adler32chksum(const unsigned char* data, uint32_t len);
+#include <exception>
+#include <cstdio>
+#include <cstdlib>
+
+typedef unsigned char byte;
+typedef unsigned short word16;
+
+uint32_t adler32checksum(const unsigned char *data, uint32_t len);
 
 #endif

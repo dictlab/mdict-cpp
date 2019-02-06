@@ -761,7 +761,7 @@ namespace jsmdict {
           // finally, we needs to check adler32 checksum
           // key_block_info_compressed[4:8] => adler32 checksum
 //          uint32_t chksum = be_bin_to_u32((unsigned char*) (kb_info_buff + 4));
-//          uint32_t adlercs = adler32chksum(key_block_info_uncomp, static_cast<uint32_t>(key_block_info_uncomp_len)) & 0xffffffff;
+//          uint32_t adlercs = adler32checksum(key_block_info_uncomp, static_cast<uint32_t>(key_block_info_uncomp_len)) & 0xffffffff;
 //
 //          assert(chksum == adlercs);
 

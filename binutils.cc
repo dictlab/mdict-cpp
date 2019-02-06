@@ -153,9 +153,6 @@ std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len){
 
 std::string be_bin_to_utf8(const char* bytes, int offset, unsigned long len){
     std::string u8(bytes + offset*sizeof(char), len);
-//	  std::cout<<u8<<"|"<<u8.length()<<std::endl;
-//	  putbytes(bytes,offset, len);
-//	  cout<<"inner:"<<u8<<endl;
     return u8;
 }
 

@@ -1,40 +1,7 @@
-/*
- * zlib_wrapper.h
- *
- *  Created on: 2016年3月29日
- *      Author: guyadong
- */
-
-#ifndef INCLUDE_ZLIB_WRAPPER_H_
-#define INCLUDE_ZLIB_WRAPPER_H_
+#ifndef MDICT_ZIP_WRAPPER_H_
+#define MDICT_ZIP_WRAPPER_H_
 #include <vector>
 #include "zlib.h"
-//#define _DEF_STRING(x) #x
-//#define DEF_TO_STRING(x) _DEF_STRING(x)
-//#define SOURCE_AT __FILE__ ":" DEF_TO_STRING(__LINE__)
-//#define ERROR_STR(msg) std::string(SOURCE_AT ":").append(msg)
-//#define throw_except_if_msg(except,expression,msg) \
-//    if(expression)\
-//        throw except(ERROR_STR(msg));
-//#define _CAS_ERROR_MSG_(ERR) case ERR:return #ERR;
-///*
-// * 以sting形式返回错误信息
-// */
-//inline std::string zlib_error_message(int err){
-//  switch(err){
-//    _CAS_ERROR_MSG_(Z_OK)
-//    _CAS_ERROR_MSG_(Z_MEM_ERROR)
-//    _CAS_ERROR_MSG_(Z_BUF_ERROR)
-//    _CAS_ERROR_MSG_(Z_STREAM_ERROR)
-//  };
-//  return "unknow error";
-//}
-//#undef _CAS_ERROR_MSG_
-/* zlib异常类 */
-class zlib_exception:public std::logic_error{
-    // 继承基类构造函数
-    using std::logic_error::logic_error;
-};
 
 
 /*

@@ -14,6 +14,8 @@
  *
  * =====================================================================================
  */
+#ifndef MDICT_BINUTILS_H_
+#define MDICT_BINUTILS_H_
 
 #include <string>
 
@@ -46,3 +48,4 @@ std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len);
 
 std::string be_bin_to_utf8(const char* bytes, int offset, unsigned long len);
 
+#endif

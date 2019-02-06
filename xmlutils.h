@@ -15,5 +15,12 @@
  * =====================================================================================
  */
 
+#ifndef MDICT_XMLUTILS_H_
+#define MDICT_XMLUTILS_H_
+
+#include <map>
+
 // parse xml header info
 std::map<std::string, std::string> parseXMLHeader(std::string dicxml);
+
+#endif

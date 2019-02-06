@@ -1,24 +1,24 @@
 /********************************************************************\
  *
- *      FILE:     rmd128.h
+ *      FILE:     rupemd128.h
  *
  *      CONTENTS: Header file for a sample C-implementation of the
  *                RIPEMD-128 hash-function. This function is a
- *                plug-in substitute for RIPEMD. A 160-bit hash
- *                result is obtained using RIPEMD-160.
+ *                plug-in substitute for RIPEMD. A 128-bit hash
+ *                result is obtained using RIPEMD-128.
  *      TARGET:   any computer with an ANSI C compiler
  *
- *      AUTHOR:   Antoon Bosselaers, ESAT-COSIC
- *      DATE:     1 March 1996
+ *      AUTHOR:   Chen Quan
+ *      DATE:     5 Feb 2018
  *      VERSION:  1.0
  *
- *      Copyright (c) Katholieke Universiteit Leuven
- *      1996, All Rights Reserved
+ *      Ref: Antoon Bosselaers, ESAT-COSIC version rmd128.h
+ *
  *
 \********************************************************************/
 
-#ifndef  RMD128H           /* make sure this file is read only once */
-#define  RMD128H
+#ifndef  MDICT_RIPEMD128_H_           /* make sure this file is read only once */
+#define  MDICT_RIPEMD128_H_           /* make sure this file is read only once */
 
 #ifndef RMDsize
 #define RMDsize 128

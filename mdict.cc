@@ -183,7 +183,7 @@ namespace jsmdict {
         int decode_key_block(unsigned char* key_block_buffer, unsigned long kb_buff_len);
 
         void printhead() {
-          std::cout<<"version: "<<this->version<<std::endl<<"encoding: "<<this->encoding<<std::endl;
+//          std::cout<<"version: "<<this->version<<std::endl<<"encoding: "<<this->encoding<<std::endl;
         }
 
     private:
@@ -265,8 +265,6 @@ namespace jsmdict {
     Mdict::Mdict(std::string fn)noexcept: filename(fn) {
       offset = 0;
       instream = std::ifstream(filename, std::ios::binary);
-      /// infile = std::fopen(fn.substr, "rb"); // read fn as read||binary mode
-      std::cout<<"constructor"<<std::endl;
     }
     // distructor
     Mdict::~Mdict() {
@@ -288,11 +286,10 @@ namespace jsmdict {
       // header size buffer
       char* head_size_buf = (char*) std::calloc(4, sizeof(char));
       readfile(0, 4, head_size_buf);
-      putbytes(head_size_buf, 4, true);
+//      putbytes(head_size_buf, 4, true);
       // header byte size convert
       uint32_t header_bytes_size = be_bin_to_u32((const unsigned char*) head_size_buf);
       std::free(head_size_buf);
-      std::cout<<"len1:" <<header_bytes_size<<std::endl;
       // assign key block start offset
       this->header_bytes_size = header_bytes_size;
       this->key_block_start_offset = this->header_bytes_size + 8;
@@ -304,7 +301,7 @@ namespace jsmdict {
       // header buffer
       char* head_buffer = (char*) std::calloc(header_bytes_size, sizeof(char));
       readfile(4, header_bytes_size, head_buffer);
-      putbytes(head_buffer, header_bytes_size, true);
+//      putbytes(head_buffer, header_bytes_size, true);
 
       // -----------------------------------------
       // 3. alder32 checksum
@@ -314,7 +311,7 @@ namespace jsmdict {
       // alder32 checksum buffer
       char* head_checksum_buffer = (char*) std::calloc(4, sizeof(char));
       readfile(header_bytes_size + 4, 4, head_checksum_buffer);
-      putbytes(head_checksum_buffer, 4, true);
+//      putbytes(head_checksum_buffer, 4, true);
 
       // TODO skip head checksum for now
       std::free(head_checksum_buffer);
@@ -330,7 +327,7 @@ namespace jsmdict {
         std::cout<<"this mdx file is invalid"<<std::endl;
         return;
       }
-      std::cout<< header_text << std::endl;
+//      std::cout<< header_text << std::endl;
 
       // -----------------------------------------
       // 5. parse xml string into map
@@ -430,7 +427,7 @@ namespace jsmdict {
       // read buffer
       this->readfile(this->key_block_start_offset, key_block_info_bytes_num, key_block_info_buffer);
       // TODO PASSED
-      putbytes(key_block_info_buffer, key_block_info_bytes_num, true);
+//      putbytes(key_block_info_buffer, key_block_info_bytes_num, true);
 
 
       // TODO key block info encrypted file not support yet
@@ -456,12 +453,11 @@ namespace jsmdict {
         std::cerr<<"binslice err:"<< eno <<std::endl;
         // TODO throw error
       }
-      putbytes(key_block_nums_bytes, this->number_width, true);
+//      putbytes(key_block_nums_bytes, this->number_width, true);
 
       uint64_t key_block_num = 0;
       if (this->number_width == 8) key_block_num = be_bin_to_u64((const unsigned char*)key_block_nums_bytes);
       else if(this->number_width == 4) key_block_num = be_bin_to_u32((const unsigned char*)key_block_nums_bytes);
-      std::cout<<"keyblocknum:"<< key_block_num <<std::endl;
       // TODO PASSED
 
       // 2. [8:16]  - number of entries
@@ -472,12 +468,11 @@ namespace jsmdict {
         // TODO throw error
       }
 
-      putbytes(entries_num_bytes, this->number_width, true);
+//      putbytes(entries_num_bytes, this->number_width, true);
 
       uint64_t entries_num = 0;
       if (this->number_width == 8) entries_num = be_bin_to_u64((const unsigned char*)entries_num_bytes);
       else if(this->number_width == 4) key_block_num = be_bin_to_u32((const unsigned char*)entries_num_bytes);
-      std::cout<<"entries_num:"<< entries_num <<std::endl;
       // TODO PASSED
 
       int key_block_info_size_start_offset = 0;
@@ -490,12 +485,11 @@ namespace jsmdict {
           std::cerr<<"binslice err3:"<< eno <<std::endl;
           // TODO throw error
         }
-        putbytes(key_block_info_decompress_size_bytes, this->number_width, true);
+//        putbytes(key_block_info_decompress_size_bytes, this->number_width, true);
 
         uint64_t key_block_info_decompress_size = 0;
         if (this->number_width == 8) key_block_info_decompress_size = be_bin_to_u64((const unsigned char*)key_block_info_decompress_size_bytes);
         else if(this->number_width == 4) key_block_info_decompress_size = be_bin_to_u32((const unsigned char*)key_block_info_decompress_size_bytes);
-        std::cout<<"keyblockcompress size:"<< key_block_info_decompress_size <<std::endl;
         this->key_block_info_decompress_size = key_block_info_decompress_size;
         // TODO PASSED
         if (key_block_info_decompress_size_bytes) std::free(key_block_info_decompress_size_bytes);
@@ -513,12 +507,11 @@ namespace jsmdict {
         std::cerr<<"binslice err3:"<< eno <<std::endl;
         // TODO throw error
       }
-      putbytes(key_block_info_size_buffer, this->number_width, true);
+//      putbytes(key_block_info_size_buffer, this->number_width, true);
 
       uint64_t key_block_info_size = 0;
       if (this->number_width == 8) key_block_info_size = be_bin_to_u64((const unsigned char*)key_block_info_size_buffer);
       else if(this->number_width == 4) key_block_info_size = be_bin_to_u32((const unsigned char*)key_block_info_size_buffer);
-      std::cout<<"key block info size:"<< key_block_info_size <<std::endl;
       // TODO PASSED
 
       // 5. [32:40] - key block size
@@ -528,12 +521,11 @@ namespace jsmdict {
         std::cerr<<"binslice err3:"<< eno <<std::endl;
         // TODO throw error
       }
-      putbytes(key_block_size_buffer, this->number_width, true);
+//      putbytes(key_block_size_buffer, this->number_width, true);
 
       uint64_t key_block_size = 0;
       if (this->number_width == 8) key_block_size = be_bin_to_u64((const unsigned char*)key_block_size_buffer);
       else if(this->number_width == 4) key_block_size = be_bin_to_u32((const unsigned char*)key_block_size_buffer);
-      std::cout<<"key block size:"<< key_block_size <<std::endl;
       // TODO PASSED
 
       // 6. [40:44] - 4bytes checksum
@@ -575,15 +567,11 @@ namespace jsmdict {
       // key block compressed start offset = this->key_block_info_start_offset + key_block_info_size
       this->key_block_compressed_start_offset = static_cast<uint32_t>(this->key_block_info_start_offset + this->key_block_info_size);
 
-      std::cout<<"key block compressed start offset" << this->key_block_compressed_start_offset <<std::endl;
       // here passed
 
       char* key_block_compressed_buffer = (char*) calloc(static_cast<size_t>(this->key_block_size), sizeof(char));
 
       readfile(this->key_block_compressed_start_offset, static_cast<int>(this->key_block_size), key_block_compressed_buffer);
-
-      std::cout<<"&X&X&X&X&X&X&X&"<<this->key_block_size<<std::endl;
-      putbytes(key_block_compressed_buffer, 3010, true);
 
       // ------------------------------------
       // TODO decode key_block_compressed
@@ -605,12 +593,9 @@ namespace jsmdict {
 
 
     void fast_decrypt(byte* data, const byte* k, int data_len, int key_len){
-      std::cout<<"fast decrypt key"<<std::endl;
       const byte* key = k;
-      putbytes((char*)data, 16, true);
+//      putbytes((char*)data, 16, true);
       byte* b = data;
-      std::cout<<"fast decrypt"<<std::endl;
-      putbytes((char*)data,data_len, true);
       byte previous = 0x36;
 
       for (int i =0; i < data_len; ++i){
@@ -634,18 +619,12 @@ namespace jsmdict {
 
     /* note: don't forget free comp_block */
     byte* mdx_decrypt(byte* comp_block, const int comp_block_len) {
-      std::cout<<"--- compblock buff --- "<< std::endl;
-      putbytes((char*) comp_block, comp_block_len, true);
       byte* key_buffer = (byte*) calloc(8, sizeof(byte));
       memcpy(key_buffer, comp_block + 4 * sizeof(char), 4 * sizeof(char));
       key_buffer[4] = 0x95; // comp_block[4:8] + [0x95,0x36,0x00,0x00]
       key_buffer[5] = 0x36;
 
-      std::cout<<"--- key buff --- "<< std::endl;
-      putbytes((char*) key_buffer, 8,true);
       byte* key = ripemd128bytes(key_buffer, 8);
-      std::cout<<"--- key --- "<< std::endl;
-      putbytes((char*) key, 16, false);
 
 
       fast_decrypt(comp_block + 8 * sizeof(byte), key, comp_block_len - 8, 16 /* key length*/);
@@ -674,7 +653,6 @@ namespace jsmdict {
        // key text ends with '\x00'
        // version >= 2.0 delimiter == '0x0000'
        // else delimiter == '0x00'  (< 2.0)
-//       std::cout<<"AAASSSFFFF"<<number_width<<std::endl;
        int i = key_start_idx + number_width;// ver > 2.0, move 8, else move 4
        while(i< key_block_len){
          if(version >= 2.0){
@@ -698,8 +676,6 @@ namespace jsmdict {
          // TODO
          throw std::runtime_error("error");
        }else if (this->encoding == 0 /* ENCODING_UTF8 */){
-//         std::cout<<"start_idx"<<key_start_idx<<"number width"<<this->number_width<<std::endl;
-//         std::cout<<"==> len"<<key_end_idx - key_start_idx - this->number_width<<std::endl;
          key_text = be_bin_to_utf8(
            (const char*)key_block,
            (key_start_idx + this->number_width),
@@ -708,7 +684,6 @@ namespace jsmdict {
 
        // next round
        key_start_idx = key_end_idx + width;
-//       std::cout<<"key id: " << key_id << "  key_text: "<<key_text<<std::endl;
 
 //       break;
 
@@ -740,18 +715,13 @@ namespace jsmdict {
 
         }else if((key_block_comp_type[0] & 255) == 2){
           // zlib compress
-          std::cout<<"---------------------AA"<<std::endl;
-          putbytes((char*)key_block_buffer + 8, static_cast<int>(comp_size - 8), true);
-          std::cout<<start_ofset<<","<<comp_size - 8<<std::endl;
 
           std::vector<uint8_t> kb_uncompressed = zlib_mem_uncompress(key_block_buffer + start_ofset + 8, comp_size - 8 );
           key_block = kb_uncompressed.data();
         }else{
-          std::cout<<"cannot determine the key block compress type"<<std::endl;
           throw std::runtime_error("cannot determine the key block compress type");
         }
 
-//        std::cout<<"AAAAAAAAAACBBBBBBBBBB"<<std::endl;
 //        putbytes((char*)(key_block_buffer + start_ofset + 8), static_cast<int>(comp_size - 8), true);
 //        putbytes((char*)key_block, static_cast<int>(comp_size - 8), true);
         // split key
@@ -772,8 +742,6 @@ namespace jsmdict {
     // note: kb_info_buff_len == key_block_info_compressed_size
     int Mdict::decode_key_block_info(char* key_block_info_buffer, unsigned long kb_info_buff_len, int key_block_num, int entries_num){
         char* kb_info_buff = key_block_info_buffer;
-        std::cout<<"-----------\n kb_info_buffer [02 00 00 00 e7 a4 02 e4 a2 e4 b8 b9 e4 dd d1 71 5e a2 7f 0c ](1508)"<<std::endl;
-        putbytes(kb_info_buff, kb_info_buff_len, true);
 
       // key block info offset indicator
       unsigned long data_offset = 0;
@@ -787,19 +755,6 @@ namespace jsmdict {
           byte* kb_info_decrypted = (unsigned char *)key_block_info_buffer;
           if(this->encrypt == ENCRYPT_KEY_INFO_ENC){
             kb_info_decrypted = mdx_decrypt((byte*)kb_info_buff, kb_info_buff_len);
-          }
-          std::cout<<"-----------\n kb_info_decrypted [02 00 00 00 e7 a4 02 e4 78 da 75 96 4b 88 1c 45 18 c7 3f dd cc 7b 66 77 03 01 41 cf 5e 36 d9 dd 59 21 17 41 f4 e2 d9 1c 3c 78 88 8f ea ee ea ee 72 ba ab 7a ab ab 67 b2 11 dc ... > ] 1508" <<std::endl;
-          putbytes((char*)kb_info_decrypted, kb_info_buff_len, true);
-          std::cout<<"==" <<std::endl;
-          putbytes((char*)kb_info_decrypted, kb_info_buff_len, false);
-
-          unsigned char expect[1500] = {120, 218, 117, 150, 75, 136, 28, 69, 24, 199, 63, 221, 204, 123, 102, 119, 3, 1, 65, 207, 94, 54, 217, 221, 89, 33, 23, 65, 244, 226, 217, 28, 60, 120, 136, 143, 234, 238, 234, 238, 114, 186, 171, 122, 171, 171, 103, 178, 17, 220, 5, 37, 224, 65, 16, 73, 240, 164, 248, 34,136, 34, 232, 73, 240, 224, 193, 120, 16, 65, 196, 87, 98, 76, 64, 205, 37, 66, 162, 70, 19, 205, 195, 231, 87, 221, 85, 61, 51, 21, 156, 203, 236, 176, 191, 127, 125, 95, 125, 207, 2, 208, 159, 230, 81, 88, 222, 24, 14, 63, 124, 109, 255, 144, 42, 159, 168, 88, 138, 9, 64, 135, 68, 146, 72, 70, 120, 14, 213, 103, 120, 160, 250, 222, 254, 181, 250, 110, 110, 66, 31, 25, 74, 148, 224, 52, 20, 18, 96, 145, 112, 45, 206, 68, 34, 34, 150, 43, 163, 187, 235, 14, 163, 251, 221, 232, 238, 131, 165, 121, 16, 45, 244, 72, 174, 164, 224, 34, 165, 178, 182, 247, 188, 209, 253, 98, 116, 25, 116, 45, 197, 124, 252, 237, 17, 30, 37, 212, 208, 27, 71, 12, 253, 91, 245, 221, 56, 5, 173, 10, 192, 243, 58, 30, 141, 105, 42, 84, 108, 207, 94, 31, 26, 250, 130, 161, 95, 129, 190, 102, 36, 85, 34, 87, 100, 11, 240, 39, 147, 65, 78, 183,232, 152, 209, 137, 85, 253, 101, 84, 231, 141, 71, 103, 97, 169, 196, 68, 72, 66, 140, 3, 234, 1, 118, 121, 98, 146, 216, 43, 124, 111, 4, 255, 24, 193, 14, 122, 141, 255, 166, 129, 118, 191, 144, 145, 22, 148, 159, 181, 219, 29, 242, 125, 116, 191, 4, 208, 229, 150, 79, 228, 152, 202, 45, 235, 134, 48, 236, 159, 134, 61, 2, 205, 146, 40, 209, 152, 69, 51, 199, 30, 172, 190, 119, 204, 239, 230, 9, 104, 27, 2, 225, 166, 47, 130, 160, 142, 224, 218, 89, 115, 236, 117, 195, 222, 131, 167, 149, 0, 122, 59, 240, 5, 15, 153, 76, 137, 98, 162, 174, 136, 149, 75, 70, 97, 190, 155, 99, 232, 24, 78, 107, 186, 190, 208, 55, 80, 138, 90, 193, 222, 59, 141, 224, 154, 17, 156, 212, 38, 10, 201, 180, 195, 75, 254, 150, 194, 252, 71, 36, 17, 99, 38, 11, 171, 89, 251, 110, 62, 177, 205, 203, 176, 219, 33, 245, 249, 237, 128, 102, 146, 141, 107, 83, 171, 135, 156, 170, 123, 21, 22, 45, 226, 137, 48, 87, 49, 22, 93, 192, 242, 148, 166, 30, 166, 61, 48, 178, 125, 119, 59, 1, 123, 18, 250, 53, 197, 120, 132, 183, 10, 36, 153, 4, 98, 194, 5, 183, 166, 142, 27, 205, 45, 70, 243, 37, 12, 166, 80, 105, 169, 69, 19, 22, 148, 242, 170, 46, 140, 98, 251, 15, 163, 184, 8, 61, 36, 34, 230, 177, 132, 41, 204, 115, 151, 234, 124, 79, 116, 65, 218, 48, 44, 204, 87, 108, 243, 3, 24, 24, 136, 249, 241, 68, 151, 236, 162, 169, 65, 143, 6, 51, 182, 86, 77, 0, 182, 127, 54, 194, 23, 160, 55, 5, 49, 92, 75, 97, 66, 15, 109, 97, 22, 210, 34, 247, 147, 58, 128, 107, 159, 58, 229, 240, 186, 38, 153, 135, 113, 80, 218, 83, 143, 98, 131, 119, 67, 73, 55, 11, 202, 85, 29, 192, 117, 223, 233, 218, 111, 208, 156, 129, 170, 248, 97, 69, 144, 84, 140, 105, 29, 191, 245, 31, 230, 83, 213, 152, 64, 79, 67, 28, 187, 47, 44, 18, 45, 73, 10, 133, 83, 70, 212, 69, 177, 242, 128, 211, 2, 7, 161, 109, 32, 221, 238, 145, 20, 5, 159, 141, 247, 25, 131, 255, 107, 240, 99, 120, 166, 101, 80, 176, 39, 38, 99, 74, 50, 34, 241, 128, 44, 33, 91, 172, 202, 218, 252, 168, 184, 98, 188, 251, 10, 58, 21, 158, 232, 160, 55, 98, 198, 85, 29, 179, 253, 134, 189, 81, 199, 108, 33, 102, 25, 222, 32, 222, 202, 176, 229, 50, 226, 219, 124, 14, 31, 116, 208, 123, 161, 95, 66, 138, 242, 156, 233, 216, 116, 25, 247, 139, 4, 231, 241, 180, 166, 95, 50, 154, 203, 70, 115, 63, 244, 44, 84, 94, 22, 127, 41, 42, 19, 198, 41, 177, 19, 96, 159, 77, 227, 79, 198, 253, 75, 208, 183, 84, 84, 16, 140, 110, 231, 113, 138, 141, 84, 228, 137, 157, 47, 171, 129, 19, 173, 16, 218, 134, 65, 164, 61, 194, 56, 31, 102, 245, 136, 89, 127, 212, 185, 200, 1, 232, 24, 68, 175, 128, 86, 66, 67, 53, 93, 6, 107, 220, 73, 220, 179, 208, 54, 132, 222, 2, 137, 72, 18, 150, 137, 44, 37, 182, 56, 134, 143, 25, 193, 143, 70, 176, 2, 183, 205, 80, 246, 207, 132, 4, 218, 183, 148, 140, 104, 206, 252, 145, 181, 22, 205, 95, 190, 249, 34, 116, 75, 68, 120, 34, 193, 91, 182, 82, 42, 38, 211, 50, 89, 123, 206, 224, 102, 206, 55, 79, 67, 67, 19, 186, 164, 82, 44, 63, 180, 194, 235, 126, 60, 229, 176, 215, 241, 104, 203, 160, 160, 203, 41, 139, 98, 79, 200, 58, 172, 27, 143, 204, 55, 125, 227, 13, 232, 24, 168, 192, 96, 46, 115, 129, 213, 231, 209, 156, 179, 48, 164, 1, 177, 17, 91, 111, 57, 217, 120, 8, 101, 26, 29, 113, 189, 166, 7, 130, 235, 222, 141, 11, 62, 154, 174, 206, 141, 167, 230, 107, 182, 249, 38, 44, 86, 92, 130, 27, 52, 161, 186, 230, 219, 25, 9, 2, 225, 143, 242, 255, 91, 21, 239, 66, 67, 35, 232, 254, 82, 134, 10, 15, 91, 226, 220, 145, 163, 30, 153, 70, 247, 138, 179, 179, 222, 131, 174, 38, 85, 92, 65, 11, 25, 171, 211, 254, 133, 51, 240, 222, 134, 93, 248, 95, 130, 113, 202, 112, 225, 234, 206, 43, 82, 55, 178, 23, 13, 187, 13, 123, 166, 144, 158, 225, 52, 175, 58, 164, 149, 225, 27, 130, 38, 185, 91, 234, 87, 77, 128, 175, 65, 191, 36, 176, 161, 20, 211, 73, 233, 103, 56, 34, 48, 223, 248, 106, 161, 182, 192, 246, 158, 118, 92, 123, 11, 22, 13, 134, 51, 50, 143, 5, 222, 161, 143, 175, 156, 60, 47, 36, 225, 62, 189, 169, 215, 237, 46, 251, 24, 218, 6, 195, 26, 89, 148, 165, 159, 56, 244, 202, 141, 105, 199, 214, 85, 39, 151, 159, 192, 242, 60, 168, 27, 178, 43, 177, 168, 113, 73, 141, 235, 30, 91, 253, 214, 217, 48, 39, 97, 80, 65, 152, 145, 138, 235, 229, 164, 200, 73, 68, 83, 90, 87, 206, 144, 58, 30, 102, 53, 165, 197, 120, 173, 156, 70, 169, 227, 226, 234, 9, 39, 250, 155, 48, 152, 197, 116, 229, 96, 80, 252, 209, 204, 134, 121, 217, 121, 24, 190, 3, 93, 139, 232, 234, 223, 157, 39, 36, 203, 61, 130, 117, 174, 72, 57, 117, 221, 210, 182, 195, 224, 60, 186, 84, 177, 6, 107, 229, 66, 170, 169, 165, 245, 135, 157, 7, 199, 14, 58, 87, 17, 34, 12, 153, 30, 174, 61, 124, 190, 69, 52, 148, 216, 87, 54, 14, 251, 46, 220, 60, 161, 74, 42, 38, 218, 70, 27, 223, 148, 84, 39, 219, 94, 231, 232, 124, 25, 97, 173, 118, 45, 162, 171, 166, 147, 79, 112, 188, 226, 12, 21, 86, 176, 49, 191, 242, 26, 95, 227, 149, 53, 147, 176, 17, 102, 67, 10, 44, 65, 204, 80, 23, 55, 154, 34, 9, 203, 235, 93, 185, 242, 185, 243, 180, 105, 205, 64, 186, 92, 209, 160, 126, 113, 249, 36, 169, 167, 200, 176, 152, 15, 65, 227, 153, 41, 134, 89, 197, 8, 180, 48, 28, 124, 102, 168, 173, 58, 245, 253, 52, 180, 75, 66, 233, 109, 218, 81, 250, 1, 95, 153, 171, 66, 236, 62, 128, 240, 157, 81, 50, 250, 50, 1, 147, 122, 233, 23, 220, 151, 172, 116, 203, 138, 6, 198, 198, 223, 70, 244, 17, 244, 167, 144, 246, 189, 61, 38, 156, 4, 172, 110, 242, 225, 177, 249, 152, 181, 110, 133, 1, 34, 248, 122, 196, 106, 174, 186, 187, 51, 193, 213, 39, 61, 108, 69, 107, 229, 140, 211, 5, 49, 244, 74, 198, 39, 188, 124, 141, 117, 39, 229, 102, 83, 44, 181, 83, 122, 253, 134, 35, 217, 143, 199, 34, 20, 227, 128, 69, 175, 154, 135, 89, 116, 152, 212, 175, 132, 207, 230, 111, 1, 155, 208, 169, 128, 72, 167, 172, 117, 110, 231, 184, 144, 185, 205, 250, 130, 233, 152, 214, 19, 255, 1, 231, 164, 2, 228};
-
-          for (int i = 0; i < 1500; i++) {
-            if (expect[i] != (kb_info_decrypted [i+8] & 255)){
-              std::cout<<"byte not equal i: " <<i<<" expect char: "<<(int) expect[i]<<" real char: "<<(int)kb_info_decrypted[i+8]<<std::endl;
-              abort();
-            }
           }
 
 
@@ -827,9 +782,6 @@ namespace jsmdict {
 
           // note: we should uncompress key_block_info_buffer[8:] data, so we need (decrypted + 8, and length -8)
           std::vector<uint8_t> decompress_buff = zlib_mem_uncompress(kb_info_decrypted+8, kb_info_buff_len - 8, this->key_block_info_decompress_size);
-          std::cout<<"HAHAHAHAHAHAHAHA"<<std::endl;
-          std::cout<<decompress_buff.size()<<", "<<this->key_block_info_decompress_size<<std::endl;
-          std::cout<<decompress_buff.data()<<std::endl;
           /// uncompress successed
           assert(decompress_buff.size() == this->key_block_info_decompress_size);
 
@@ -860,14 +812,12 @@ namespace jsmdict {
               current_entries = be_bin_to_u32(decompress_buff.data() + data_offset * sizeof(uint8_t));
             }
             num_entries_counter += current_entries;
-            std::cout<<"current entries:"<<current_entries<<std::endl;
 
             // move offset
             // if version>= 2.0 move forward 8 bytes
 
             data_offset += this->number_width * sizeof(uint8_t);
 
-            std::cout<<"number width:"<<number_width<<" "<<this->number_width * sizeof(uint8_t)<<std::endl;
             // first key size
             unsigned long first_key_size = 0;
 
@@ -877,8 +827,6 @@ namespace jsmdict {
               first_key_size = be_bin_to_u8(decompress_buff.data() + data_offset * sizeof(uint8_t));
             }
             data_offset += byte_width;
-            std::cout<<"first key size: "<<first_key_size<<std::endl;
-            std::cout<<"data offset: "<<data_offset<<std::endl;
 
             // step_gap means first key start offset to first key end;
             int step_gap = 0;
@@ -892,7 +840,7 @@ namespace jsmdict {
             // DECODE first CODE
             // TODO here minus the terminal character size(1), but we still not sure should minus this or not
             std::string fkey = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
-            std::cout<<"first key: "<<fkey<<std::endl;
+//            std::cout<<"first key: "<<fkey<<std::endl;
             // move forward
             data_offset += step_gap;
 
@@ -914,7 +862,6 @@ namespace jsmdict {
             }
 
             std::string last_key = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
-            std::cout<<"last key: "<<last_key<<std::endl;
 
             // move forward
             data_offset += step_gap;
@@ -944,8 +891,6 @@ namespace jsmdict {
             // entries offset move forward
             data_offset += this->number_width;
 
-            std::cout<< "compress_size:" << key_block_compress_size<<std::endl;
-            std::cout<< "decompress_size:" << key_block_decompress_size<<std::endl;
 
             key_block_info* kbinfo = new key_block_info(fkey, last_key, previous_start_offset, key_block_compress_size, key_block_decompress_size);
             // adjust ofset
@@ -957,35 +902,35 @@ namespace jsmdict {
 //          break;
 
           }
-          std::cout<< "counter: " <<counter<<std::endl;
           assert(counter == this->key_block_num);
           assert(num_entries_counter == this->entries_num);
 
 //          std::vector<key_block_info*>::iterator it;
 
+          //TODO WORKING HERE
           for (auto it = key_block_info_list.begin(); it != key_block_info_list.end(); it++){
             std::cout<<"fkey : "<<(*it)->first_key<<std::endl;
             std::cout<<"lkey : "<<(*it)->last_key<<std::endl;
             std::cout<<"comp_size : "<<(*it)->key_block_comp_size<<std::endl;
             std::cout<<"decomp_size : "<<(*it)->key_block_decomp_size<<std::endl;
             std::cout<<"offset : "<<(*it)->key_block_start_offset<<std::endl;
+            break;
           }
 
         }else {
           // doesn't compression
         }
 
-        std::cout<<"data offset: " << data_offset<<std::endl;
-        assert(data_offset == this->key_block_info_decompress_size);
+//        std::cout<<"data offset: " << data_offset<<std::endl;
+//        assert(data_offset == this->key_block_info_decompress_size);
         this->key_block_body_start = this->key_block_info_start_offset + this->key_block_info_size;
-        std::cout<<"key_block_body offset: " << this->key_block_body_start<<std::endl;
+//        std::cout<<"key_block_body offset: " << this->key_block_body_start<<std::endl;
         /// here passed
 
 
       }
 
     void Mdict::readfile(uint64_t offset, uint64_t len, char* buf){
-      std::cout<<"offset: " <<offset<<"len: "<<len<<std::endl;
       instream.seekg(offset);
       instream.read(buf, static_cast<std::streamsize>(len));
     }
@@ -996,7 +941,7 @@ namespace jsmdict {
      ***************************************/
 
     std::string Mdict::lookup(const std::string word, int word_len){
-      return "hello world" + this->filename + " ";
+      return "lookup.. -? " + this->filename + " ";
     }
 
     std::vector<std::string> Mdict::prefix(const std::string prefix, int prefix_len){
@@ -1015,8 +960,6 @@ int main(){
   std::cout<<mdict.lookup("word", 4) <<std::endl;
   std::vector<std::string> ss = mdict.prefix("prefix", 6);
   //for (std::vector<std::string>::const_iterator i = ss.begin(); i != ss.end(); ++i)
-  for (auto i = ss.begin(); i != ss.end(); ++i)
-    std::cout << *i << std::endl;
   mdict.printhead();
   mdict.read_key_block_header();
   mdict.read_key_block_info();

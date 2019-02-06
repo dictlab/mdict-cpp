@@ -293,17 +293,17 @@ byte *ripemd128(const byte *message, int len)
 //         printf("%ld ", X[i]);
          message += 4;
       }
-      printf("\nX[i] ");
-      for(int j = 0; j < 16; j++) {
-         printf("%ld ", X[j]);
-      }
-
-      printf("\n");
-      printf("\nMDBUFFER[i] ");
-      for(int j = 0; j < 4; j++) {
-         printf("%lx ", digest[j]);
-      }
-      printf("\n");
+//      printf("\nX[i] ");
+//      for(int j = 0; j < 16; j++) {
+//         printf("%ld ", X[j]);
+//      }
+//
+//      printf("\n");
+//      printf("\nMDBUFFER[i] ");
+//      for(int j = 0; j < 4; j++) {
+//         printf("%lx ", digest[j]);
+//      }
+//      printf("\n");
 
       ripemd128compress(digest, X);
 
@@ -330,14 +330,12 @@ byte *ripemd128(const byte *message, int len)
       hashcode[i+2] = (byte) ((digest[i >> 2] >> 16) & 0x000000ff);  /*  significant bits.     */
       hashcode[i+3] = (byte) ((digest[i >> 2] >> 24) & 0x000000ff);
    }
-   printf("\nAAAAAAAAAAAA---------\n");
-   for (i=0; i<RMDsize/8; i+=4) {
-     printf("%02x(%d)",hashcode[i]  ,hashcode[i]);         /* implicit cast to byte  */
-     printf("%02x(%d)",hashcode[i+1],hashcode[i+1]);  /*  extracts the 8 least  */
-     printf("%02x(%d)",hashcode[i+2],hashcode[i+2]);  /*  significant bits.     */
-     printf("%02x(%d)",hashcode[i+3],hashcode[i+3]);
-   }
-  printf("\nAAAAAAAAAAAA---------\n");
+//   for (i=0; i<RMDsize/8; i+=4) {
+//     printf("%02x(%d)",hashcode[i]  ,hashcode[i]);         /* implicit cast to byte  */
+//     printf("%02x(%d)",hashcode[i+1],hashcode[i+1]);  /*  extracts the 8 least  */
+//     printf("%02x(%d)",hashcode[i+2],hashcode[i+2]);  /*  significant bits.     */
+//     printf("%02x(%d)",hashcode[i+3],hashcode[i+3]);
+//   }
 
    return (byte *)hashcode;
 }
@@ -359,9 +357,9 @@ byte* ripemd128bytes(uint8_t *message, int length)
 
    for (int i=0; i< RMDsize/8 /*ripemd size / 8 = 128 / 8*/; i++) {
      hashcode[i] = (byte)(hashcode[i] & 255);
-     printf("%d ", hashcode[i]);
+//     printf("%d ", hashcode[i]);
    }
-   printf("\n");
+//   printf("\n");
 //   for (i=0; i< RMDsize/8; i++) {
 //      printf("%02x ", hashcode[i] );
 //   }

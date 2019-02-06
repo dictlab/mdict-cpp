@@ -24,6 +24,5 @@ using namespace std;
 int main() {
     unsigned char a[] = {0,0,4,166};
     uint32_t n = be_bin_to_u32(a);
-    cout<<"be_bin_to_u32: "<<n<<endl;
     assert(n == 1190);
 }

@@ -39,7 +39,7 @@ ADD_SUBDIRECTORY(deps)
 
 
 #执行文件链接属性
-ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cpp ripemd128.c adler32.cc)
+ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc)
 TARGET_LINK_LIBRARIES(mdict z)
 
 

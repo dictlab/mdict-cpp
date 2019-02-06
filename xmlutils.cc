@@ -48,9 +48,9 @@ loop:
 		char c = dicxml.at(i);
 		if (c != ' ') continue;
 		else break;
-		std::cout << c;
+//		std::cout << c;
 	}
-	std::cout << '\n';
+//	std::cout << '\n';
 
 
 	int r = i;
@@ -80,14 +80,14 @@ stringloop:
 			// sflag == true means key has already getted
 			// and openQuo and !closeQuo means current getting value
 			if (!getKey && !getValue && c == ' ' && !(r + j == dicxml.length()-2)) {
-				std::cout << tmpK <<":"<<tmpV<<std::endl;
+//				std::cout << tmpK <<":"<<tmpV<<std::endl;
 				tagm[tmpK]=tmpV;
 				r += j;
 				//cout<<"bbb"<<r<<endl;
 				goto stringloop;
 			}
 			else if (!getKey && !getValue && (r + j == dicxml.length()-2)) {
-				std::cout << tmpK <<":"<<tmpV<<std::endl;
+//				std::cout << tmpK <<":"<<tmpV<<std::endl;
 				tagm[tmpK]=tmpV;
 				r = dicxml.length(); // this is for exit tagloop
 				//cout<<"aaa"<<r+j<<endl;

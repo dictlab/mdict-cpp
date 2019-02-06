@@ -145,18 +145,15 @@ std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len){
 	char16_t* wcbytes = reinterpret_cast<char16_t*>(cbytes);
 
     std::u16string u16 = std::u16string(wcbytes);
-	std::cout<<u16.length()<<std::endl;
 
     std::string u8 = conv16.to_bytes(u16);
-	putbytes(cbytes, len, true);
     if(len > 0) std::free(cbytes);
-	std::cout<<u8<<"|"<<u8.length()<<std::endl;
     return u8;
 }
 
 std::string be_bin_to_utf8(const char* bytes, int offset, unsigned long len){
     std::string u8(bytes + offset*sizeof(char), len);
-	  std::cout<<u8<<"|"<<u8.length()<<std::endl;
+//	  std::cout<<u8<<"|"<<u8.length()<<std::endl;
 //	  putbytes(bytes,offset, len);
 //	  cout<<"inner:"<<u8<<endl;
     return u8;

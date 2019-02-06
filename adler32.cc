@@ -126,7 +126,6 @@ void Adler32::TruncatedFinal(byte *hash, size_t size) {
 
 uint32_t adler32chksum(const unsigned char* data, uint32_t len) {
   Adler32 adler32hasher;
-//  char* str = const_cast<char *>("helloworld");
   adler32hasher.Update(reinterpret_cast<const byte *>(data), len);
   char* hash = (char*)calloc(4, sizeof(char));
   adler32hasher.Final(reinterpret_cast<byte *>(hash));

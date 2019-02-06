@@ -39,13 +39,5 @@ inline int zlib_mem_uncompress (void *dest,size_t *destLen,const void *source, s
   *destLen=size_t(len);
   return err;
 }
-/*
- * 解压缩数据到对象
- */
-template<typename T>
-inline typename std::enable_if<std::is_class<T>::value>::type
-uncompress_obj (T &dest,const void *source, size_t sourceLen){
-  auto destLen=sizeof(T);
-  zlib_mem_uncompress(std::addressof(dest),&destLen,source,sourceLen);
-}
+
 #endif /* INCLUDE_ZLIB_WRAPPER_H_ */

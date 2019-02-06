@@ -8,7 +8,7 @@ PROJECT(libmdict)
 #设置CMAKE最小版本
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 #设置编译器
-SET(CMAKE_CXX_COMPILER "g++")
+SET(CMAKE_CXX_COMPILER g++)
 #设置构建类型，及相应的编译选项
 SET(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb --std=c++11 ")
@@ -26,7 +26,7 @@ MESSAGE("++++++++++++++Start Build+++++++++++++++++")
 ADD_SUBDIRECTORY(deps)
 
 #头文件搜索目录
-#INCLUDE_DIRECTORIES(inc)
+INCLUDE_DIRECTORIES(/usr/local/include .)
 #链接库搜索路径
 #LINK_DIRECTORIES(lib)
 #设置链接库
@@ -43,6 +43,11 @@ ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc)
 TARGET_LINK_LIBRARIES(mdict z)
 
 
+# adler32 test
 ADD_EXECUTABLE(adler32_test adler32.cc adler32_test.cc binutils.cc)
 
+# ripemd128 test
 ADD_EXECUTABLE(ripemd128_test ripemd128_test.c ripemd128.c)
+
+# xmlutils
+ADD_EXECUTABLE(xmlutils_test xmlutils.cc xmlutils_test.cc)

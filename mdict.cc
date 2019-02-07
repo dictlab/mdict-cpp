@@ -165,7 +165,18 @@ void Mdict::read_header() {
 }
 
 /**
- * read key block header
+ * read key block header, key block header contains a serials number, including
+ *
+ * key block header info struct:
+ * [0:8]/[0:4]   - number of key blocks
+ * [8:16]/[4:8]  - number of entries
+ * [16:24]/nil - key block info decompressed size (if version >= 2.0,
+ * otherwise, this section does not exist)
+ * [24:32]/[8:12] - key block info size
+ * [32:40][12:16] - key block size
+ * note: if version <2.0, the key info buffer size is 4 * 4
+ *       otherwise, ths key info buffer size is 5 * 8
+ * <2.0  the order of number is same
  */
 void Mdict::read_key_block_header() {
   // key block header part
@@ -343,6 +354,17 @@ void Mdict::read_key_block_header() {
   }
 }
 
+/**
+ * read key block info
+ *
+ * it will decode the key block info, and set the key block info list
+ * it contains:
+ * first key
+ * last key
+ * comp size
+ * decomp size
+ * offset
+ */
 void Mdict::read_key_block_info() {
   // start at this->key_block_info_start_offset
   char* key_block_info_buffer = (char*)calloc(
@@ -385,6 +407,13 @@ void Mdict::read_key_block_info() {
     std::free(key_block_compressed_buffer);
 }
 
+/**
+ * use ripemd128 as decrypt key, and decrypt the key info data
+ * @param data the data which needs to decrypt
+ * @param k the decrypt key
+ * @param data_len data length
+ * @param key_len key length
+ */
 void fast_decrypt(byte* data, const byte* k, int data_len, int key_len) {
   const byte* key = k;
   //      putbytes((char*)data, 16, true);
@@ -409,7 +438,15 @@ void fast_decrypt(byte* data, const byte* k, int data_len, int key_len) {
   //      return new BufferList(b);
 }
 
-/* note: don't forget free comp_block */
+/**
+ *
+ * decrypt the data, this is a helper function to invoke the fast_decrypt
+ * note: don't forget free comp_block !!
+ *
+ * @param comp_block compressed block buffer
+ * @param comp_block_len compressed block buffer size
+ * @return the decrypted compressed block
+ */
 byte* mdx_decrypt(byte* comp_block, const int comp_block_len) {
   byte* key_buffer = (byte*)calloc(8, sizeof(byte));
   memcpy(key_buffer, comp_block + 4 * sizeof(char), 4 * sizeof(char));
@@ -427,7 +464,16 @@ byte* mdx_decrypt(byte* comp_block, const int comp_block_len) {
   /// passed
 }
 
+/**
+ * split key block into key block list
+ *
+ * this is for key block (not key block info)
+ *
+ * @param key_block key block buffer
+ * @param key_block_len key block length
+ */
 void Mdict::split_key_block(unsigned char* key_block,
+
                             unsigned long key_block_len) {
   int key_start_idx = 0;
   int key_end_idx = 0;
@@ -481,7 +527,15 @@ void Mdict::split_key_block(unsigned char* key_block,
     //       break;
   }
 }
-
+/**
+ * decode the key block decode function, will invoke split key block
+ *
+ * this is for key block (not key block info)
+ *
+ * @param key_block_buffer
+ * @param kb_buff_len
+ * @return
+ */
 int Mdict::decode_key_block(unsigned char* key_block_buffer,
                             unsigned long kb_buff_len) {
   std::vector<char*> key_list;
@@ -530,6 +584,14 @@ int Mdict::decode_key_block(unsigned char* key_block_buffer,
 }
 
 // note: kb_info_buff_len == key_block_info_compressed_size
+/**
+ * decode the key block info
+ * @param key_block_info_buffer the key block info buffer
+ * @param kb_info_buff_len the key block buffer length
+ * @param key_block_num the key block number
+ * @param entries_num the entries number
+ * @return
+ */
 int Mdict::decode_key_block_info(char* key_block_info_buffer,
                                  unsigned long kb_info_buff_len,
                                  int key_block_num, int entries_num) {
@@ -739,6 +801,12 @@ int Mdict::decode_key_block_info(char* key_block_info_buffer,
   /// here passed
 }
 
+/**
+ * read in the file from the file stream
+ * @param offset the file start offset
+ * @param len the byte length needs to read
+ * @param buf the target buffer
+ */
 void Mdict::readfile(uint64_t offset, uint64_t len, char* buf) {
   instream.seekg(offset);
   instream.read(buf, static_cast<std::streamsize>(len));
@@ -748,6 +816,9 @@ void Mdict::readfile(uint64_t offset, uint64_t len, char* buf) {
  *             public part             *
  ***************************************/
 
+/**
+ * init the dictionary file
+ */
 void Mdict::init() {
   this->read_header();
   this->printhead();
@@ -755,10 +826,20 @@ void Mdict::init() {
   this->read_key_block_info();
 }
 
+/**
+ * look the file by word
+ * @param word the searching word
+ * @return
+ */
 std::string Mdict::lookup(const std::string word) {
   return "lookup.. -? " + this->filename + " ";
 }
 
+/**
+ * look word by prefix
+ * @param prefix
+ * @return
+ */
 std::vector<std::string> Mdict::prefix(const std::string prefix) {
   std::vector<std::string> list;
   list.emplace_back("hello1");

@@ -17,8 +17,8 @@
  *
 \********************************************************************/
 
-#ifndef  MDICT_RIPEMD128_H_           /* make sure this file is read only once */
-#define  MDICT_RIPEMD128_H_           /* make sure this file is read only once */
+#ifndef MDICT_RIPEMD128_H_ /* make sure this file is read only once */
+#define MDICT_RIPEMD128_H_ /* make sure this file is read only once */
 
 #ifndef RMDsize
 #define RMDsize 128
@@ -33,34 +33,30 @@ extern "C" {
 /********************************************************************/
 
 /* typedef 8, 16 and 32 bit types, resp.  */
-/* adapt these, if necessary, 
+/* adapt these, if necessary,
    for your operating system and compiler */
-typedef    unsigned char       byte;   /* unsigned 8-bit type */
-typedef    unsigned short      word;   /* unsigned 16-bit type */
-typedef    unsigned int        dword32;  /* unsigned 32-bit type */
-
+typedef unsigned char byte;   /* unsigned 8-bit type */
+typedef unsigned short word;  /* unsigned 16-bit type */
+typedef unsigned int dword32; /* unsigned 32-bit type */
 
 /********************************************************************/
 
 /* macro definitions */
 
 /* collect four bytes into one word: */
-#define BYTES_TO_DWORD(strptr)                    \
-            (((dword32) *((strptr)+3) << 24) | \
-             ((dword32) *((strptr)+2) << 16) | \
-             ((dword32) *((strptr)+1) <<  8) | \
-             ((dword32) *(strptr)))
+#define BYTES_TO_DWORD(strptr)                                               \
+  (((dword32) * ((strptr) + 3) << 24) | ((dword32) * ((strptr) + 2) << 16) | \
+   ((dword32) * ((strptr) + 1) << 8) | ((dword32) * (strptr)))
 
 /* ROL(x, n) cyclically rotates x over n bits to the left */
 /* x must be of an unsigned 32 bits type and 0 <= n < 32. */
-#define ROL(x, n)        (((x) << (n)) | ((x) >> (32-(n))))
+#define ROL(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
 
-#define F(x, y, z)    (x ^ y ^ z)
-#define G(x, y, z)    (z ^ (x & (y^z)))
-#define H(x, y, z)    (z ^ (x | ~y))
-#define I(x, y, z)    (y ^ (z & (x^y)))
-#define J(x, y, z)    (x ^ (y | ~z))
-
+#define F(x, y, z) (x ^ y ^ z)
+#define G(x, y, z) (z ^ (x & (y ^ z)))
+#define H(x, y, z) (z ^ (x | ~y))
+#define I(x, y, z) (y ^ (z & (x ^ y)))
+#define J(x, y, z) (x ^ (y | ~z))
 
 #define K0 0
 #define K1 0x5a827999UL
@@ -73,40 +69,47 @@ typedef    unsigned int        dword32;  /* unsigned 32-bit type */
 #define K8 0x7a6d76e9UL
 #define K9 0
 
-  
 /* the eight basic operations FF() through III() */
-#define FF(a, b, c, d, x, s)        {\
-      (a) += F((b), (c), (d)) + (x) + K0;\
-      (a) = ROL((a), (s));\
-   }
-#define GG(a, b, c, d, x, s)        {\
-      (a) += G((b), (c), (d)) + (x) + K1;\
-      (a) = ROL((a), (s));\
-   }
-#define HH(a, b, c, d, x, s)        {\
-      (a) += H((b), (c), (d)) + (x) + K2;\
-      (a) = ROL((a), (s));\
-   }
-#define II(a, b, c, d, x, s)        {\
-      (a) += I((b), (c), (d)) + (x) + K3;\
-      (a) = ROL((a), (s));\
-   }
-#define FFF(a, b, c, d, x, s)        {\
-      (a) += F((b), (c), (d)) + (x) + K9;\
-      (a) = ROL((a), (s));\
-   }
-#define GGG(a, b, c, d, x, s)        {\
-      (a) += G((b), (c), (d)) + (x) + K7;\
-      (a) = ROL((a), (s));\
-   }
-#define HHH(a, b, c, d, x, s)        {\
-      (a) += H((b), (c), (d)) + (x) + K6;\
-      (a) = ROL((a), (s));\
-   }
-#define III(a, b, c, d, x, s)        {\
-      (a) += I((b), (c), (d)) + (x) + K5;\
-      (a) = ROL((a), (s));\
-   }
+#define FF(a, b, c, d, x, s)            \
+  {                                     \
+    (a) += F((b), (c), (d)) + (x) + K0; \
+    (a) = ROL((a), (s));                \
+  }
+#define GG(a, b, c, d, x, s)            \
+  {                                     \
+    (a) += G((b), (c), (d)) + (x) + K1; \
+    (a) = ROL((a), (s));                \
+  }
+#define HH(a, b, c, d, x, s)            \
+  {                                     \
+    (a) += H((b), (c), (d)) + (x) + K2; \
+    (a) = ROL((a), (s));                \
+  }
+#define II(a, b, c, d, x, s)            \
+  {                                     \
+    (a) += I((b), (c), (d)) + (x) + K3; \
+    (a) = ROL((a), (s));                \
+  }
+#define FFF(a, b, c, d, x, s)           \
+  {                                     \
+    (a) += F((b), (c), (d)) + (x) + K9; \
+    (a) = ROL((a), (s));                \
+  }
+#define GGG(a, b, c, d, x, s)           \
+  {                                     \
+    (a) += G((b), (c), (d)) + (x) + K7; \
+    (a) = ROL((a), (s));                \
+  }
+#define HHH(a, b, c, d, x, s)           \
+  {                                     \
+    (a) += H((b), (c), (d)) + (x) + K6; \
+    (a) = ROL((a), (s));                \
+  }
+#define III(a, b, c, d, x, s)           \
+  {                                     \
+    (a) += I((b), (c), (d)) + (x) + K5; \
+    (a) = ROL((a), (s));                \
+  }
 
 /********************************************************************/
 
@@ -127,8 +130,7 @@ void ripemd128compress(dword32 *digest, dword32 *X);
  * ISO7816 message padding
  * return the length after padding, the data will be modified
  */
-int ripemd128PaddingISO7816(uint8_t **data, int data_len) ;
-
+int ripemd128PaddingISO7816(uint8_t **data, int data_len);
 
 /**
  * simple ripemd128 for string method
@@ -136,13 +138,12 @@ int ripemd128PaddingISO7816(uint8_t **data, int data_len) ;
  * @param length
  */
 
-byte* ripemd128bytes(uint8_t *message, int length);
+byte *ripemd128bytes(uint8_t *message, int length);
 
-#endif  /* RMD128H */
+#endif /* RMD128H */
 
 /*********************** end of file rmd128.h ***********************/
 
 #ifdef __cplusplus
 }
 #endif
-

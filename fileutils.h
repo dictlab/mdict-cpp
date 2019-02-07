@@ -22,5 +22,4 @@
 // get binary file size
 int fsizeof(const char* fpath);
 
-
 #endif

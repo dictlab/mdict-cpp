@@ -1,13 +1,13 @@
 #ifndef MDICT_ADLER32_H_
 #define MDICT_ADLER32_H_
 
-#include <stdint.h>
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#include <exception>
 #include <cstdio>
 #include <cstdlib>
+#include <exception>
 
 typedef unsigned char byte;
 typedef unsigned short word16;

@@ -33,12 +33,10 @@ uint32_t be_bin_to_u32(const unsigned char* bin /* 4 bytes char array  */);
 
 uint64_t be_bin_to_u64(const unsigned char* bin /* 8 bytes char array*/);
 
+int bin_slice(const char* srcByte, int srcByteLen, int offset, int len,
+              char* distByte);
 
-
-int bin_slice(const char* srcByte, int srcByteLen, int offset, int len, char* distByte);
-
-
-void putbytes(const char* bytes,int len, bool hex);
+void putbytes(const char* bytes, int len, bool hex);
 
 // ================================================
 // code convert part

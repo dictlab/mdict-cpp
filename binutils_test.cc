@@ -14,15 +14,15 @@
  *
  * =====================================================================================
  */
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 
 #include "binutils.h"
 
 using namespace std;
 
 int main() {
-    unsigned char a[] = {0,0,4,166};
-    uint32_t n = be_bin_to_u32(a);
-    assert(n == 1190);
+  unsigned char a[] = {0, 0, 4, 166};
+  uint32_t n = be_bin_to_u32(a);
+  assert(n == 1190);
 }

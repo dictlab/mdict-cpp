@@ -19,7 +19,6 @@
 
 #include <string>
 
-#include <zlib.h> //todo delete this
 /*
  *
  * convert BigEndian 4 bytes unsigned char array to uint32 integer

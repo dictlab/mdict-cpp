@@ -23,8 +23,6 @@
 #include "xmlutils.h"
 #include "ripemd128.h"
 
-//#include "deps/miniz/miniz.h"
-//#include <zlib.h>
 #include "zlib_wrapper.h"
 #include "adler32.h"
 
@@ -136,66 +134,152 @@
  *
  */
 
-
-
-
-
-namespace jsmdict {
-
+namespace mdict {
+    /**
+     * key block info class definition
+     */
     class key_block_info{
     public:
-       std::string first_key;
-       std::string last_key;
-       unsigned long key_block_start_offset;
-       unsigned long key_block_comp_size;
-       unsigned long key_block_decomp_size;
-       key_block_info(std::string first_key, std::string last_key, unsigned long kb_start_ofset, unsigned long kb_comp_size,
-                      unsigned long kb_decomp_size){
-         this->key_block_comp_size = kb_comp_size;
-         this->key_block_decomp_size = kb_decomp_size;
-         this->key_block_start_offset = kb_start_ofset;
-         this->first_key = first_key;
-         this->last_key = last_key;
-       }
-       ~key_block_info(){
-         delete this;
-       }
+        // first key of this key block
+        std::string first_key;
+        // last key of this key block
+        std::string last_key;
+        // key block start offset
+        unsigned long key_block_start_offset;
+        // key block compressed size
+        unsigned long key_block_comp_size;
+        // key block decompressed size
+        unsigned long key_block_decomp_size;
+
+
+        /**
+         * constructor
+         * @param first_key first key of this key block
+         * @param last_key  last key of this key block
+         * @param kb_start_ofset key block start offset
+         * @param kb_comp_size  key block compress size
+         * @param kb_decomp_size key block decompressed size
+         */
+        key_block_info(std::string first_key, std::string last_key, unsigned long kb_start_ofset, unsigned long kb_comp_size,
+                       unsigned long kb_decomp_size){
+          this->key_block_comp_size = kb_comp_size;
+          this->key_block_decomp_size = kb_decomp_size;
+          this->key_block_start_offset = kb_start_ofset;
+          this->first_key = first_key;
+          this->last_key = last_key;
+        }
     };
 
+    /**
+     * Mdict class definition
+     */
     class Mdict{
     public:
+        /**
+         * constructor
+         * @param fn dictionary file name
+         */
         Mdict(std::string fn) noexcept;
+
+        /**
+         * deconstructor
+         */
         ~Mdict();
 
 
-        std::string lookup(const std::string word, int word_len);
-        std::vector<std::string> prefix(const std::string prefix, int prefix_len);
+        /**
+         * lookup the definition of a word
+         * @param word the word wich we want to search
+         * @return
+         */
+        std::string lookup(std::string word);
 
-        // read dictionary file header
+        /**
+         * search the word which matches the prefix
+         * @param prefix the word's prefix
+         * @param prefix_len the word's length (optional)
+         * @return
+         */
+        std::vector<std::string> prefix(std::string prefix);
+
+
+        // contains key or not
+        /**
+         * contains the word or not
+         * @param word the searching word
+         * @param word_len the searching word length
+         * @return true means hit, otherwise, not exists
+         */
+        bool contains(char* word, int word_len);
+
+
+        /********************************
+         *     INNER DICTIONARY PART    *
+         ********************************/
+
+        /********************************
+         *     header section           *
+         ********************************/
+
+        /**
+         * read in the dictionary header
+         */
         void read_header();
 
+        /********************************
+         *     key block info section   *
+         ********************************/
+
+        /**
+         * read the key block header
+         */
         void read_key_block_header();
 
+
+        /**
+         * read the key block info
+         */
         void read_key_block_info();
 
+        /**
+         * decode the key block info into key block list
+         * @param key_block_info_buffer key block info buffer
+         * @param kb_info_buff_len key block info buffer length
+         * @param key_block_num key block number (optional)
+         * @param entries_num word entries number (optional)
+         * @return 0 - successful, otherwise failed
+         */
         int decode_key_block_info(char* key_block_info_buffer, unsigned long kb_info_buff_len ,int key_block_num, int entries_num);
 
+        /**
+         * decode the key block part
+         * @param key_block_buffer key block buffer
+         * @param kb_buff_len key block length
+         * @return
+         */
         int decode_key_block(unsigned char* key_block_buffer, unsigned long kb_buff_len);
 
+        /**
+         * print the header part (TODO delete)
+         */
         void printhead() {
 //          std::cout<<"version: "<<this->version<<std::endl<<"encoding: "<<this->encoding<<std::endl;
         }
 
     private:
-        // general part
-        const std::string filename;
 
-        // file read offset
-        long long offset;
+        /********************************
+         *     general section           *
+         ********************************/
+        // dictionary file name
+        const std::string filename;
 
         // file input stream
         std::ifstream instream;
 
+        /********************************
+         *     header section           *
+         ********************************/
         // ---------------------
         //     header part
         // ---------------------
@@ -244,13 +328,20 @@ namespace jsmdict {
 
         int encoding = ENCODING_UTF8;
 
-        // read offset and len bytes
+        /**
+         * read in length bytes from stream
+         * @param offset the start offset
+         * @param len the length of the buffer
+         * @param buf the target buffer
+         */
         void readfile(uint64_t offset, uint64_t len, char *buf);
 
-        // contains key or not
-        bool contains(char* word, int word_len);
 
-
+        /**
+         * split key block from key block buffer
+         * @param key_block the key block buffer
+         * @param key_block_len the key block buffer length
+         */
         void split_key_block(unsigned char* key_block, unsigned long key_block_len);
 
 
@@ -263,7 +354,6 @@ namespace jsmdict {
 
     // constructor
     Mdict::Mdict(std::string fn)noexcept: filename(fn) {
-      offset = 0;
       instream = std::ifstream(filename, std::ios::binary);
     }
     // distructor
@@ -277,7 +367,9 @@ namespace jsmdict {
      *             private part            *
      ***************************************/
 
-
+    /**
+     * read header
+     */
     void Mdict::read_header(){
       // -----------------------------------------
       // 1. [0:4] dictionary header length 4 byte
@@ -286,13 +378,14 @@ namespace jsmdict {
       // header size buffer
       char* head_size_buf = (char*) std::calloc(4, sizeof(char));
       readfile(0, 4, head_size_buf);
-//      putbytes(head_size_buf, 4, true);
+
       // header byte size convert
       uint32_t header_bytes_size = be_bin_to_u32((const unsigned char*) head_size_buf);
       std::free(head_size_buf);
       // assign key block start offset
       this->header_bytes_size = header_bytes_size;
       this->key_block_start_offset = this->header_bytes_size + 8;
+      /// passed
 
       // -----------------------------------------
       // 2. [4: header_bytes_size+4], header buffer
@@ -301,7 +394,7 @@ namespace jsmdict {
       // header buffer
       char* head_buffer = (char*) std::calloc(header_bytes_size, sizeof(char));
       readfile(4, header_bytes_size, head_buffer);
-//      putbytes(head_buffer, header_bytes_size, true);
+      /// passed
 
       // -----------------------------------------
       // 3. alder32 checksum
@@ -311,7 +404,7 @@ namespace jsmdict {
       // alder32 checksum buffer
       char* head_checksum_buffer = (char*) std::calloc(4, sizeof(char));
       readfile(header_bytes_size + 4, 4, head_checksum_buffer);
-//      putbytes(head_checksum_buffer, 4, true);
+      /// passed
 
       // TODO skip head checksum for now
       std::free(head_checksum_buffer);
@@ -327,13 +420,14 @@ namespace jsmdict {
         std::cout<<"this mdx file is invalid"<<std::endl;
         return;
       }
-//      std::cout<< header_text << std::endl;
+      /// passed
 
       // -----------------------------------------
       // 5. parse xml string into map
       // -----------------------------------------
 
       std::map<std::string, std::string> headinfo = parseXMLHeader(header_text);
+      /// passed
 
       // -----------------------------------------
       // 6. handle header message, set flags
@@ -359,6 +453,7 @@ namespace jsmdict {
           this->encrypt = ENCRYPT_NO_ENC;
         }
       }
+      /// passed
 
 
 
@@ -409,10 +504,14 @@ namespace jsmdict {
       } else {
         this->encoding = ENCODING_UTF8;
       }
+      /// passed
 
     }
 
 
+    /**
+     * read key block header
+     */
     void Mdict::read_key_block_header() {
       // key block header part
       int key_block_info_bytes_num = 0;
@@ -425,18 +524,18 @@ namespace jsmdict {
       // key block info buffer
       char* key_block_info_buffer = (char*) calloc(static_cast<size_t>(key_block_info_bytes_num), sizeof(char));
       // read buffer
-      this->readfile(this->key_block_start_offset, key_block_info_bytes_num, key_block_info_buffer);
-      // TODO PASSED
-//      putbytes(key_block_info_buffer, key_block_info_bytes_num, true);
+      this->readfile(this->key_block_start_offset, static_cast<uint64_t>(key_block_info_bytes_num), key_block_info_buffer);
+      /// PASSED
 
 
       // TODO key block info encrypted file not support yet
       if(this->encrypt == ENCRYPT_RECORD_ENC) {
         std::cout<< "user identification is needed to read encrypted file"<<std::endl;
+        if(key_block_info_buffer) std::free(key_block_info_buffer);
         throw std::invalid_argument("invalid encrypted file");
       }
 
-      // keyblock header info struct:
+      // key block header info struct:
       // [0:8]/[0:4]   - number of key blocks
       // [8:16]/[4:8]  - number of entries
       // [16:24]/nil - key block info decompressed size (if version >= 2.0, otherwise, this section does not exist)
@@ -450,30 +549,35 @@ namespace jsmdict {
       char * key_block_nums_bytes = (char*)calloc(static_cast<size_t>(this->number_width), sizeof(char));
       int eno = bin_slice(key_block_info_buffer, key_block_info_bytes_num, 0, this->number_width, key_block_nums_bytes);
       if (eno != 0){
-        std::cerr<<"binslice err:"<< eno <<std::endl;
-        // TODO throw error
+        if(key_block_info_buffer) std::free(key_block_info_buffer);
+        if(key_block_nums_bytes) std::free(key_block_nums_bytes);
+        throw std::logic_error("get key block bin slice failed");
       }
-//      putbytes(key_block_nums_bytes, this->number_width, true);
+      /// passed
+
 
       uint64_t key_block_num = 0;
       if (this->number_width == 8) key_block_num = be_bin_to_u64((const unsigned char*)key_block_nums_bytes);
       else if(this->number_width == 4) key_block_num = be_bin_to_u32((const unsigned char*)key_block_nums_bytes);
-      // TODO PASSED
+      if(key_block_nums_bytes) std::free(key_block_nums_bytes);
+      /// passed
 
       // 2. [8:16]  - number of entries
       char * entries_num_bytes = (char*)calloc(static_cast<size_t>(this->number_width), sizeof(char));
       eno = bin_slice(key_block_info_buffer, key_block_info_bytes_num, this->number_width, this->number_width, entries_num_bytes);
       if (eno != 0){
-        std::cerr<<"binslice err2:"<< eno <<std::endl;
-        // TODO throw error
+        if(key_block_info_buffer) std::free(key_block_info_buffer);
+        if(entries_num_bytes) std::free(entries_num_bytes);
+        throw std::logic_error("get key block bin slice failed");
       }
+      /// passed
 
-//      putbytes(entries_num_bytes, this->number_width, true);
 
       uint64_t entries_num = 0;
       if (this->number_width == 8) entries_num = be_bin_to_u64((const unsigned char*)entries_num_bytes);
       else if(this->number_width == 4) key_block_num = be_bin_to_u32((const unsigned char*)entries_num_bytes);
-      // TODO PASSED
+      if(entries_num_bytes) std::free(entries_num_bytes);
+      /// passed
 
       int key_block_info_size_start_offset = 0;
 
@@ -482,20 +586,24 @@ namespace jsmdict {
         char * key_block_info_decompress_size_bytes = (char*)calloc(static_cast<size_t>(this->number_width), sizeof(char));
         eno = bin_slice(key_block_info_buffer, key_block_info_bytes_num, this->number_width*2, this->number_width, key_block_info_decompress_size_bytes);
         if (eno != 0){
-          std::cerr<<"binslice err3:"<< eno <<std::endl;
-          // TODO throw error
+          if(key_block_info_buffer) std::free(key_block_info_buffer);
+          if(key_block_info_decompress_size_bytes) std::free(key_block_info_decompress_size_bytes);
+          throw std::logic_error("decode key block decompress size failed");
         }
-//        putbytes(key_block_info_decompress_size_bytes, this->number_width, true);
+        /// passed
 
         uint64_t key_block_info_decompress_size = 0;
         if (this->number_width == 8) key_block_info_decompress_size = be_bin_to_u64((const unsigned char*)key_block_info_decompress_size_bytes);
         else if(this->number_width == 4) key_block_info_decompress_size = be_bin_to_u32((const unsigned char*)key_block_info_decompress_size_bytes);
         this->key_block_info_decompress_size = key_block_info_decompress_size;
-        // TODO PASSED
-        if (key_block_info_decompress_size_bytes) std::free(key_block_info_decompress_size_bytes);
+        if(key_block_info_decompress_size_bytes) std::free(key_block_info_decompress_size_bytes);
+        /// passed
+
         // key block info size (number) start at 24 ([24:32])
         key_block_info_size_start_offset = this->number_width * 3;
       }else{
+
+
         // key block info size (number) start at 24 ([8:12])
         key_block_info_size_start_offset = this->number_width * 2;
       }
@@ -504,38 +612,37 @@ namespace jsmdict {
       char * key_block_info_size_buffer = (char*)calloc(static_cast<size_t>(this->number_width), sizeof(char));
       eno = bin_slice(key_block_info_buffer, key_block_info_bytes_num, key_block_info_size_start_offset, this->number_width, key_block_info_size_buffer);
       if (eno != 0){
-        std::cerr<<"binslice err3:"<< eno <<std::endl;
-        // TODO throw error
+        if(key_block_info_buffer != nullptr) std::free(key_block_info_buffer);
+        if(key_block_info_size_buffer != nullptr) std::free(key_block_info_size_buffer);
+          throw std::logic_error("decode key block info size failed");
       }
-//      putbytes(key_block_info_size_buffer, this->number_width, true);
 
       uint64_t key_block_info_size = 0;
       if (this->number_width == 8) key_block_info_size = be_bin_to_u64((const unsigned char*)key_block_info_size_buffer);
       else if(this->number_width == 4) key_block_info_size = be_bin_to_u32((const unsigned char*)key_block_info_size_buffer);
-      // TODO PASSED
+      if(key_block_info_size_buffer != nullptr) std::free(key_block_info_size_buffer);
+      /// passed
 
       // 5. [32:40] - key block size
       char * key_block_size_buffer = (char*)calloc(static_cast<size_t>(this->number_width), sizeof(char));
       eno = bin_slice(key_block_info_buffer, key_block_info_bytes_num, key_block_info_size_start_offset + this->number_width, this->number_width, key_block_size_buffer);
       if (eno != 0){
-        std::cerr<<"binslice err3:"<< eno <<std::endl;
-        // TODO throw error
+        if(key_block_info_buffer) std::free(key_block_info_buffer);
+        if(key_block_size_buffer) std::free(key_block_size_buffer);
+          throw std::logic_error("decode key block size failed");
       }
-//      putbytes(key_block_size_buffer, this->number_width, true);
+      /// passed
 
       uint64_t key_block_size = 0;
       if (this->number_width == 8) key_block_size = be_bin_to_u64((const unsigned char*)key_block_size_buffer);
       else if(this->number_width == 4) key_block_size = be_bin_to_u32((const unsigned char*)key_block_size_buffer);
-      // TODO PASSED
+      if(key_block_size_buffer) std::free(key_block_size_buffer);
+      /// passed
 
       // 6. [40:44] - 4bytes checksum
       // TODO if version > 2.0, skip 4bytes checksum
 
       // free key block info buffer
-      if (key_block_nums_bytes != nullptr) std::free(key_block_nums_bytes);
-      if (entries_num_bytes != nullptr) std::free(entries_num_bytes);
-      if (key_block_info_size_buffer) std::free(key_block_info_size_buffer);
-      if (key_block_size_buffer) std::free(key_block_size_buffer);
       if (key_block_info_buffer != nullptr) std::free(key_block_info_buffer);
 
       this->key_block_num = key_block_num;
@@ -599,10 +706,10 @@ namespace jsmdict {
       byte previous = 0x36;
 
       for (int i =0; i < data_len; ++i){
-       byte t = static_cast<byte>(((b[i] >> 4) | (b[i] << 4)) & 0xff);
-       t = t ^ previous ^ ((byte)(i & 0xff)) ^ key[i % key_len];
-       previous = b[i];
-       b[i] = t;
+        byte t = static_cast<byte>(((b[i] >> 4) | (b[i] << 4)) & 0xff);
+        t = t ^ previous ^ ((byte)(i & 0xff)) ^ key[i % key_len];
+        previous = b[i];
+        b[i] = t;
       }
 //      const b = new Uint8Array(data);
 //      const key = new Uint8Array(k);
@@ -650,40 +757,40 @@ namespace jsmdict {
           key_id = be_bin_to_u32(key_block + key_start_idx);
           width = 1;
         }
-       // key text ends with '\x00'
-       // version >= 2.0 delimiter == '0x0000'
-       // else delimiter == '0x00'  (< 2.0)
-       int i = key_start_idx + number_width;// ver > 2.0, move 8, else move 4
-       while(i< key_block_len){
-         if(version >= 2.0){
-          if (key_block[i] == 0 && key_block[i+1] == 0 /* delimiter = '0000' */){
-            key_end_idx = i;
-            break;
+        // key text ends with '\x00'
+        // version >= 2.0 delimiter == '0x0000'
+        // else delimiter == '0x00'  (< 2.0)
+        int i = key_start_idx + number_width;// ver > 2.0, move 8, else move 4
+        while(i< key_block_len){
+          if(version >= 2.0){
+            if (key_block[i] == 0 && key_block[i+1] == 0 /* delimiter = '0000' */){
+              key_end_idx = i;
+              break;
+            }
+          }else{
+            if (key_block[i] == 0 /* delimiter == '0' */){
+              key_end_idx = i;
+              break;
+            }
           }
-         }else{
-           if (key_block[i] == 0 /* delimiter == '0' */){
-            key_end_idx = i;
-            break;
-          }
-         }
 
-         i += 1;
+          i += 1;
 
-       }
+        }
 
-       std::string key_text = "";
-       if (this->encoding == 1 /* ENCODING_UTF16 */){
-         // TODO
-         throw std::runtime_error("error");
-       }else if (this->encoding == 0 /* ENCODING_UTF8 */){
-         key_text = be_bin_to_utf8(
-           (const char*)key_block,
-           (key_start_idx + this->number_width),
-           static_cast<unsigned long>(key_end_idx - key_start_idx - this->number_width));
-       }
+        std::string key_text = "";
+        if (this->encoding == 1 /* ENCODING_UTF16 */){
+          // TODO
+          throw std::runtime_error("error");
+        }else if (this->encoding == 0 /* ENCODING_UTF8 */){
+          key_text = be_bin_to_utf8(
+            (const char*)key_block,
+            (key_start_idx + this->number_width),
+            static_cast<unsigned long>(key_end_idx - key_start_idx - this->number_width));
+        }
 
-       // next round
-       key_start_idx = key_end_idx + width;
+        // next round
+        key_start_idx = key_end_idx + width;
 
 //       break;
 
@@ -741,194 +848,194 @@ namespace jsmdict {
 
     // note: kb_info_buff_len == key_block_info_compressed_size
     int Mdict::decode_key_block_info(char* key_block_info_buffer, unsigned long kb_info_buff_len, int key_block_num, int entries_num){
-        char* kb_info_buff = key_block_info_buffer;
+      char* kb_info_buff = key_block_info_buffer;
 
       // key block info offset indicator
       unsigned long data_offset = 0;
 
-        if (this->version >= 2.0) {
-          // if version >= 2.0, use zlib compression
-          assert(kb_info_buff[0] == 2);
-          assert(kb_info_buff[1] == 0);
-          assert(kb_info_buff[2] == 0);
-          assert(kb_info_buff[3] == 0);
-          byte* kb_info_decrypted = (unsigned char *)key_block_info_buffer;
-          if(this->encrypt == ENCRYPT_KEY_INFO_ENC){
-            kb_info_decrypted = mdx_decrypt((byte*)kb_info_buff, kb_info_buff_len);
-          }
+      if (this->version >= 2.0) {
+        // if version >= 2.0, use zlib compression
+        assert(kb_info_buff[0] == 2);
+        assert(kb_info_buff[1] == 0);
+        assert(kb_info_buff[2] == 0);
+        assert(kb_info_buff[3] == 0);
+        byte* kb_info_decrypted = (unsigned char *)key_block_info_buffer;
+        if(this->encrypt == ENCRYPT_KEY_INFO_ENC){
+          kb_info_decrypted = mdx_decrypt((byte*)kb_info_buff, kb_info_buff_len);
+        }
 
 
-          // finally, we needs to check adler32 checksum
-          // key_block_info_compressed[4:8] => adler32 checksum
+        // finally, we needs to check adler32 checksum
+        // key_block_info_compressed[4:8] => adler32 checksum
 //          uint32_t chksum = be_bin_to_u32((unsigned char*) (kb_info_buff + 4));
 //          uint32_t adlercs = adler32checksum(key_block_info_uncomp, static_cast<uint32_t>(key_block_info_uncomp_len)) & 0xffffffff;
 //
 //          assert(chksum == adlercs);
 
 
-          /// here passed, key block info is corrected
-          // TODO decode key block info compressed into keys list
+        /// here passed, key block info is corrected
+        // TODO decode key block info compressed into keys list
 
 
 
-          // for version 2.0, will compress by zlib, lzo just just for 1.0
-          // key_block_info_buff[0:8] => compress_type
-          // TODO zlib decompress
-          // TODO:
-          // if the size of compressed data original data is unknown,
-          // we malloc 8 size of source data len, we cannot estimate the original data size
-          // but currently, we know the size of key_block_info decompress size, so we use this
+        // for version 2.0, will compress by zlib, lzo just just for 1.0
+        // key_block_info_buff[0:8] => compress_type
+        // TODO zlib decompress
+        // TODO:
+        // if the size of compressed data original data is unknown,
+        // we malloc 8 size of source data len, we cannot estimate the original data size
+        // but currently, we know the size of key_block_info decompress size, so we use this
 
 
-          // note: we should uncompress key_block_info_buffer[8:] data, so we need (decrypted + 8, and length -8)
-          std::vector<uint8_t> decompress_buff = zlib_mem_uncompress(kb_info_decrypted+8, kb_info_buff_len - 8, this->key_block_info_decompress_size);
-          /// uncompress successed
-          assert(decompress_buff.size() == this->key_block_info_decompress_size);
+        // note: we should uncompress key_block_info_buffer[8:] data, so we need (decrypted + 8, and length -8)
+        std::vector<uint8_t> decompress_buff = zlib_mem_uncompress(kb_info_decrypted+8, kb_info_buff_len - 8, this->key_block_info_decompress_size);
+        /// uncompress successed
+        assert(decompress_buff.size() == this->key_block_info_decompress_size);
 
-          // get key block info list
+        // get key block info list
 //          std::vector<key_block_info*> key_block_info_list;
-          /// entries summary, every block has a lot of entries, the sum of entries should equals entries_number
-          unsigned long num_entries_counter = 0;
-          // key number counter
-          unsigned long counter = 0;
+        /// entries summary, every block has a lot of entries, the sum of entries should equals entries_number
+        unsigned long num_entries_counter = 0;
+        // key number counter
+        unsigned long counter = 0;
 
-          // current block entries
-          unsigned long current_entries = 0;
+        // current block entries
+        unsigned long current_entries = 0;
 
-          unsigned long previous_start_offset = 0;
+        unsigned long previous_start_offset = 0;
 
 
-          int byte_width = 1;
-          int text_term = 0;
+        int byte_width = 1;
+        int text_term = 0;
+        if (this->version >= 2.0) {
+          byte_width = 2;
+          text_term = 1;
+        }
+
+        while(counter < this->key_block_num){
           if (this->version >= 2.0) {
-            byte_width = 2;
-            text_term = 1;
+            current_entries = be_bin_to_u64(decompress_buff.data() + data_offset * sizeof(uint8_t));
+          }else{
+            current_entries = be_bin_to_u32(decompress_buff.data() + data_offset * sizeof(uint8_t));
+          }
+          num_entries_counter += current_entries;
+
+          // move offset
+          // if version>= 2.0 move forward 8 bytes
+
+          data_offset += this->number_width * sizeof(uint8_t);
+
+          // first key size
+          unsigned long first_key_size = 0;
+
+          if (this->version >= 2.0) {
+            first_key_size = be_bin_to_u16(decompress_buff.data() + data_offset * sizeof(uint8_t));
+          }else{
+            first_key_size = be_bin_to_u8(decompress_buff.data() + data_offset * sizeof(uint8_t));
+          }
+          data_offset += byte_width;
+
+          // step_gap means first key start offset to first key end;
+          int step_gap = 0;
+
+          if ( this->encoding == 1 /* encoding utf16 equals 1*/ ) {
+            step_gap = (first_key_size + text_term) * 2;
+          } else {
+            step_gap = first_key_size + text_term;
           }
 
-          while(counter < this->key_block_num){
-            if (this->version >= 2.0) {
-              current_entries = be_bin_to_u64(decompress_buff.data() + data_offset * sizeof(uint8_t));
-            }else{
-              current_entries = be_bin_to_u32(decompress_buff.data() + data_offset * sizeof(uint8_t));
-            }
-            num_entries_counter += current_entries;
-
-            // move offset
-            // if version>= 2.0 move forward 8 bytes
-
-            data_offset += this->number_width * sizeof(uint8_t);
-
-            // first key size
-            unsigned long first_key_size = 0;
-
-            if (this->version >= 2.0) {
-              first_key_size = be_bin_to_u16(decompress_buff.data() + data_offset * sizeof(uint8_t));
-            }else{
-              first_key_size = be_bin_to_u8(decompress_buff.data() + data_offset * sizeof(uint8_t));
-            }
-            data_offset += byte_width;
-
-            // step_gap means first key start offset to first key end;
-            int step_gap = 0;
-
-            if ( this->encoding == 1 /* encoding utf16 equals 1*/ ) {
-              step_gap = (first_key_size + text_term) * 2;
-            } else {
-              step_gap = first_key_size + text_term;
-            }
-
-            // DECODE first CODE
-            // TODO here minus the terminal character size(1), but we still not sure should minus this or not
-            std::string fkey = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
+          // DECODE first CODE
+          // TODO here minus the terminal character size(1), but we still not sure should minus this or not
+          std::string fkey = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
 //            std::cout<<"first key: "<<fkey<<std::endl;
-            // move forward
-            data_offset += step_gap;
+          // move forward
+          data_offset += step_gap;
 
 
-            // the last key
-            unsigned long last_key_size = 0;
+          // the last key
+          unsigned long last_key_size = 0;
 
-            if (this->version >= 2.0) {
-              last_key_size = be_bin_to_u16(decompress_buff.data() + data_offset * sizeof(uint8_t));
-            }else{
-              last_key_size = be_bin_to_u8(decompress_buff.data() + data_offset * sizeof(uint8_t));
-            }
-            data_offset += byte_width;
+          if (this->version >= 2.0) {
+            last_key_size = be_bin_to_u16(decompress_buff.data() + data_offset * sizeof(uint8_t));
+          }else{
+            last_key_size = be_bin_to_u8(decompress_buff.data() + data_offset * sizeof(uint8_t));
+          }
+          data_offset += byte_width;
 
-            if (this->encoding == 1 /* ENCODING_UTF16 */) {
-              step_gap = (last_key_size + text_term) * 2;
-            } else {
-              step_gap = last_key_size + text_term;
-            }
+          if (this->encoding == 1 /* ENCODING_UTF16 */) {
+            step_gap = (last_key_size + text_term) * 2;
+          } else {
+            step_gap = last_key_size + text_term;
+          }
 
-            std::string last_key = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
+          std::string last_key = be_bin_to_utf8((char*)(decompress_buff.data() + data_offset), 0, (unsigned long)step_gap - text_term);
 
-            // move forward
-            data_offset += step_gap;
-
-
-            // ------------
-            // key block part
-            // ------------
-
-            uint64_t key_block_compress_size = 0;
-            if (version >= 2.0) {
-              key_block_compress_size = be_bin_to_u64(decompress_buff.data() + data_offset);
-            }else{
-              key_block_compress_size = be_bin_to_u32(decompress_buff.data() + data_offset);
-            }
-
-            data_offset += this->number_width;
-
-            uint64_t key_block_decompress_size = 0;
-
-            if (version >= 2.0) {
-              key_block_decompress_size = be_bin_to_u64(decompress_buff.data() + data_offset);
-            }else{
-              key_block_decompress_size = be_bin_to_u32(decompress_buff.data() + data_offset);
-            }
-
-            // entries offset move forward
-            data_offset += this->number_width;
+          // move forward
+          data_offset += step_gap;
 
 
-            key_block_info* kbinfo = new key_block_info(fkey, last_key, previous_start_offset, key_block_compress_size, key_block_decompress_size);
-            // adjust ofset
-            previous_start_offset += key_block_compress_size;
-            key_block_info_list.push_back(kbinfo);
+          // ------------
+          // key block part
+          // ------------
 
-            // key block counter
-            counter += 1;
+          uint64_t key_block_compress_size = 0;
+          if (version >= 2.0) {
+            key_block_compress_size = be_bin_to_u64(decompress_buff.data() + data_offset);
+          }else{
+            key_block_compress_size = be_bin_to_u32(decompress_buff.data() + data_offset);
+          }
+
+          data_offset += this->number_width;
+
+          uint64_t key_block_decompress_size = 0;
+
+          if (version >= 2.0) {
+            key_block_decompress_size = be_bin_to_u64(decompress_buff.data() + data_offset);
+          }else{
+            key_block_decompress_size = be_bin_to_u32(decompress_buff.data() + data_offset);
+          }
+
+          // entries offset move forward
+          data_offset += this->number_width;
+
+
+          key_block_info* kbinfo = new key_block_info(fkey, last_key, previous_start_offset, key_block_compress_size, key_block_decompress_size);
+          // adjust ofset
+          previous_start_offset += key_block_compress_size;
+          key_block_info_list.push_back(kbinfo);
+
+          // key block counter
+          counter += 1;
 //          break;
 
-          }
-          assert(counter == this->key_block_num);
-          assert(num_entries_counter == this->entries_num);
+        }
+        assert(counter == this->key_block_num);
+        assert(num_entries_counter == this->entries_num);
 
 //          std::vector<key_block_info*>::iterator it;
 
-          //TODO WORKING HERE
-          for (auto it = key_block_info_list.begin(); it != key_block_info_list.end(); it++){
-            std::cout<<"fkey : "<<(*it)->first_key<<std::endl;
-            std::cout<<"lkey : "<<(*it)->last_key<<std::endl;
-            std::cout<<"comp_size : "<<(*it)->key_block_comp_size<<std::endl;
-            std::cout<<"decomp_size : "<<(*it)->key_block_decomp_size<<std::endl;
-            std::cout<<"offset : "<<(*it)->key_block_start_offset<<std::endl;
-            break;
-          }
-
-        }else {
-          // doesn't compression
+        //TODO WORKING HERE
+        for (auto it = key_block_info_list.begin(); it != key_block_info_list.end(); it++){
+          std::cout<<"fkey : "<<(*it)->first_key<<std::endl;
+          std::cout<<"lkey : "<<(*it)->last_key<<std::endl;
+          std::cout<<"comp_size : "<<(*it)->key_block_comp_size<<std::endl;
+          std::cout<<"decomp_size : "<<(*it)->key_block_decomp_size<<std::endl;
+          std::cout<<"offset : "<<(*it)->key_block_start_offset<<std::endl;
+          break;
         }
+
+      }else {
+        // doesn't compression
+      }
 
 //        std::cout<<"data offset: " << data_offset<<std::endl;
 //        assert(data_offset == this->key_block_info_decompress_size);
-        this->key_block_body_start = this->key_block_info_start_offset + this->key_block_info_size;
+      this->key_block_body_start = this->key_block_info_start_offset + this->key_block_info_size;
 //        std::cout<<"key_block_body offset: " << this->key_block_body_start<<std::endl;
-        /// here passed
+      /// here passed
 
 
-      }
+    }
 
     void Mdict::readfile(uint64_t offset, uint64_t len, char* buf){
       instream.seekg(offset);
@@ -940,11 +1047,11 @@ namespace jsmdict {
      *             public part             *
      ***************************************/
 
-    std::string Mdict::lookup(const std::string word, int word_len){
+    std::string Mdict::lookup(const std::string word){
       return "lookup.. -? " + this->filename + " ";
     }
 
-    std::vector<std::string> Mdict::prefix(const std::string prefix, int prefix_len){
+    std::vector<std::string> Mdict::prefix(const std::string prefix){
       std::vector<std::string> list;
       list.emplace_back("hello1");
       return list;
@@ -955,10 +1062,10 @@ namespace jsmdict {
 
 int main(){
 
-  jsmdict::Mdict mdict("/Users/chenquan/Workspace/cpp/libmdict/mdx/oale8.mdx");
+  mdict::Mdict mdict("/Users/chenquan/Workspace/cpp/libmdict/mdx/oale8.mdx");
   mdict.read_header();
-  std::cout<<mdict.lookup("word", 4) <<std::endl;
-  std::vector<std::string> ss = mdict.prefix("prefix", 6);
+  std::cout<<mdict.lookup("word") <<std::endl;
+  std::vector<std::string> ss = mdict.prefix("prefix");
   //for (std::vector<std::string>::const_iterator i = ss.begin(); i != ss.end(); ++i)
   mdict.printhead();
   mdict.read_key_block_header();

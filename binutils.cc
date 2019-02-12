@@ -25,8 +25,8 @@
 
 using namespace std;
 
-// anouncement
-gz_header* GZHeader();
+char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
 
 uint32_t be_bin_to_u32(const unsigned char* bin /* 4 bytes char array  */) {
   uint32_t n = 0;
@@ -63,42 +63,24 @@ uint8_t be_bin_to_u8(const unsigned char* bin /* 8 bytes char array  */) {
   return bin[0] & 255;
 }
 
-void putbytes(const char* bytes, int len, bool hex = true) {
+void putbytes(const char* bytes, int len, bool hex = true, unsigned long startofset = 0) {
   if (hex) {
-    int maxlen = 10 > len ? len : 10;
-    std::printf("Buffer[");
-    for (int i = 0; i < maxlen - 1; i++) {
-      std::printf("%02x, ", bytes[i] & 255);
+    std::printf("<Buffer ");
+    for (int i = 0; i < len - 1; i++) {
+      std::printf("%02x ", bytes[i] & 255);
       //        std::printf("%02x(%d) ", bytes[i] & 255,bytes[i] & 255);
     }
-    std::printf("%02x ", bytes[maxlen - 1] & 255);
-    //    std::printf("%02x(%d) ", bytes[maxlen - 1],bytes[maxlen - 1]);
-    if (maxlen != len) {
-      std::printf(", ..., ");
-      for (int i = (len - maxlen < 10 ? maxlen : 10); i < len - 1; i++) {
-        std::printf("%02x, ", bytes[i] & 255);
-        //          std::printf("%02x(%d) ", bytes[i] & 255,bytes[i] & 255);
-      }
-      std::printf("%02x", bytes[len - 1] & 255);
-      //      std::printf("%02x(%d) ", bytes[len - 1],bytes[len - 1]);
-    }
-    std::printf("](%d)\n", len);
+    std::printf("%02x", bytes[len - 1] & 255);
+
+    std::printf("> (%d,%d)\n", startofset, len);
+//    std::printf(">\n");
   } else {
-    int maxlen = 10 > len ? len : 10;
-    std::printf("Buffer[");
-    for (int i = 0; i < maxlen - 1; i++) {
-      std::printf("%d, ", bytes[i] & 255);
+    std::printf("<Buffer ");
+    for (int i = 0; i < len - 1; i++) {
+      std::printf("%d ", bytes[i] & 255);
     }
-    std::printf("%d ", bytes[maxlen - 1] & 255);
-    if (maxlen != len) {
-      std::printf(", ..., ");
-      // for (int i = len - 10; i < len - 1; i++) {
-      for (int i = (len - maxlen < 10 ? maxlen : 10); i < len - 1; i++) {
-        std::printf("%d, ", bytes[i] & 255);
-      }
-      std::printf("%d", bytes[len - 1] & 255);
-    }
-    std::printf("](%d)\n", len);
+    std::printf("%d", bytes[len - 1] & 255);
+    std::printf("> (%d)\n", len);
   }
 }
 
@@ -169,4 +151,13 @@ int bin_slice(const char* srcByte, int srcByteLen, int offset, int len,
   for (int i = 0; i < len; ++i) {
     (distByte)[i] = srcByte[i + offset];
   }
+}
+
+int bintohex(char* bin, int len, char* target){
+  int i = 0;
+  for(i = 0; i < len; i++){
+    target[i] = hex_chars[bin[i] & 0xF0 >> 4];
+    target[i+1] = hex_chars[bin[i] & 0x0F >> 0];
+  }
+  return i;
 }

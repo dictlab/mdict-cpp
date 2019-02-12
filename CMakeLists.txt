@@ -40,7 +40,7 @@ INCLUDE_DIRECTORIES(/usr/local/include .)
 
 #执行文件链接属性
 ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_test.cc)
-TARGET_LINK_LIBRARIES(mdict z)
+TARGET_LINK_LIBRARIES(mdict miniz)
 
 
 # adler32 test

@@ -36,7 +36,7 @@ uint64_t be_bin_to_u64(const unsigned char* bin /* 8 bytes char array*/);
 int bin_slice(const char* srcByte, int srcByteLen, int offset, int len,
               char* distByte);
 
-void putbytes(const char* bytes, int len, bool hex);
+void putbytes(const char* bytes, int len, bool hex, unsigned long start_ofset);
 
 // ================================================
 // code convert part
@@ -44,5 +44,7 @@ void putbytes(const char* bytes, int len, bool hex);
 std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len);
 
 std::string be_bin_to_utf8(const char* bytes, int offset, unsigned long len);
+
+int bintohex(char* bin, int len,char* target);
 
 #endif

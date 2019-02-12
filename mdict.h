@@ -1,8 +1,11 @@
+#include <utility>
+
 #ifndef MDICT_MDICT_H_
 #define MDICT_MDICT_H_
 
 #include <codecvt>
 #include <cstdlib>
+#include <cstring>
 
 #include <fstream>
 #include <iostream>
@@ -169,6 +172,22 @@ class key_block_info {
   }
 };
 
+class key_list_item {
+ public:
+  unsigned long key_id;
+  std::string key_word;
+  unsigned long start_offset;
+  unsigned long end_offset;
+  key_list_item(unsigned long kid, std::string kw)
+      : key_id(kid), key_word(std::move(kw)) {}
+  key_list_item(unsigned long kid, std::string kw, unsigned long sofset,
+                unsigned long eofset)
+      : key_id(kid),
+        key_word(kw),
+        start_offset(sofset),
+        end_offset(eofset){}
+};
+
 /**
  * Mdict class definition
  */
@@ -282,6 +301,9 @@ class Mdict {
   // key block info list
   std::vector<key_block_info *> key_block_info_list;
 
+  // key list (key word list)
+  std::vector<key_list_item*> key_list;
+
   /**
    * read in length bytes from stream
    * @param offset the start offset
@@ -295,7 +317,10 @@ class Mdict {
    * @param key_block the key block buffer
    * @param key_block_len the key block buffer length
    */
-  void split_key_block(unsigned char *key_block, unsigned long key_block_len);
+  //# void split_key_block(unsigned char *key_block, unsigned long
+  // key_block_len);
+  std::vector<key_list_item *> split_key_block(unsigned char *key_block,
+                                               unsigned long key_block_len);
 
   /********************************
    *     INNER DICTIONARY PART    *
@@ -345,6 +370,8 @@ class Mdict {
   int decode_key_block(unsigned char *key_block_buffer,
                        unsigned long kb_buff_len);
 
+
+  int decode_record_block(unsigned char *record_block_buffer, unsigned long rb_len);
   /**
    * print the header part (TODO delete)
    */

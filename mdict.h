@@ -174,18 +174,64 @@ class key_block_info {
 
 class key_list_item {
  public:
-  unsigned long key_id;
+  unsigned long record_start;
   std::string key_word;
+  unsigned long entry_accumulator;
   unsigned long start_offset;
   unsigned long end_offset;
   key_list_item(unsigned long kid, std::string kw)
-      : key_id(kid), key_word(std::move(kw)) {}
-  key_list_item(unsigned long kid, std::string kw, unsigned long sofset,
-                unsigned long eofset)
-      : key_id(kid),
+      : record_start(kid), key_word(std::move(kw)) {}
+  key_list_item(unsigned long kid, std::string kw,
+                unsigned long ent_acc)
+      : record_start(kid),
         key_word(kw),
-        start_offset(sofset),
-        end_offset(eofset){}
+        entry_accumulator(ent_acc) {}
+};
+
+class record_header_item {
+ public:
+  unsigned long block_id;
+  unsigned long compressed_size;
+  unsigned long decompressed_size;
+  unsigned long compressed_size_accumulator;
+  unsigned long decompressed_size_accumulator;
+  record_header_item(unsigned long bid, unsigned long comp_size,
+                     unsigned long uncomp_size, unsigned long comp_accu,
+                     unsigned long decomp_accu):
+        block_id(bid),
+        compressed_size(comp_size),
+        decompressed_size(uncomp_size),
+        compressed_size_accumulator(comp_accu),
+        decompressed_size_accumulator(decomp_accu){};
+};
+
+class record {
+ public:
+  std::string key_text;
+  unsigned long key_idx;
+  int encoding;
+  unsigned long record_start_offset;
+  unsigned int comp_size;
+  unsigned int uncomp_size;
+  unsigned int comp_type;
+  bool record_encrypted;
+  unsigned long relative_record_start;
+  unsigned long relative_record_end;
+  record(std::string ktext, unsigned long kidx, int encoding,
+         unsigned long r_start_ofset, unsigned int csize, unsigned int uncsize,
+         unsigned int comp_type, bool renc, unsigned long rela_stat,
+         unsigned long rela_end) {
+    this->key_text = ktext;
+    this->key_idx = kidx;
+    this->encoding = encoding;
+    this->record_start_offset = r_start_ofset;
+    this->comp_size = csize;
+    this->uncomp_size = uncsize;
+    this->comp_type = comp_type;
+    this->record_encrypted = renc;
+    this->relative_record_start = rela_stat;
+    this->relative_record_end = rela_end;
+  }
 };
 
 /**
@@ -302,7 +348,30 @@ class Mdict {
   std::vector<key_block_info *> key_block_info_list;
 
   // key list (key word list)
-  std::vector<key_list_item*> key_list;
+  std::vector<key_list_item *> key_list;
+
+  // -------------------
+  // record block section
+  // -------------------
+
+  uint64_t record_block_info_offset;
+
+  uint64_t record_block_info_size;  // >= 2.0 32, else 16
+
+  uint64_t record_block_number;          // [0:8/4]    - record blcok number
+  uint64_t record_block_entries_number;  // [8:16/4:8] - num entries the
+                                         // key-value entries number
+  uint64_t record_block_header_size;  // [16:24/8:12] - record block info size
+                                      // // TODO
+  uint64_t record_block_size;         // [24:32/12:16] - record block size
+
+  std::vector<record_header_item *> record_header;
+
+  // record_block_offset = record_block_info_offset + record_info_size +
+  // record_header_size
+  uint64_t record_block_offset;
+
+  std::vector<record *> key_data;
 
   /**
    * read in length bytes from stream
@@ -370,8 +439,9 @@ class Mdict {
   int decode_key_block(unsigned char *key_block_buffer,
                        unsigned long kb_buff_len);
 
+  int read_record_block_header();
 
-  int decode_record_block(unsigned char *record_block_buffer, unsigned long rb_len);
+  int decode_record_block();
   /**
    * print the header part (TODO delete)
    */

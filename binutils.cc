@@ -25,8 +25,8 @@
 
 using namespace std;
 
-char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
+char const hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 uint32_t be_bin_to_u32(const unsigned char* bin /* 4 bytes char array  */) {
   uint32_t n = 0;
@@ -63,7 +63,8 @@ uint8_t be_bin_to_u8(const unsigned char* bin /* 8 bytes char array  */) {
   return bin[0] & 255;
 }
 
-void putbytes(const char* bytes, int len, bool hex = true, unsigned long startofset = 0) {
+void putbytes(const char* bytes, int len, bool hex = true,
+              unsigned long startofset) {
   if (hex) {
     std::printf("<Buffer ");
     for (int i = 0; i < len - 1; i++) {
@@ -73,7 +74,7 @@ void putbytes(const char* bytes, int len, bool hex = true, unsigned long startof
     std::printf("%02x", bytes[len - 1] & 255);
 
     std::printf("> (%d,%d)\n", startofset, len);
-//    std::printf(">\n");
+    //    std::printf(">\n");
   } else {
     std::printf("<Buffer ");
     for (int i = 0; i < len - 1; i++) {
@@ -131,7 +132,8 @@ std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len) {
   return u8;
 }
 
-std::string be_bin_to_utf8(const char* bytes, int offset, unsigned long len) {
+std::string be_bin_to_utf8(const char* bytes, unsigned long offset,
+                           unsigned long len) {
   std::string u8(bytes + offset * sizeof(char), len);
   return u8;
 }
@@ -153,11 +155,11 @@ int bin_slice(const char* srcByte, int srcByteLen, int offset, int len,
   }
 }
 
-int bintohex(char* bin, int len, char* target){
+int bintohex(char* bin, int len, char* target) {
   int i = 0;
-  for(i = 0; i < len; i++){
+  for (i = 0; i < len; i++) {
     target[i] = hex_chars[bin[i] & 0xF0 >> 4];
-    target[i+1] = hex_chars[bin[i] & 0x0F >> 0];
+    target[i + 1] = hex_chars[bin[i] & 0x0F >> 0];
   }
   return i;
 }

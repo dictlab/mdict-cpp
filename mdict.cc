@@ -441,16 +441,6 @@ void fast_decrypt(byte* data, const byte* k, int data_len, int key_len) {
     previous = b[i];
     b[i] = t;
   }
-  //      const b = new Uint8Array(data);
-  //      const key = new Uint8Array(k);
-  //      let previous = 0x36;
-  //      for (let i = 0; i < b.length; ++i) {
-  //        let t = ((b[i] >> 4) | (b[i] << 4)) & 0xff;
-  //        t = t ^ previous ^ (i & 0xff) ^ key[i % key.length];
-  //        previous = b[i];
-  //        b[i] = t;
-  //      }
-  //      return new BufferList(b);
 }
 
 /**
@@ -712,20 +702,13 @@ int Mdict::decode_key_block(unsigned char* key_block_buffer,
     // next round
     i += comp_size;
   }
-  std::cout << key_list.size() << " << " << std::endl;
   assert(key_list.size() == this->entries_num);
   /// passed
-  //  for (auto it = key_list.begin(); it != key_list.end(); it++) {
-  //    std::cout << (*it)->key_word << "|" << (*it)->start_offset << "|"
-  //              << (*it)->end_offset << std::endl;
-  //  }
 
   this->record_block_info_offset = this->key_block_info_start_offset +
                                    this->key_block_info_size +
                                    this->key_block_size;
   /// passed
-  std::cout << "record block offset: " << this->record_block_info_offset
-            << std::endl;
 
   return 0;
 }
@@ -768,12 +751,6 @@ int Mdict::read_record_block_header() {
   } else {
   }
   free(record_info_buffer);
-  std::cout << "record_block_number: " << record_block_number << std::endl;
-  std::cout << "record_block_entries_number: " << record_block_entries_number
-            << std::endl;
-  std::cout << "record_block_header_size: " << record_block_header_size
-            << std::endl;
-  std::cout << "record_block_size: " << record_block_size << std::endl;
   assert(record_block_entries_number == entries_num);
   /// passed
 
@@ -816,16 +793,8 @@ int Mdict::read_record_block_header() {
   }
 
   free(record_header_buffer);
-  //      std::cout<<"record header size: " <<
-  //      this->record_header.size()<<std::endl;
   assert(this->record_header.size() == this->record_block_number);
   assert(size_counter == this->record_block_header_size);
-  //      for(auto it = record_header.begin(); it != record_header.end(); it++){
-  //        std::cout<<"record header comp:
-  //        "<<(*it)->compressed_size<<std::endl;
-  //        std::cout<<"record header uncomp:
-  //        "<<(*it)->decompressed_size<<std::endl;
-  //      }
 
   record_block_offset = record_block_info_offset + record_block_info_size +
                         record_block_header_size;
@@ -833,11 +802,10 @@ int Mdict::read_record_block_header() {
   return 0;
 }
 
-std::vector<std::pair<std::string,std::string>> Mdict::decode_record_block_by_rid(
-    unsigned long rid /* record id */) {
+std::vector<std::pair<std::string, std::string>>
+Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
-
 
   // key list index counter
   unsigned long i = 0l;
@@ -853,7 +821,7 @@ std::vector<std::pair<std::string,std::string>> Mdict::decode_record_block_by_ri
   uint64_t uncomp_size = record_header[idx]->decompressed_size;
   uint64_t comp_accu = record_header[idx]->compressed_size_accumulator;
   uint64_t decomp_accu = record_header[idx]->decompressed_size_accumulator;
-//  std::cout << "record decomp accu " << decomp_accu << std::endl;
+  //  std::cout << "record decomp accu " << decomp_accu << std::endl;
 
   char* record_block_cmp_buffer = (char*)calloc(comp_size, sizeof(char));
 
@@ -924,22 +892,23 @@ std::vector<std::pair<std::string,std::string>> Mdict::decode_record_block_by_ri
       continue;
     }
 
-    // end important: the condition should be lgt, because, the end bound will be equal to uncompressed size
+    // end important: the condition should be lgt, because, the end bound will
+    // be equal to uncompressed size
     // this part ensures the record match to key list bound
     if (record_start - decomp_accu >= uncomp_size) {
       break;
     }
 
-//    std::cout << "key text: " << key_text << std::endl;
+    //    std::cout << "key text: " << key_text << std::endl;
     //    std::cout << "idx: " << idx << std::endl;
     unsigned long expect_end =
         this->key_list[i + 1]->record_start - this->key_list[i]->record_start;
     unsigned long upbound = uncomp_size - this->key_list[i]->record_start;
     upbound = expect_end < upbound ? expect_end : upbound;
-    std::string def =
-        be_bin_to_utf8((char*)record_block,
-                       this->key_list[i]->record_start - decomp_accu, upbound - 1 /* to delete null character*/);
-//    std::cout << "def: " << def << std::endl;
+    std::string def = be_bin_to_utf8(
+        (char*)record_block, this->key_list[i]->record_start - decomp_accu,
+        upbound - 1 /* to delete null character*/);
+    //    std::cout << "def: " << def << std::endl;
     std::pair<std::string, std::string> vp(key_text, def);
     vec.push_back(vp);
     i++;
@@ -1042,36 +1011,6 @@ int Mdict::decode_record_block() {
           key_text, key_list[i]->record_start, this->encoding, record_offset,
           comp_size, uncomp_size, comp_type, (this->encrypt == 1),
           record_start - offset, record_end - offset));
-
-      std::cout << "==============" << std::endl;
-      std::cout << "key text: " << key_text << std::endl;
-      //      std::cout << "idx: " << idx << std::endl;
-      //      std::cout << "record key_id: " << this->key_list[i]->record_start
-      //                << std::endl;
-      //      std::cout << "encoding: " << this->encoding << std::endl;
-      //      std::cout << "record idx: " << idx << std::endl;
-      //      std::cout << "record start offset: " << record_offset <<
-      //      std::endl;
-      //      std::cout << "record comp size: " << comp_size << std::endl;
-      //      std::cout << "record decomp size: " << uncomp_size << std::endl;
-      //      std::cout << "record comp type: " << comp_type << std::endl;
-      //      std::cout << "record encrypted: " << (this->encrypt == 1) <<
-      //      std::endl;
-      //      std::cout << "relative record start: " << record_start - offset
-      //                << std::endl;
-      //      std::cout << "relative record end: " << record_end - offset <<
-      //      std::endl;
-      //      std::string def =
-      //          be_bin_to_utf8((char*)record_block,
-      //          this->key_list[i]->record_start,
-      //                         this->key_list[i + 1]->record_start -
-      //                             this->key_list[i]->record_start - 1);
-      //      std::cout << "def: " << def << std::endl;
-      //      std::string def2 =
-      //          be_bin_to_utf8((char*)record_block, record_start - offset,
-      //                         record_end - record_start);
-      //      std::cout << "def2: " << def2 << std::endl;
-      //      std::cout << "==============" << std::endl;
       i++;
       item_counter++;
     }
@@ -1332,94 +1271,14 @@ void Mdict::readfile(uint64_t offset, uint64_t len, char* buf) {
  * init the dictionary file
  */
 void Mdict::init() {
+  /* indexing... */
   this->read_header();
   this->printhead();
   this->read_key_block_header();
   this->read_key_block_info();
   this->read_record_block_header();
-  //  this->decode_record_block(); // very slow!!!
 
-  //  std::cout << "key block info list size: " <<
-  //  this->key_block_info_list.size()
-  //            << std::endl;
-  //  std::cout << "record block number: " << this->record_block_number
-  //            << std::endl;
-  //  for (int i = 0; i < 3; i++) {
-  //    std::cout << "-----------" << std::endl;
-  //    std::cout << "first_key      : " <<
-  //    this->key_block_info_list[i]->first_key
-  //              << std::endl;
-  //    std::cout << "last_key       : " <<
-  //    this->key_block_info_list[i]->last_key
-  //              << std::endl;
-  //    std::cout << "key_block_start_offset : "
-  //              << this->key_block_info_list[i]->key_block_start_offset
-  //              << std::endl;
-  //    std::cout << "-----------" << std::endl;
-  //  }
-  //
-  //  for (int i = 0; i < 3; i++) {
-  //    std::cout << "-----------" << std::endl;
-  //    std::cout << "entry_accumulator: " <<
-  //    this->key_list[i]->entry_accumulator
-  //              << std::endl;
-  //    std::cout << "key_list block id: " << this->key_list[i]->block_id
-  //              << std::endl;
-  //    std::cout << "record_start     : " << this->key_list[i]->record_start
-  //              << std::endl;
-  //    std::cout << "key_word         : " << this->key_list[i]->key_word
-  //              << std::endl;
-  //    std::cout << "-----------" << std::endl;
-  //  }
-  //
-  //  for (int i = 0; i < 3; i++) {
-  //    std::cout << "***********" << std::endl;
-  //    std::cout << "block_id: " << this->record_header[i]->block_id <<
-  //    std::endl;
-  //    std::cout << "decompressed_size: "
-  //              << this->record_header[i]->decompressed_size << std::endl;
-  //    std::cout << "decompressed_size_accumulator: "
-  //              << this->record_header[i]->decompressed_size_accumulator
-  //              << std::endl;
-  //    std::cout << "compressed_size: " <<
-  //    this->record_header[i]->compressed_size
-  //              << std::endl;
-  //    std::cout << "compressed_size_accumulator: "
-  //              << this->record_header[i]->compressed_size_accumulator
-  //              << std::endl;
-  //    std::cout << "***********" << std::endl;
-  //  }
-  //
-  unsigned long idx =
-      this->reduce0("hello", 0, this->key_block_info_list.size());
-  //  std::cout << idx << std::endl;
-  //  std::cout << key_block_info_list[idx]->first_key << std::endl;
-  //  std::cout << key_block_info_list[idx]->last_key << std::endl;
-  //  std::cout << key_block_info_list[idx]->key_block_start_offset <<
-  //  std::endl;
-  //  std::cout << key_block_info_list[idx]->key_block_comp_accumulator <<
-  //  std::endl;
-
-  std::vector<key_list_item*> tlist = this->decode_key_block_by_block_id(idx);
-  //  for (auto it = tlist.begin(); it != tlist.end(); it++) {
-  //    std::cout << "tlist: " << (*it)->key_word << std::endl;
-  //  }
-  unsigned long word_id = reduce1(tlist, "hello");
-
-  std::cout << "word_id:" << word_id << std::endl;
-  std::cout << "a->key_word " << tlist[word_id]->key_word << std::endl;
-  std::cout << "a->block_id " << tlist[word_id]->block_id << std::endl;
-  std::cout << "a->record_start " << tlist[word_id]->record_start << std::endl;
-  std::cout << "a->entry_accumulator " << tlist[word_id]->entry_accumulator
-            << std::endl;
-  std::cout << "------------" << std::endl;
-  unsigned long record_block_idx = reduce2(tlist[word_id]->record_start);
-  std::cout << "record_block_idx: " << record_block_idx << std::endl;
-
-  auto vec = decode_record_block_by_rid(record_block_idx);
-  for(auto it= vec.begin(); it != vec.end(); ++it){
-   std::cout<<"word: "<<(*it).first<<" \n def: "<<(*it).second<<std::endl;
-  }
+  // TODO delete this  this->decode_record_block(); // very slow!!!
 }
 
 /**
@@ -1478,7 +1337,6 @@ unsigned long Mdict::reduce1(
 unsigned long Mdict::reduce2(
     unsigned long record_start) {  // non-recursive reduce implements
   // TODO OPTIMISE
-  /*
   unsigned long left = 0l;
   unsigned long right = this->record_header.size() - 1;
   unsigned long mid = 0;
@@ -1492,14 +1350,36 @@ unsigned long Mdict::reduce2(
       right = mid - 1;
     }
   }
-  return left;
-   */
-  for (unsigned long i = 0; i < record_header.size(); i++) {
-    if (this->record_header[i]->decompressed_size_accumulator >= record_start) {
-      return i == 0 ? 0 : i - 1;
+  return left - 1;
+  // TODO test this
+  //  for (unsigned long i = 0; i < record_header.size(); i++) {
+  //    if (this->record_header[i]->decompressed_size_accumulator >=
+  //    record_start) {
+  //      return i == 0 ? 0 : i - 1;
+  //    }
+  //  }
+  return 0;
+}
+
+std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
+                           std::string phrase) {
+  unsigned int left = 0;
+  unsigned int right = vec.size() - 1;
+  unsigned int mid = 0;
+  unsigned int result = 0;
+  while (left <= right) {
+    mid = left + ((right - left) >> 1);
+    if (_s(phrase).compare(_s(vec[mid].first)) > 0) {
+      left = mid + 1;
+    } else if (_s(phrase).compare(_s(vec[mid].first)) < 0) {
+      right = mid - 1;
+    } else {
+      result = mid;
+      break;
     }
   }
-  return 0;
+  result = left;
+  return vec[result].second;
 }
 
 /**
@@ -1508,7 +1388,22 @@ unsigned long Mdict::reduce2(
  * @return
  */
 std::string Mdict::lookup(const std::string word) {
-  return "lookup.. -? " + this->filename + " ";
+  // search word in key block info list
+  unsigned long idx = this->reduce0(word, 0, this->key_block_info_list.size());
+  // decode key block by block id
+  std::vector<key_list_item*> tlist = this->decode_key_block_by_block_id(idx);
+  // reduce word id from key list item vector to get the word index of key list
+  unsigned long word_id = reduce1(tlist, word);
+  // reduce search the record block index by word record start offset
+  unsigned long record_block_idx = reduce2(tlist[word_id]->record_start);
+  // decode recode by record index
+  auto vec = decode_record_block_by_rid(record_block_idx);
+  //  for(auto it= vec.begin(); it != vec.end(); ++it){
+  //   std::cout<<"word: "<<(*it).first<<" \n def: "<<(*it).second<<std::endl;
+  //  }
+  // reduce the definition by word
+  std::string def = reduce3(vec, word);
+  return def;
 }
 
 /**

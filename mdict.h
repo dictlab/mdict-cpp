@@ -303,6 +303,15 @@ class Mdict {
    */
   unsigned long reduce2(unsigned long record_start);
 
+  /**
+   *  search definiation from key_text:def pair vector
+   * @param vec  key:def pair vector
+   * @param phrase the target word phrase
+   * @return definition
+   */
+  std::string reduce3(std::vector<std::pair<std::string, std::string>> vec,
+                      std::string phrase);
+
  private:
   /********************************
    *     general section           *
@@ -471,7 +480,8 @@ class Mdict {
 
   int decode_record_block();
 
-  std::vector<std::pair<std::string,std::string>> decode_record_block_by_rid(unsigned long rid /* record id */);
+  std::vector<std::pair<std::string, std::string>> decode_record_block_by_rid(
+      unsigned long rid /* record id */);
 
   /**
    * print the header part (TODO delete)

@@ -45,3 +45,6 @@ lib
 # mdx
 *.mdx
 *.mdd
+
+# build
+build

@@ -2,4 +2,20 @@
 
 mdict *.mdx/*.mdd interpreter c++ implements
 
-## TODO
+
+## With Cmake
+
+```
+mkdir build
+cd build && cmake ..
+make mdict
+```
+the executable binary will generate at `bin/mdict`
+
+## Manually
+
+```
+make mdict
+```
+
+

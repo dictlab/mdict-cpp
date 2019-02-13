@@ -21,7 +21,7 @@ std::map<std::string, std::string> parseXMLHeader(std::string dicxml) {
   /// std::map<char*, char*> headTag;
 
   // scaner loop
-  bool start = false, end = false;
+  //  bool start = false, end = false;
   bool endCorrect = false;
   char endPrevChar = 0, endChar = 0;
 
@@ -39,26 +39,22 @@ std::map<std::string, std::string> parseXMLHeader(std::string dicxml) {
 
   unsigned i = 0;
 
-// get start index
-loop:
+  // get start index
   for (; i < dicxml.length(); ++i) {
     char c = dicxml.at(i);
     if (c != ' ')
       continue;
     else
       break;
-    //		std::cout << c;
   }
-  //	std::cout << '\n';
 
   int r = i;
 
-tagloop:
   // loop to length -2 (for '/>')
   for (; r < dicxml.length() - 2; r++) {
   stringloop:
-    std::string tmpK = "";
-    std::string tmpV = "";
+    std::string tmpK;
+    std::string tmpV;
     // split flag
     bool sflag = false;
     bool openQuo = false, closeQuo = false;

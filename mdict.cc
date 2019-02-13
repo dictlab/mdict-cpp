@@ -238,6 +238,7 @@ void Mdict::read_key_block_header() {
   if (eno != 0) {
     if (key_block_info_buffer) std::free(key_block_info_buffer);
     if (key_block_nums_bytes) std::free(key_block_nums_bytes);
+    std::cout << "eno: " << eno << std::endl;
     throw std::logic_error("get key block bin slice failed");
   }
   /// passed
@@ -480,7 +481,8 @@ byte* mdx_decrypt(byte* comp_block, const int comp_block_len) {
 std::vector<key_list_item*> Mdict::split_key_block(unsigned char* key_block,
                                                    unsigned long key_block_len,
                                                    unsigned long block_id) {
-  uint32_t adlchk = adler32checksum(key_block, key_block_len);
+  // TODO assert checksum
+  // uint32_t adlchk = adler32checksum(key_block, key_block_len);
   //  std::cout<<"adler32 chksum: "<<adlchk<<std::endl;
   int key_start_idx = 0;
   int key_end_idx = 0;
@@ -576,7 +578,6 @@ std::vector<key_list_item*> Mdict::decode_key_block_by_block_id(
   // ------------------------------------
   // decode key_block_compressed
   // ------------------------------------
-  unsigned long kb_len = this->key_block_size;
 
   unsigned long idx = block_id;
 
@@ -586,7 +587,6 @@ std::vector<key_list_item*> Mdict::decode_key_block_by_block_id(
   unsigned long start_ofset =
       this->key_block_info_list[idx]->key_block_comp_accumulator +
       this->key_block_compressed_start_offset;
-  unsigned long end_ofset = start_ofset + comp_size;
 
   char* key_block_buffer =
       (char*)calloc(static_cast<size_t>(comp_size), sizeof(unsigned char));
@@ -653,7 +653,7 @@ int Mdict::decode_key_block(unsigned char* key_block_buffer,
     unsigned long decomp_size =
         this->key_block_info_list[idx]->key_block_decomp_size;
     unsigned long start_ofset = i;
-    unsigned long end_ofset = i + comp_size;
+    // unsigned long end_ofset = i + comp_size;
     // 4 bytes comp type
     char* key_block_comp_type = (char*)calloc(4, sizeof(char));
     memcpy(key_block_comp_type, key_block_buffer, 4 * sizeof(char));
@@ -986,7 +986,7 @@ int Mdict::decode_record_block() {
     free(record_block_cmp_buffer);
     //    free(record_block_uncompressed_b); /* ensure not free twice*/
 
-    unsigned char* record_block = record_block_uncompressed_b;
+    // unsigned char* record_block = record_block_uncompressed_b;
     /**
     * 请注意，block 是会有很多个的，而每个block都可能会被压缩
     * 而 key_list中的 record_start,
@@ -1022,6 +1022,7 @@ int Mdict::decode_record_block() {
     //    break;
   }
   assert(size_counter == record_block_size);
+  return 0;
 }
 
 /**
@@ -1250,6 +1251,7 @@ int Mdict::decode_key_block_info(char* key_block_info_buffer,
   //        std::cout<<"key_block_body offset: " <<
   //        this->key_block_body_start<<std::endl;
   /// here passed
+  return 0;
 }
 
 /**

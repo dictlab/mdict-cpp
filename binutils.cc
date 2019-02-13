@@ -73,7 +73,7 @@ void putbytes(const char* bytes, int len, bool hex = true,
     }
     std::printf("%02x", bytes[len - 1] & 255);
 
-    std::printf("> (%d,%d)\n", startofset, len);
+    std::printf("> (%ld,%d)\n", startofset, len);
     //    std::printf(">\n");
   } else {
     std::printf("<Buffer ");
@@ -153,6 +153,7 @@ int bin_slice(const char* srcByte, int srcByteLen, int offset, int len,
   for (int i = 0; i < len; ++i) {
     (distByte)[i] = srcByte[i + offset];
   }
+  return 0;
 }
 
 int bintohex(char* bin, int len, char* target) {

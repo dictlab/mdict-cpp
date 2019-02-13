@@ -28,6 +28,7 @@ inline std::vector<uint8_t> zlib_mem_uncompress(const void *source,
       continue;
     }
     // 其他错误抛出异常
+    printf("ZLIBERR %d\n", err);
     return std::vector<uint8_t>();
   }
 }

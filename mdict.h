@@ -150,8 +150,10 @@ class key_block_info {
   unsigned long key_block_start_offset;
   // key block compressed size
   unsigned long key_block_comp_size;
+  unsigned long key_block_comp_accumulator;
   // key block decompressed size
   unsigned long key_block_decomp_size;
+  unsigned long key_block_decomp_accumulator;
 
   /**
    * constructor
@@ -163,12 +165,15 @@ class key_block_info {
    */
   key_block_info(std::string first_key, std::string last_key,
                  unsigned long kb_start_ofset, unsigned long kb_comp_size,
-                 unsigned long kb_decomp_size) {
+                 unsigned long kb_decomp_size, unsigned long kb_comp_accu,
+                 unsigned long kb_decomp_accu) {
     this->key_block_comp_size = kb_comp_size;
     this->key_block_decomp_size = kb_decomp_size;
     this->key_block_start_offset = kb_start_ofset;
     this->first_key = first_key;
     this->last_key = last_key;
+    this->key_block_comp_accumulator = kb_comp_accu;
+    this->key_block_decomp_accumulator = kb_decomp_accu;
   }
 };
 
@@ -177,15 +182,15 @@ class key_list_item {
   unsigned long record_start;
   std::string key_word;
   unsigned long entry_accumulator;
-  unsigned long start_offset;
-  unsigned long end_offset;
+  unsigned long block_id;
   key_list_item(unsigned long kid, std::string kw)
       : record_start(kid), key_word(std::move(kw)) {}
-  key_list_item(unsigned long kid, std::string kw,
-                unsigned long ent_acc)
+  key_list_item(unsigned long kid, std::string kw, unsigned long ent_acc,
+                unsigned long bid)
       : record_start(kid),
         key_word(kw),
-        entry_accumulator(ent_acc) {}
+        entry_accumulator(ent_acc),
+        block_id(bid) {}
 };
 
 class record_header_item {
@@ -197,8 +202,8 @@ class record_header_item {
   unsigned long decompressed_size_accumulator;
   record_header_item(unsigned long bid, unsigned long comp_size,
                      unsigned long uncomp_size, unsigned long comp_accu,
-                     unsigned long decomp_accu):
-        block_id(bid),
+                     unsigned long decomp_accu)
+      : block_id(bid),
         compressed_size(comp_size),
         decompressed_size(uncomp_size),
         compressed_size_accumulator(comp_accu),
@@ -278,6 +283,25 @@ class Mdict {
    * init the dictionary
    */
   void init();
+  /**
+   *
+   * @param phrase
+   * @param start
+   * @param end
+   * @return
+   */
+  unsigned long reduce0(std::string phrase, unsigned long start,
+                        unsigned long end);
+
+  unsigned long reduce1(std::vector<key_list_item *> wordlist,
+                        std::string phrase);
+
+  /**
+   * reduce search in record_block_header
+   * @param record_start record start offset
+   * @return record block id
+   */
+  unsigned long reduce2(unsigned long record_start);
 
  private:
   /********************************
@@ -389,7 +413,8 @@ class Mdict {
   //# void split_key_block(unsigned char *key_block, unsigned long
   // key_block_len);
   std::vector<key_list_item *> split_key_block(unsigned char *key_block,
-                                               unsigned long key_block_len);
+                                               unsigned long key_block_len,
+                                               unsigned long block_id);
 
   /********************************
    *     INNER DICTIONARY PART    *
@@ -439,9 +464,15 @@ class Mdict {
   int decode_key_block(unsigned char *key_block_buffer,
                        unsigned long kb_buff_len);
 
+  std::vector<key_list_item *> decode_key_block_by_block_id(
+      unsigned long block_id);
+
   int read_record_block_header();
 
   int decode_record_block();
+
+  std::vector<std::pair<std::string,std::string>> decode_record_block_by_rid(unsigned long rid /* record id */);
+
   /**
    * print the header part (TODO delete)
    */

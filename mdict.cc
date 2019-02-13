@@ -8,6 +8,10 @@
  */
 
 #include "mdict.h"
+#include <algorithm>
+#include <regex>
+
+const std::regex re_pattern("\\s|:|\\.|,|-|\'|\\(|\\)|#|<|>|!");
 
 namespace mdict {
 
@@ -19,6 +23,17 @@ Mdict::Mdict(std::string fn) noexcept : filename(fn) {
 Mdict::~Mdict() {
   // close instream
   instream.close();
+}
+
+/**
+ * transform word into comparable string
+ * @param word
+ * @return
+ */
+std::string _s(std::string word) {
+  std::string s = std::regex_replace(word, re_pattern, "");
+  std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+  return s;
 }
 
 /***************************************
@@ -472,8 +487,9 @@ byte* mdx_decrypt(byte* comp_block, const int comp_block_len) {
  * @param key_block key block buffer
  * @param key_block_len key block length
  */
-std::vector<key_list_item*> Mdict::split_key_block(
-    unsigned char* key_block, unsigned long key_block_len) {
+std::vector<key_list_item*> Mdict::split_key_block(unsigned char* key_block,
+                                                   unsigned long key_block_len,
+                                                   unsigned long block_id) {
   uint32_t adlchk = adler32checksum(key_block, key_block_len);
   //  std::cout<<"adler32 chksum: "<<adlchk<<std::endl;
   int key_start_idx = 0;
@@ -544,9 +560,9 @@ std::vector<key_list_item*> Mdict::split_key_block(
                                      this->number_width));
     }
     /// passed
-    entry_acc ++;
+    entry_acc++;
     inner_key_list.push_back(
-        new key_list_item(record_start, key_text, entry_acc));
+        new key_list_item(record_start, key_text, entry_acc, block_id));
 
     // TODO add to word list
 
@@ -559,6 +575,75 @@ std::vector<key_list_item*> Mdict::split_key_block(
   }
   return inner_key_list;
 }
+
+/**
+ * decode key block info by block id use with reduce function
+ * @param block_id key_block id
+ * @return return key list item
+ */
+std::vector<key_list_item*> Mdict::decode_key_block_by_block_id(
+    unsigned long block_id) {
+  // ------------------------------------
+  // decode key_block_compressed
+  // ------------------------------------
+  unsigned long kb_len = this->key_block_size;
+
+  unsigned long idx = block_id;
+
+  unsigned long comp_size = this->key_block_info_list[idx]->key_block_comp_size;
+  unsigned long decomp_size =
+      this->key_block_info_list[idx]->key_block_decomp_size;
+  unsigned long start_ofset =
+      this->key_block_info_list[idx]->key_block_comp_accumulator +
+      this->key_block_compressed_start_offset;
+  unsigned long end_ofset = start_ofset + comp_size;
+
+  char* key_block_buffer =
+      (char*)calloc(static_cast<size_t>(comp_size), sizeof(unsigned char));
+
+  readfile(start_ofset, static_cast<int>(comp_size), key_block_buffer);
+
+  // 4 bytes comp type
+  char* key_block_comp_type = (char*)calloc(4, sizeof(char));
+  memcpy(key_block_comp_type, key_block_buffer, 4 * sizeof(char));
+  // 4 bytes adler checksum of decompressed key block
+  uint32_t chksum =
+      be_bin_to_u32((unsigned char*)key_block_buffer + 4 * sizeof(char));
+
+  unsigned char* key_block = nullptr;
+  std::vector<uint8_t> kb_uncompressed;  // note: ensure kb_uncompressed not
+                                         // die when out of uncompress scope
+
+  if ((key_block_comp_type[0] & 255) == 0) {
+    // none compressed
+    key_block = (unsigned char*)(key_block_buffer + 8 * sizeof(char));
+  } else if ((key_block_comp_type[0] & 255) == 1) {
+    // 01000000
+    // TODO lzo decompress
+
+  } else if ((key_block_comp_type[0] & 255) == 2) {
+    // zlib compress
+    kb_uncompressed =
+        zlib_mem_uncompress(key_block_buffer + 8 * sizeof(char), comp_size);
+    if (kb_uncompressed.empty()) {
+      throw std::runtime_error("key block decompress failed empty");
+    }
+    key_block = kb_uncompressed.data();
+
+    uint32_t adler32cs =
+        adler32checksum(key_block, static_cast<uint32_t>(decomp_size));
+    assert(adler32cs == chksum);
+    assert(kb_uncompressed.size() == decomp_size);
+  } else {
+    throw std::runtime_error("cannot determine the key block compress type");
+  }
+
+  // split key
+  std::vector<key_list_item*> tlist =
+      split_key_block(key_block, decomp_size, idx);
+  return tlist;
+}
+
 /**
  * decode the key block decode function, will invoke split key block
  *
@@ -618,7 +703,8 @@ int Mdict::decode_key_block(unsigned char* key_block_buffer,
     }
 
     // split key
-    std::vector<key_list_item*> tlist = split_key_block(key_block, decomp_size);
+    std::vector<key_list_item*> tlist =
+        split_key_block(key_block, decomp_size, idx);
     key_list.insert(key_list.end(), tlist.begin(), tlist.end());
 
     // TODO HERE append keys
@@ -719,10 +805,11 @@ int Mdict::read_record_block_header() {
           be_bin_to_u64((unsigned char*)(record_header_buffer + size_counter));
       size_counter += number_width;
 
+      this->record_header.push_back(new record_header_item(
+          i, comp_size, uncomp_size, comp_accu, decomp_accu));
+      // ensure after push
       comp_accu += comp_size;
       decomp_accu += uncomp_size;
-      this->record_header.push_back(
-          new record_header_item(i, comp_size, uncomp_size, comp_accu, decomp_accu));
     } else {
       // TODO
     }
@@ -746,9 +833,124 @@ int Mdict::read_record_block_header() {
   return 0;
 }
 
+std::vector<std::pair<std::string,std::string>> Mdict::decode_record_block_by_rid(
+    unsigned long rid /* record id */) {
+  // record block start offset: record_block_offset
+  uint64_t record_offset = this->record_block_offset;
+
+
+  // key list index counter
+  unsigned long i = 0l;
+
+  std::vector<uint8_t> record_block_uncompressed_v;
+  unsigned char* record_block_uncompressed_b;
+  uint64_t checksum = 0l;
+
+  unsigned long idx = rid;
+
+  //  for (int idx = 0; idx < this->record_header.size(); idx++) {
+  uint64_t comp_size = record_header[idx]->compressed_size;
+  uint64_t uncomp_size = record_header[idx]->decompressed_size;
+  uint64_t comp_accu = record_header[idx]->compressed_size_accumulator;
+  uint64_t decomp_accu = record_header[idx]->decompressed_size_accumulator;
+//  std::cout << "record decomp accu " << decomp_accu << std::endl;
+
+  char* record_block_cmp_buffer = (char*)calloc(comp_size, sizeof(char));
+
+  this->readfile(record_offset + comp_accu, comp_size, record_block_cmp_buffer);
+  // 4 bytes, compress type
+  char* comp_type_b = (char*)calloc(4, sizeof(char));
+  memcpy(comp_type_b, record_block_cmp_buffer, 4 * sizeof(char));
+  //    putbytes(comp_type_b, 4, true);
+  int comp_type = comp_type_b[0] & 0xff;
+  // 4 bytes adler32 checksum
+  char* checksum_b = (char*)calloc(4, sizeof(char));
+  memcpy(checksum_b, record_block_cmp_buffer + 4, 4 * sizeof(char));
+  checksum = be_bin_to_u32((unsigned char*)checksum_b);
+  free(checksum_b);
+
+  if (comp_type == 0 /* not compressed TODO*/) {
+    throw std::runtime_error("uncompress block not support yet");
+  } else {
+    char* record_block_decrypted_buff;
+    if (this->encrypt == ENCRYPT_RECORD_ENC /* record block encrypted */) {
+      // TODO
+      throw std::runtime_error("record encrypted not support yet");
+    }
+    record_block_decrypted_buff = record_block_cmp_buffer + 8 * sizeof(char);
+    // decompress
+    if (comp_type == 1 /* lzo */) {
+      throw std::runtime_error("lzo compress not support yet");
+    } else if (comp_type == 2) {
+      // zlib compress
+      record_block_uncompressed_v =
+          zlib_mem_uncompress(record_block_decrypted_buff, comp_size);
+      if (record_block_uncompressed_v.empty()) {
+        throw std::runtime_error("record block decompress failed size == 0");
+      }
+      record_block_uncompressed_b = record_block_uncompressed_v.data();
+      uint32_t adler32cs = adler32checksum(record_block_uncompressed_b,
+                                           static_cast<uint32_t>(uncomp_size));
+      assert(record_block_uncompressed_v.size() == uncomp_size);
+      assert(adler32cs == checksum);
+    } else {
+      throw std::runtime_error(
+          "cannot determine the record block compress type");
+    }
+  }
+
+  free(comp_type_b);
+  free(record_block_cmp_buffer);
+  //    free(record_block_uncompressed_b); /* ensure not free twice*/
+
+  unsigned char* record_block = record_block_uncompressed_b;
+  /**
+  * 请注意，block 是会有很多个的，而每个block都可能会被压缩
+  * 而 key_list中的 record_start,
+  * key_text是相对每一个block而言的，end是需要每次解析的时候算出来的
+  * 所有的record_start/length/end都是针对解压后的block而言的
+  */
+
+  std::vector<std::pair<std::string, std::string>> vec;
+
+  while (i < this->key_list.size()) {
+    // TODO OPTIMISE
+    unsigned long record_start = key_list[i]->record_start;
+
+    std::string key_text = key_list[i]->key_word;
+    // start, skip the keys which not includes in record block
+    if (record_start < decomp_accu) {
+      i++;
+      continue;
+    }
+
+    // end important: the condition should be lgt, because, the end bound will be equal to uncompressed size
+    // this part ensures the record match to key list bound
+    if (record_start - decomp_accu >= uncomp_size) {
+      break;
+    }
+
+//    std::cout << "key text: " << key_text << std::endl;
+    //    std::cout << "idx: " << idx << std::endl;
+    unsigned long expect_end =
+        this->key_list[i + 1]->record_start - this->key_list[i]->record_start;
+    unsigned long upbound = uncomp_size - this->key_list[i]->record_start;
+    upbound = expect_end < upbound ? expect_end : upbound;
+    std::string def =
+        be_bin_to_utf8((char*)record_block,
+                       this->key_list[i]->record_start - decomp_accu, upbound - 1 /* to delete null character*/);
+//    std::cout << "def: " << def << std::endl;
+    std::pair<std::string, std::string> vp(key_text, def);
+    vec.push_back(vp);
+    i++;
+  }
+
+  //  assert(size_counter == record_block_size);
+  return vec;
+}
+
 int Mdict::decode_record_block() {
   // record block start offset: record_block_offset
-
   uint64_t record_offset = this->record_block_offset;
 
   uint64_t item_counter = 0l;
@@ -760,7 +962,7 @@ int Mdict::decode_record_block() {
   // record offset
   unsigned long offset = 0l;
 
-  std::cout << "record offset" << this->record_block_offset << std::endl;
+  std::cout << "record offset BBB " << this->record_block_offset << std::endl;
   std::vector<uint8_t> record_block_uncompressed_v;
   unsigned char* record_block_uncompressed_b;
   uint64_t checksum = 0l;
@@ -841,8 +1043,8 @@ int Mdict::decode_record_block() {
           comp_size, uncomp_size, comp_type, (this->encrypt == 1),
           record_start - offset, record_end - offset));
 
-      //      std::cout << "==============" << std::endl;
-      //      std::cout << "key text: " << key_text << std::endl;
+      std::cout << "==============" << std::endl;
+      std::cout << "key text: " << key_text << std::endl;
       //      std::cout << "idx: " << idx << std::endl;
       //      std::cout << "record key_id: " << this->key_list[i]->record_start
       //                << std::endl;
@@ -960,6 +1162,8 @@ int Mdict::decode_key_block_info(char* key_block_info_buffer,
       text_term = 1;
     }
 
+    unsigned long comp_acc = 0l;
+    unsigned long decomp_acc = 0l;
     while (counter < this->key_block_num) {
       if (this->version >= 2.0) {
         current_entries = be_bin_to_u64(decompress_buff.data() +
@@ -1061,13 +1265,18 @@ int Mdict::decode_key_block_info(char* key_block_info_buffer,
 
       key_block_info* kbinfo = new key_block_info(
           fkey, last_key, previous_start_offset, key_block_compress_size,
-          key_block_decompress_size);
+          key_block_decompress_size, comp_acc, decomp_acc);
+
       // adjust ofset
       previous_start_offset += key_block_compress_size;
       key_block_info_list.push_back(kbinfo);
 
       // key block counter
       counter += 1;
+      // accumulate
+      comp_acc += key_block_compress_size;
+      decomp_acc += key_block_decompress_size;
+
       //          break;
     }
     assert(counter == this->key_block_num);
@@ -1128,11 +1337,169 @@ void Mdict::init() {
   this->read_key_block_header();
   this->read_key_block_info();
   this->read_record_block_header();
-  //  this->decode_record_block();
-  std::cout << "key block info list size: " << this->key_block_info_list.size()
+  //  this->decode_record_block(); // very slow!!!
+
+  //  std::cout << "key block info list size: " <<
+  //  this->key_block_info_list.size()
+  //            << std::endl;
+  //  std::cout << "record block number: " << this->record_block_number
+  //            << std::endl;
+  //  for (int i = 0; i < 3; i++) {
+  //    std::cout << "-----------" << std::endl;
+  //    std::cout << "first_key      : " <<
+  //    this->key_block_info_list[i]->first_key
+  //              << std::endl;
+  //    std::cout << "last_key       : " <<
+  //    this->key_block_info_list[i]->last_key
+  //              << std::endl;
+  //    std::cout << "key_block_start_offset : "
+  //              << this->key_block_info_list[i]->key_block_start_offset
+  //              << std::endl;
+  //    std::cout << "-----------" << std::endl;
+  //  }
+  //
+  //  for (int i = 0; i < 3; i++) {
+  //    std::cout << "-----------" << std::endl;
+  //    std::cout << "entry_accumulator: " <<
+  //    this->key_list[i]->entry_accumulator
+  //              << std::endl;
+  //    std::cout << "key_list block id: " << this->key_list[i]->block_id
+  //              << std::endl;
+  //    std::cout << "record_start     : " << this->key_list[i]->record_start
+  //              << std::endl;
+  //    std::cout << "key_word         : " << this->key_list[i]->key_word
+  //              << std::endl;
+  //    std::cout << "-----------" << std::endl;
+  //  }
+  //
+  //  for (int i = 0; i < 3; i++) {
+  //    std::cout << "***********" << std::endl;
+  //    std::cout << "block_id: " << this->record_header[i]->block_id <<
+  //    std::endl;
+  //    std::cout << "decompressed_size: "
+  //              << this->record_header[i]->decompressed_size << std::endl;
+  //    std::cout << "decompressed_size_accumulator: "
+  //              << this->record_header[i]->decompressed_size_accumulator
+  //              << std::endl;
+  //    std::cout << "compressed_size: " <<
+  //    this->record_header[i]->compressed_size
+  //              << std::endl;
+  //    std::cout << "compressed_size_accumulator: "
+  //              << this->record_header[i]->compressed_size_accumulator
+  //              << std::endl;
+  //    std::cout << "***********" << std::endl;
+  //  }
+  //
+  unsigned long idx =
+      this->reduce0("hello", 0, this->key_block_info_list.size());
+  //  std::cout << idx << std::endl;
+  //  std::cout << key_block_info_list[idx]->first_key << std::endl;
+  //  std::cout << key_block_info_list[idx]->last_key << std::endl;
+  //  std::cout << key_block_info_list[idx]->key_block_start_offset <<
+  //  std::endl;
+  //  std::cout << key_block_info_list[idx]->key_block_comp_accumulator <<
+  //  std::endl;
+
+  std::vector<key_list_item*> tlist = this->decode_key_block_by_block_id(idx);
+  //  for (auto it = tlist.begin(); it != tlist.end(); it++) {
+  //    std::cout << "tlist: " << (*it)->key_word << std::endl;
+  //  }
+  unsigned long word_id = reduce1(tlist, "hello");
+
+  std::cout << "word_id:" << word_id << std::endl;
+  std::cout << "a->key_word " << tlist[word_id]->key_word << std::endl;
+  std::cout << "a->block_id " << tlist[word_id]->block_id << std::endl;
+  std::cout << "a->record_start " << tlist[word_id]->record_start << std::endl;
+  std::cout << "a->entry_accumulator " << tlist[word_id]->entry_accumulator
             << std::endl;
-  std::cout << "record block number: " << this->record_block_number
-            << std::endl;
+  std::cout << "------------" << std::endl;
+  unsigned long record_block_idx = reduce2(tlist[word_id]->record_start);
+  std::cout << "record_block_idx: " << record_block_idx << std::endl;
+
+  auto vec = decode_record_block_by_rid(record_block_idx);
+  for(auto it= vec.begin(); it != vec.end(); ++it){
+   std::cout<<"word: "<<(*it).first<<" \n def: "<<(*it).second<<std::endl;
+  }
+}
+
+/**
+ * find the key word includes in which block
+ * @param phrase
+ * @param start
+ * @param end
+ * @return
+ */
+unsigned long Mdict::reduce0(
+    std::string phrase, unsigned long start,
+    unsigned long end) {  // non-recursive reduce implements
+  unsigned long mid = 0;
+  while (start <= end) {
+    mid = start + ((end - start) >> 1);
+    if (phrase.compare(this->key_block_info_list[mid]->last_key) > 0) {
+      start = mid + 1;
+    } else {
+      end = mid - 1;
+    }
+  }
+  return start;
+}
+
+unsigned long Mdict::reduce1(
+    std::vector<key_list_item*> wordlist,
+    std::string phrase) {  // non-recursive reduce implements
+  unsigned long left = 0;
+  unsigned long right = wordlist.size() - 1;
+  unsigned long mid = 0;
+  std::string word = _s(std::move(phrase));
+  int comp = 0;
+  while (left <= right) {
+    mid = left + ((right - left) >> 1);
+    comp = word.compare(_s(wordlist[mid]->key_word));
+    //    std::cout<<wordlist[mid]->key_word<< " " <<
+    //    _s(wordlist[mid]->key_word)<<" "<<comp << " "<< left << " "<< mid  <<"
+    //    " << right<<std::endl;
+    if (comp > 0) {
+      left = mid + 1;
+    } else if (comp < 0) {
+      right = mid - 1;
+    } else {
+      return mid;
+    }
+  }
+  return left;
+}
+
+/**
+ *
+ * @param wordlist
+ * @param phrase
+ * @return
+ */
+unsigned long Mdict::reduce2(
+    unsigned long record_start) {  // non-recursive reduce implements
+  // TODO OPTIMISE
+  /*
+  unsigned long left = 0l;
+  unsigned long right = this->record_header.size() - 1;
+  unsigned long mid = 0;
+  while (left <= right) {
+    mid = left + ((right - left) >> 1);
+    if (record_start >=
+        this->record_header[mid]->decompressed_size_accumulator) {
+      left = mid + 1;
+    } else if (record_start <
+               this->record_header[mid]->decompressed_size_accumulator) {
+      right = mid - 1;
+    }
+  }
+  return left;
+   */
+  for (unsigned long i = 0; i < record_header.size(); i++) {
+    if (this->record_header[i]->decompressed_size_accumulator >= record_start) {
+      return i == 0 ? 0 : i - 1;
+    }
+  }
+  return 0;
 }
 
 /**

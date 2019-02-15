@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include <fstream>
+#include <hunspell/hunspell.hxx>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -250,6 +251,8 @@ class Mdict {
    */
   Mdict(std::string fn) noexcept;
 
+  Mdict(std::string fn, std::string aff_fn, std::string dic_fn) noexcept;
+
   /**
    * deconstructor
    */
@@ -263,12 +266,21 @@ class Mdict {
   std::string lookup(std::string word);
 
   /**
-   * search the word which matches the prefix
-   * @param prefix the word's prefix
+   * suggest simuler word which matches the prefix
+   * @param word the word's prefix
    * @param prefix_len the word's length (optional)
    * @return
    */
-  std::vector<std::string> prefix(std::string prefix);
+  std::vector<std::string> suggest(const std::string word);
+
+  /**
+   *
+   * @param word
+   * @return
+   */
+  std::vector<std::string> stem(const std::string word);
+
+
 
   // contains key or not
   /**
@@ -319,8 +331,14 @@ class Mdict {
   // dictionary file name
   const std::string filename;
 
+  const std::string aff_file;
+
+  const std::string dic_file;
+
   // file input stream
   std::ifstream instream;
+
+  Hunspell *hunspell_inst = nullptr;
 
   /********************************
    *     header section           *

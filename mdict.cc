@@ -9,6 +9,7 @@
 
 #include "mdict.h"
 #include <algorithm>
+#include <hunspell/hunspell.hxx>
 #include <regex>
 
 const std::regex re_pattern("\\s|:|\\.|,|-|\'|\\(|\\)|#|<|>|!");
@@ -18,6 +19,15 @@ namespace mdict {
 // constructor
 Mdict::Mdict(std::string fn) noexcept : filename(fn) {
   instream = std::ifstream(filename, std::ios::binary);
+}
+
+// overloading constructor with hunspell dic file
+Mdict::Mdict(std::string fn, std::string aff_fn, std::string dic_fn) noexcept
+    : filename(fn), aff_file(aff_fn), dic_file(dic_fn) {
+  instream = std::ifstream(filename, std::ios::binary);
+  if (!aff_fn.empty() && !dic_fn.empty()) {
+    hunspell_inst = new Hunspell(aff_file.data(), dic_file.data());
+  }
 }
 // distructor
 Mdict::~Mdict() {
@@ -1409,13 +1419,28 @@ std::string Mdict::lookup(const std::string word) {
 }
 
 /**
- * look word by prefix
- * @param prefix
+ * suggest sim word by hunspell
+ * @param word
  * @return
  */
-std::vector<std::string> Mdict::prefix(const std::string prefix) {
+std::vector<std::string> Mdict::suggest(const std::string word) {
   std::vector<std::string> list;
-  list.emplace_back("hello1");
+  if(this->hunspell_inst == nullptr){
+    return list;
+  }
+
+  list = hunspell_inst->suggest(word);
+  return list;
+}
+
+std::vector<std::string> Mdict::stem(const std::string word) {
+  std::vector<std::string> list;
+  if(this->hunspell_inst == nullptr){
+    return list;
+  }
+
+  list = hunspell_inst->stem(word);
+
   return list;
 }
 }

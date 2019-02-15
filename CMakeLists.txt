@@ -28,7 +28,7 @@ ADD_SUBDIRECTORY(deps)
 #头文件搜索目录
 INCLUDE_DIRECTORIES(/usr/local/include .)
 #链接库搜索路径
-#LINK_DIRECTORIES(lib)
+#LINK_DIRECTORIES(/usr/local/lib)
 #设置链接库
 #SET(EXTRA_LIBS ${EXTRA_LIBS} test1 test2)
 #SET(EXTRA_LIBS ${EXTRA_LIBS} ${MY_LINK})
@@ -36,11 +36,22 @@ INCLUDE_DIRECTORIES(/usr/local/include .)
 
 
 # mdict
-
-
 #执行文件链接属性
+
+find_library(HUNSPELL_LIBRARY
+		NAMES hunspell-1.7
+		HINTS "/usr/local/lib"
+		NO_DEFAULT_PATH)
+# check if we found the library
+message(STATUS "HELLO_LIB: [${HELLO_LIB}]")
+
+if (NOT HUNSPELL_LIBRARY)
+	message(SEND_ERROR "Did not find lib hundspell")
+endif()
+
+
 ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_test.cc)
-TARGET_LINK_LIBRARIES(mdict miniz)
+TARGET_LINK_LIBRARIES(mdict miniz ${HUNSPELL_LIBRARY})
 
 
 # adler32 test

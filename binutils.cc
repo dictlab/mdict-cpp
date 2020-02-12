@@ -65,9 +65,10 @@ uint8_t be_bin_to_u8(const unsigned char* bin /* 8 bytes char array  */) {
 
 void putbytes(const char* bytes, int len, bool hex = true,
               unsigned long startofset) {
+  int maxlen = 100;
   if (hex) {
     std::printf("<Buffer ");
-    for (int i = 0; i < len - 1; i++) {
+    for (int i = 0; i < ((len - 1) > maxlen ? maxlen: (len-1)); i++) {
       std::printf("%02x ", bytes[i] & 255);
       //        std::printf("%02x(%d) ", bytes[i] & 255,bytes[i] & 255);
     }

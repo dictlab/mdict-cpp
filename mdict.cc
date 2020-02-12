@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <hunspell/hunspell.hxx>
 #include <regex>
+#include <cstring>
 
 const std::regex re_pattern("\\s|:|\\.|,|-|\'|\\(|\\)|#|<|>|!");
 
@@ -219,6 +220,7 @@ void Mdict::read_key_block_header() {
   this->readfile(this->key_block_start_offset,
                  static_cast<uint64_t>(key_block_info_bytes_num),
                  key_block_info_buffer);
+//  putbytes(key_block_info_buffer,key_block_info_bytes_num, true);
   /// PASSED
 
   // TODO key block info encrypted file not support yet
@@ -421,6 +423,7 @@ void Mdict::read_key_block_info() {
   // decode key_block_compressed
   // ------------------------------------
   unsigned long kb_len = this->key_block_size;
+//  putbytes(key_block_compressed_buffer,this->key_block_size, true);
 
   int err =
       decode_key_block((unsigned char*)key_block_compressed_buffer, kb_len);
@@ -745,6 +748,7 @@ int Mdict::read_record_block_header() {
   } else {
     record_block_info_size = 4 * 4;
   }
+
   char* record_info_buffer =
       (char*)calloc(record_block_info_size, sizeof(char));
   this->readfile(record_block_info_offset, record_block_info_size,
@@ -932,7 +936,7 @@ int Mdict::decode_record_block() {
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
 
-  uint64_t item_counter = 0l;
+  uint64_t item_counter = 0;
   uint64_t size_counter = 0l;
 
   // key list index counter
@@ -941,7 +945,6 @@ int Mdict::decode_record_block() {
   // record offset
   unsigned long offset = 0l;
 
-  std::cout << "record offset BBB " << this->record_block_offset << std::endl;
   std::vector<uint8_t> record_block_uncompressed_v;
   unsigned char* record_block_uncompressed_b;
   uint64_t checksum = 0l;
@@ -1289,6 +1292,7 @@ void Mdict::init() {
   this->read_key_block_header();
   this->read_key_block_info();
   this->read_record_block_header();
+//  this->decode_record_block();
 
   // TODO delete this  this->decode_record_block(); // very slow!!!
 }
@@ -1379,15 +1383,16 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
   unsigned int right = vec.size() - 1;
   unsigned int mid = 0;
   unsigned int result = 0;
-  while (left <= right) {
+  while (left < right) {
     mid = left + ((right - left) >> 1);
+    std::cout<<_s(vec[mid].first)<<std::endl;
     if (_s(phrase).compare(_s(vec[mid].first)) > 0) {
       left = mid + 1;
-    } else if (_s(phrase).compare(_s(vec[mid].first)) < 0) {
-      right = mid - 1;
-    } else {
-      result = mid;
+    } else if (_s(phrase).compare(_s(vec[mid].first)) == 0) {
+      left = mid;
       break;
+    } else {
+      right = mid - 1;
     }
   }
   result = left;
@@ -1444,3 +1449,65 @@ std::vector<std::string> Mdict::stem(const std::string word) {
   return list;
 }
 }
+
+
+/**
+  实现 mdict_extern.h中的方法
+ */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ init the dictionary
+ */
+void *mdict_init(const char *dictionary_path, const char *aff_path, const char *dic_path) {
+
+  std::string dict_file_path(dictionary_path);
+  std::string aff_file_path(aff_path);
+  std::string dic_file_path(dic_path);
+
+  mdict::Mdict *mydict = new mdict::Mdict(dict_file_path, aff_file_path, dic_file_path);
+  mydict->init();
+
+  return mydict;
+}
+
+/**
+ lookup a word
+ */
+void mdict_lookup(void *dict, const char *word, char **result) {
+  mdict::Mdict *self = (mdict::Mdict *) dict;
+  std::string queryWord(word);
+  std::string s = self->lookup(queryWord);
+
+  (*result) = (char *) calloc(sizeof(char), s.size() + 1);
+  std::copy(s.begin(), s.end(), (*result));
+  (*result)[s.size()] = '\0';
+
+}
+
+/**
+suggest  a word
+*/
+void mdict_suggest(void *dict, char *word, char **suggested_words, int length) {
+
+}
+
+/**
+ return a stem
+ */
+void mdict_stem(void *dict, char *word, char **suggested_words, int length) {
+}
+
+void mdict_destory(void* dict){
+  mdict::Mdict *self = (mdict::Mdict *) dict;
+  delete self;
+}
+
+
+#ifdef __cplusplus
+}
+#endif

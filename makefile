@@ -57,7 +57,7 @@ binutils: bin src/binutils.cc src/binutils.h src/binutils_test.cc
 	g++ --std=c++11 binutils.cc binutils_test.cc -o bin/binutils && ./bin/binutils
 
 libmdict: deps/miniz/miniz.c deps/miniz/miniz_zip.c deps/miniz/miniz_tinfl.c deps/miniz/miniz_tdef.c
-	g++ --std=c++11 -Ideps/miniz/ deps/miniz/miniz.c deps/miniz/miniz_zip.c deps/miniz/miniz_tinfl.c deps/miniz/miniz_tdef.c
+	gcc ${CFLAGS} -c ${HEADER} -Ideps/miniz/ deps/miniz/miniz.c deps/miniz/miniz_zip.c deps/miniz/miniz_tinfl.c deps/miniz/miniz_tdef.c
 
 bin:
 	mkdir -p bin

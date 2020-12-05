@@ -8,10 +8,13 @@
  */
 
 #include "mdict.h"
+
 #include <algorithm>
+#ifdef ENABLE_HUNSPELL
 #include <hunspell/hunspell.hxx>
-#include <regex>
+#endif
 #include <cstring>
+#include <regex>
 
 const std::regex re_pattern("\\s|:|\\.|,|-|\'|\\(|\\)|#|<|>|!");
 
@@ -22,6 +25,7 @@ Mdict::Mdict(std::string fn) noexcept : filename(fn) {
   instream = std::ifstream(filename, std::ios::binary);
 }
 
+#ifdef ENABLE_HUNSPELL
 // overloading constructor with hunspell dic file
 Mdict::Mdict(std::string fn, std::string aff_fn, std::string dic_fn) noexcept
     : filename(fn), aff_file(aff_fn), dic_file(dic_fn) {
@@ -30,6 +34,8 @@ Mdict::Mdict(std::string fn, std::string aff_fn, std::string dic_fn) noexcept
     hunspell_inst = new Hunspell(aff_file.data(), dic_file.data());
   }
 }
+#endif
+
 // distructor
 Mdict::~Mdict() {
   // close instream
@@ -220,7 +226,7 @@ void Mdict::read_key_block_header() {
   this->readfile(this->key_block_start_offset,
                  static_cast<uint64_t>(key_block_info_bytes_num),
                  key_block_info_buffer);
-//  putbytes(key_block_info_buffer,key_block_info_bytes_num, true);
+  //  putbytes(key_block_info_buffer,key_block_info_bytes_num, true);
   /// PASSED
 
   // TODO key block info encrypted file not support yet
@@ -423,7 +429,7 @@ void Mdict::read_key_block_info() {
   // decode key_block_compressed
   // ------------------------------------
   unsigned long kb_len = this->key_block_size;
-//  putbytes(key_block_compressed_buffer,this->key_block_size, true);
+  //  putbytes(key_block_compressed_buffer,this->key_block_size, true);
 
   int err =
       decode_key_block((unsigned char*)key_block_compressed_buffer, kb_len);
@@ -736,13 +742,13 @@ int Mdict::decode_key_block(unsigned char* key_block_buffer,
  */
 int Mdict::read_record_block_header() {
   /**
-  * record block info section
-  * decode the record block info section
-  * [0:8/4]    - record blcok number
-  * [8:16/4:8] - num entries the key-value entries number
-  * [16:24/8:12] - record block info size
-  * [24:32/12:16] - record block size
-  */
+   * record block info section
+   * decode the record block info section
+   * [0:8/4]    - record blcok number
+   * [8:16/4:8] - num entries the key-value entries number
+   * [16:24/8:12] - record block info size
+   * [24:32/12:16] - record block size
+   */
   if (this->version >= 2.0) {
     record_block_info_size = 4 * 8;
   } else {
@@ -887,11 +893,11 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
 
   unsigned char* record_block = record_block_uncompressed_b;
   /**
-  * 请注意，block 是会有很多个的，而每个block都可能会被压缩
-  * 而 key_list中的 record_start,
-  * key_text是相对每一个block而言的，end是需要每次解析的时候算出来的
-  * 所有的record_start/length/end都是针对解压后的block而言的
-  */
+   * 请注意，block 是会有很多个的，而每个block都可能会被压缩
+   * 而 key_list中的 record_start,
+   * key_text是相对每一个block而言的，end是需要每次解析的时候算出来的
+   * 所有的record_start/length/end都是针对解压后的block而言的
+   */
 
   std::vector<std::pair<std::string, std::string>> vec;
 
@@ -1001,11 +1007,11 @@ int Mdict::decode_record_block() {
 
     // unsigned char* record_block = record_block_uncompressed_b;
     /**
-    * 请注意，block 是会有很多个的，而每个block都可能会被压缩
-    * 而 key_list中的 record_start,
-    * key_text是相对每一个block而言的，end是需要每次解析的时候算出来的
-    * 所有的record_start/length/end都是针对解压后的block而言的
-    */
+     * 请注意，block 是会有很多个的，而每个block都可能会被压缩
+     * 而 key_list中的 record_start,
+     * key_text是相对每一个block而言的，end是需要每次解析的时候算出来的
+     * 所有的record_start/length/end都是针对解压后的block而言的
+     */
     while (i < this->key_list.size()) {
       unsigned long record_start = key_list[i]->record_start;
       std::string key_text = key_list[i]->key_word;
@@ -1039,13 +1045,13 @@ int Mdict::decode_record_block() {
 }
 
 /**
-* decode the key block info
-* @param key_block_info_buffer the key block info buffer
-* @param kb_info_buff_len the key block buffer length
-* @param key_block_num the key block number
-* @param entries_num the entries number
-* @return
-*/
+ * decode the key block info
+ * @param key_block_info_buffer the key block info buffer
+ * @param kb_info_buff_len the key block buffer length
+ * @param key_block_num the key block number
+ * @param entries_num the entries number
+ * @return
+ */
 int Mdict::decode_key_block_info(char* key_block_info_buffer,
                                  unsigned long kb_info_buff_len,
                                  int key_block_num, int entries_num) {
@@ -1292,7 +1298,7 @@ void Mdict::init() {
   this->read_key_block_header();
   this->read_key_block_info();
   this->read_record_block_header();
-//  this->decode_record_block();
+  //  this->decode_record_block();
 
   // TODO delete this  this->decode_record_block(); // very slow!!!
 }
@@ -1385,7 +1391,7 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
   unsigned int result = 0;
   while (left < right) {
     mid = left + ((right - left) >> 1);
-    std::cout<<_s(vec[mid].first)<<std::endl;
+    // std::cout << _s(vec[mid].first) << std::endl;
     if (_s(phrase).compare(_s(vec[mid].first)) > 0) {
       left = mid + 1;
     } else if (_s(phrase).compare(_s(vec[mid].first)) == 0) {
@@ -1428,9 +1434,10 @@ std::string Mdict::lookup(const std::string word) {
  * @param word
  * @return
  */
+#ifdef ENABLE_HUNSPELL
 std::vector<std::string> Mdict::suggest(const std::string word) {
   std::vector<std::string> list;
-  if(this->hunspell_inst == nullptr){
+  if (this->hunspell_inst == nullptr) {
     return list;
   }
 
@@ -1440,7 +1447,7 @@ std::vector<std::string> Mdict::suggest(const std::string word) {
 
 std::vector<std::string> Mdict::stem(const std::string word) {
   std::vector<std::string> list;
-  if(this->hunspell_inst == nullptr){
+  if (this->hunspell_inst == nullptr) {
     return list;
   }
 
@@ -1448,66 +1455,5 @@ std::vector<std::string> Mdict::stem(const std::string word) {
 
   return list;
 }
-}
-
-
-/**
-  实现 mdict_extern.h中的方法
- */
-
-
-#ifdef __cplusplus
-extern "C" {
 #endif
-
-/**
- init the dictionary
- */
-void *mdict_init(const char *dictionary_path, const char *aff_path, const char *dic_path) {
-
-  std::string dict_file_path(dictionary_path);
-  std::string aff_file_path(aff_path);
-  std::string dic_file_path(dic_path);
-
-  mdict::Mdict *mydict = new mdict::Mdict(dict_file_path, aff_file_path, dic_file_path);
-  mydict->init();
-
-  return mydict;
 }
-
-/**
- lookup a word
- */
-void mdict_lookup(void *dict, const char *word, char **result) {
-  mdict::Mdict *self = (mdict::Mdict *) dict;
-  std::string queryWord(word);
-  std::string s = self->lookup(queryWord);
-
-  (*result) = (char *) calloc(sizeof(char), s.size() + 1);
-  std::copy(s.begin(), s.end(), (*result));
-  (*result)[s.size()] = '\0';
-
-}
-
-/**
-suggest  a word
-*/
-void mdict_suggest(void *dict, char *word, char **suggested_words, int length) {
-
-}
-
-/**
- return a stem
- */
-void mdict_stem(void *dict, char *word, char **suggested_words, int length) {
-}
-
-void mdict_destory(void* dict){
-  mdict::Mdict *self = (mdict::Mdict *) dict;
-  delete self;
-}
-
-
-#ifdef __cplusplus
-}
-#endif

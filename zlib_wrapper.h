@@ -1,6 +1,7 @@
 #ifndef MDICT_ZIP_WRAPPER_H_
 #define MDICT_ZIP_WRAPPER_H_
 #include <vector>
+
 #include "deps/miniz/miniz.h"
 // #include "zlib.h"
 

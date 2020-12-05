@@ -6,7 +6,6 @@
 #include <codecvt>
 #include <cstdlib>
 #include <cstring>
-
 #include <fstream>
 #include <hunspell/hunspell.hxx>
 #include <iostream>
@@ -280,8 +279,6 @@ class Mdict {
    */
   std::vector<std::string> stem(const std::string word);
 
-
-
   // contains key or not
   /**
    * contains the word or not
@@ -509,5 +506,5 @@ class Mdict {
     //          "<<this->encoding<<std::endl;
   }
 };
-}
+}  // namespace mdict
 #endif

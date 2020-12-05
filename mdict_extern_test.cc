@@ -4,10 +4,11 @@
 
 #include "mdict_extern.h"
 
-#include <iostream>
 #include <sys/time.h>
-#include <ctime>
+
 #include <cstdlib>
+#include <ctime>
+#include <iostream>
 typedef long long int64;
 class Timetool {
  public:
@@ -23,11 +24,15 @@ class Timetool {
 
 int main() {
   int64 t1 = Timetool::getSystemTime();
-  void* dict = mdict_init("/Users/chenquan/Workspace/cpp/libmdict/mdx/oale8.mdx","/Users/chenquan/Workspace/cpp/libmdict/deps/hunspell/dictionary/en_US.aff","/Users/chenquan/Workspace/cpp/libmdict/deps/hunspell/dictionary/en_US.dic" );
+  void* dict =
+      mdict_init(
+              "../example_data/mdx/macmillan2.mdx",
+              "../example_data/dictionary/en_US.aff",
+              "../example_data/dictionary/en_US.dic"
+                 );
 
   int64 t2 = Timetool::getSystemTime();
   std::cout << "init cost time: " << t2 - t1 << "ms" << std::endl;
-
 
   char* result[0];
   mdict_lookup(dict, "word", result);
@@ -37,10 +42,8 @@ int main() {
   int64 t3 = Timetool::getSystemTime();
   std::cout << "lookup cost time: " << t3 - t2 << " ms" << std::endl;
 
-
   mdict_destory(dict);
-  if(*result != nullptr) {
+  if (*result != nullptr) {
     free(*result);
   }
-
 }

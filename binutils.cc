@@ -15,11 +15,11 @@
  * =====================================================================================
  */
 
+#include "binutils.h"
+
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
-
-#include "binutils.h"
 //#include "deps/miniz/miniz.h"
 #include <zlib.h>
 
@@ -68,7 +68,7 @@ void putbytes(const char* bytes, int len, bool hex = true,
   int maxlen = 100;
   if (hex) {
     std::printf("<Buffer ");
-    for (int i = 0; i < ((len - 1) > maxlen ? maxlen: (len-1)); i++) {
+    for (int i = 0; i < ((len - 1) > maxlen ? maxlen : (len - 1)); i++) {
       std::printf("%02x ", bytes[i] & 255);
       //        std::printf("%02x(%d) ", bytes[i] & 255,bytes[i] & 255);
     }
@@ -108,8 +108,8 @@ template <typename internT, typename externT, typename stateT>
 using facet_codecvt = usable_facet<std::codecvt<internT, externT, stateT>>;
 
 /*************************************************
-* little-endian binary to utf16 to utf8 string   *
-**************************************************/
+ * little-endian binary to utf16 to utf8 string   *
+ **************************************************/
 
 // binary to utf16->utf8
 std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len) {

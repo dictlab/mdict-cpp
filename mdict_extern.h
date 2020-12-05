@@ -18,12 +18,13 @@ extern "C" {
 /**
  init the dictionary
  */
-void* mdict_init(const char* dictionary_path,const char* aff_path,const char* dic_path);
+void* mdict_init(const char* dictionary_path, const char* aff_path,
+                 const char* dic_path);
 
 /**
  lookup a word
  */
-void mdict_lookup(void* dict,const char* word, char** result);
+void mdict_lookup(void* dict, const char* word, char** result);
 
 /**
 suggest  a word
@@ -35,16 +36,12 @@ void mdict_suggest(void* dict, char* word, char** suggested_words, int length);
  */
 void mdict_stem(void* dict, char* word, char** suggested_words, int length);
 
-
 void mdict_destory(void* dict);
 
-
 //-------------------------
-
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* mdict_extern_h */

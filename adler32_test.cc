@@ -1,6 +1,7 @@
 // adler32.cpp - originally written and placed in the public domain by Wei Dai
 
 #include "adler32.h"
+
 #include <gtest/gtest.h>
 
 int main() {

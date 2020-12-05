@@ -16,9 +16,9 @@
  * =====================================================================================
  */
 
-#include <cstdio>
-
 #include "fileutils.h"
+
+#include <cstdio>
 
 int fsizeof(const char* fpath) {
   FILE* f = std::fopen(fpath, "rb");

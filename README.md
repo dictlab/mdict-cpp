@@ -9,23 +9,20 @@ mdict *.mdx/*.mdd interpreter c++ implements
 
 ```
 mkdir build
-cd build && cmake ..
-make mdict
+cd build && cmake .. && make mydict
+./bin/mydict your_mdx_file.mdx
 ```
 the executable binary will generate at `bin/mdict`
 
-### Make
-
-```
-make mdict
-```
 
 ## Library
 
 ### Library
 
 ```
-make libmdict
+mkdir build 
+cd buid && cmake .. && make mdict
+ls ./lib/libmdict.a
 ```
 
 

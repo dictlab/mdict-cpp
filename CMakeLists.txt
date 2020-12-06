@@ -50,13 +50,10 @@ if (NOT HUNSPELL_LIBRARY)
 endif()
 
 
-ADD_EXECUTABLE(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_test.cc mdict_extern.cc)
-TARGET_LINK_LIBRARIES(mdict miniz ${HUNSPELL_LIBRARY})
+ADD_EXECUTABLE(mydict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc mdict_extern_test.cc)
+TARGET_LINK_LIBRARIES(mydict miniz ${HUNSPELL_LIBRARY})
 
-ADD_EXECUTABLE(mdict_extern_test mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc mdict_extern_test.cc)
-TARGET_LINK_LIBRARIES(mdict_extern_test miniz ${HUNSPELL_LIBRARY})
-
-
+ADD_LIBRARY(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc)
 
 # adler32 test
 ADD_EXECUTABLE(adler32_test adler32.cc adler32_test.cc binutils.cc)

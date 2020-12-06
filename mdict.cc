@@ -15,13 +15,14 @@
 #endif
 #include <cstring>
 #include <regex>
+#include <utility>
 
-const std::regex re_pattern("\\s|:|\\.|,|-|\'|\\(|\\)|#|<|>|!");
+const std::regex re_pattern(R"(\s|:|\.|,|-|'|\(|\)|#|<|>|!)");
 
 namespace mdict {
 
 // constructor
-Mdict::Mdict(std::string fn) noexcept : filename(fn) {
+Mdict::Mdict(std::string fn) noexcept : filename(std::move(fn)) {
   instream = std::ifstream(filename, std::ios::binary);
 }
 

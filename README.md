@@ -10,7 +10,7 @@ mdict *.mdx/*.mdd interpreter c++ implements
 ```
 mkdir build
 cd build && cmake .. && make mydict
-./bin/mydict your_mdx_file.mdx
+./bin/mydict your_mdx_file.mdx yourword
 ```
 the executable binary will generate at `bin/mdict`
 

@@ -17,5 +17,10 @@ ExternalProject_Add(hunspell
         INSTALL_COMMAND ${HUNSPELL_INSTALL}
 )
 
-#add_library(hunspell-1.7 STATIC IMPORTED)
-#add_dependencies(hunspell-1.7 hunspell)
+ADD_LIBRARY(HUNSPELL STATIC IMPORTED)
+add_dependencies(HUNSPELL hunspell)
+
+set_target_properties(HUNSPELL PROPERTIES
+        IMPORTED_CONFIGURATIONS "DEBUG"
+        IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/target/lib/libhunspell-1.7.a"
+        )

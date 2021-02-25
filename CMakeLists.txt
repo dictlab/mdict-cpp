@@ -33,8 +33,11 @@ LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_LIST_DIR}/target/lib)
 
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/cmake/ProjectHunspell.cmake)
 
+
+
+
 ADD_EXECUTABLE(mydict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc mdict_extern_test.cc)
-TARGET_LINK_LIBRARIES(mydict miniz hunspell-1.7)
+TARGET_LINK_LIBRARIES(mydict miniz HUNSPELL)
 
 ADD_LIBRARY(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc)
 

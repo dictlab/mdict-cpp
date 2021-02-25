@@ -24,3 +24,7 @@ set_target_properties(HUNSPELL PROPERTIES
         IMPORTED_CONFIGURATIONS "DEBUG"
         IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/target/lib/libhunspell-1.7.a"
         )
+set_target_properties(HUNSPELL PROPERTIES
+        IMPORTED_CONFIGURATIONS "RELEASE"
+        IMPORTED_LOCATION_RELEASE "${PROJECT_SOURCE_DIR}/target/lib/libhunspell-1.7.a"
+        )

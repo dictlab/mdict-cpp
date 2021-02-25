@@ -49,3 +49,5 @@ lib
 # build
 build
 target
+dicts
+*.pyc

@@ -3,8 +3,7 @@ PROJECT(libmdict)
 
 #设置CMAKE最小版本
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
-#设置编译器
-SET(CMAKE_CXX_COMPILER g++)
+
 #设置构建类型，及相应的编译选项
 SET(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb --std=c++11 ")

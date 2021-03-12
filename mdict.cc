@@ -1311,44 +1311,49 @@ void Mdict::init() {
  * @param end
  * @return
  */
-unsigned long Mdict::reduce0(
-    std::string phrase, unsigned long start,
-    unsigned long end) {  // non-recursive reduce implements
-  unsigned long mid = 0;
-  while (start <= end) {
-    mid = start + ((end - start) >> 1);
-    if (phrase.compare(this->key_block_info_list[mid]->last_key) > 0) {
-      start = mid + 1;
-    } else {
-      end = mid - 1;
+long Mdict::reduce0(
+        std::string phrase, unsigned long start,
+        unsigned long end) {  // non-recursive reduce implements
+    for (int i = 0; i < end; ++i)
+    {
+        std::string first_key = this->key_block_info_list[i]->first_key;
+        std::string last_key = this->key_block_info_list[i]->last_key;
+//        std::cout << "index : " << i << ", first_key : " << first_key << ", last_key : " << last_key << std::endl;
+        if (phrase.compare(first_key) >= 0 && phrase.compare(last_key) <= 0)
+        {
+//            std::cout << ">>>>>>>>>>>> found index " << i << std::endl;
+            return i;
+        }
     }
-  }
-  return start;
+    return -1;
 }
 
-unsigned long Mdict::reduce1(
-    std::vector<key_list_item*> wordlist,
-    std::string phrase) {  // non-recursive reduce implements
-  unsigned long left = 0;
-  unsigned long right = wordlist.size() - 1;
-  unsigned long mid = 0;
-  std::string word = _s(std::move(phrase));
-  int comp = 0;
-  while (left <= right) {
-    mid = left + ((right - left) >> 1);
-    comp = word.compare(_s(wordlist[mid]->key_word));
-    //    std::cout<<wordlist[mid]->key_word<< " " <<
-    //    _s(wordlist[mid]->key_word)<<" "<<comp << " "<< left << " "<< mid  <<"
-    //    " << right<<std::endl;
-    if (comp > 0) {
-      left = mid + 1;
-    } else if (comp < 0) {
-      right = mid - 1;
-    } else {
-      return mid;
+
+long Mdict::reduce1(
+        std::vector<key_list_item*> wordlist,
+        std::string phrase) {  // non-recursive reduce implements
+    unsigned long left = 0;
+    unsigned long right = wordlist.size() - 1;
+    unsigned long mid = 0;
+    std::string word = _s(std::move(phrase));
+
+    int comp = 0;
+    while (left <= right) {
+        mid = left + ((right - left) >> 1);
+        // std::cout << "reduce1, mid = " << mid << ", left: " << left << ", right : " <<  right << ", size: " << wordlist.size() << std::endl;
+        if (mid >= wordlist.size()) {
+            return -1;
+        }
+        comp = word.compare(_s(wordlist[mid]->key_word));
+        if (comp == 0) {
+            return mid;
+        } else if (comp > 0) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
     }
-  }
-  return left;
+    return -1;
 }
 
 /**
@@ -1357,7 +1362,7 @@ unsigned long Mdict::reduce1(
  * @param phrase
  * @return
  */
-unsigned long Mdict::reduce2(
+long Mdict::reduce2(
     unsigned long record_start) {  // non-recursive reduce implements
   // TODO OPTIMISE
   unsigned long left = 0l;
@@ -1411,24 +1416,39 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
  * @param word the searching word
  * @return
  */
-std::string Mdict::lookup(const std::string word) {
-  // search word in key block info list
-  unsigned long idx = this->reduce0(word, 0, this->key_block_info_list.size());
-  // decode key block by block id
-  std::vector<key_list_item*> tlist = this->decode_key_block_by_block_id(idx);
-  // reduce word id from key list item vector to get the word index of key list
-  unsigned long word_id = reduce1(tlist, word);
-  // reduce search the record block index by word record start offset
-  unsigned long record_block_idx = reduce2(tlist[word_id]->record_start);
-  // decode recode by record index
-  auto vec = decode_record_block_by_rid(record_block_idx);
-  //  for(auto it= vec.begin(); it != vec.end(); ++it){
-  //   std::cout<<"word: "<<(*it).first<<" \n def: "<<(*it).second<<std::endl;
-  //  }
-  // reduce the definition by word
-  std::string def = reduce3(vec, word);
-  return def;
-}
+    std::string Mdict::lookup(const std::string word) {
+        try
+        {
+            // search word in key block info list
+            long idx = this->reduce0(word, 0, this->key_block_info_list.size());
+//            std::cout << "==> lookup idx " << idx << std::endl;
+            if (idx >= 0)
+            {
+                // decode key block by block id
+                std::vector<key_list_item*> tlist = this->decode_key_block_by_block_id(idx);
+                // reduce word id from key list item vector to get the word index of key list
+                long word_id = reduce1(tlist, word);
+                if ( word_id >= 0 )
+                {
+                    // reduce search the record block index by word record start offset
+                    unsigned long record_block_idx = reduce2(tlist[word_id]->record_start);
+                    // decode recode by record index
+                    auto vec = decode_record_block_by_rid(record_block_idx);
+                    //  for(auto it= vec.begin(); it != vec.end(); ++it){
+                    //   std::cout<<"word: "<<(*it).first<<" \n def: "<<(*it).second<<std::endl;
+                    //  }
+                    // reduce the definition by word
+                    std::string def = reduce3(vec, word);
+                    return def;
+                }
+            }
+        }
+        catch (std::exception& e)
+        {
+            std::cout << "==> lookup error" << e.what() << std::endl;
+        }
+        return std::string();
+    }
 
 /**
  * suggest sim word by hunspell

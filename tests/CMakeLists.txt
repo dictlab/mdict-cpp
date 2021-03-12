@@ -8,7 +8,7 @@ include_directories(${PROJECT_SOURCE_DIR}/deps/googletest/googlemock/include)
 
 add_subdirectory(testdict)
 
-add_executable(test_reduce0 test_reduce0.cpp)
+add_executable(test_reduce0 test_lookup_01.cpp)
 target_link_libraries(test_reduce0 GTest GTestMain mdict miniz)
 add_test(NAME test_reduce0 COMMAND test_reduce0)
 

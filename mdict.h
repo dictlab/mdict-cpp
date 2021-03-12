@@ -299,10 +299,10 @@ class Mdict {
    * @param end
    * @return
    */
-  unsigned long reduce0(std::string phrase, unsigned long start,
+  long reduce0(std::string phrase, unsigned long start,
                         unsigned long end);
 
-  unsigned long reduce1(std::vector<key_list_item *> wordlist,
+  long reduce1(std::vector<key_list_item *> wordlist,
                         std::string phrase);
 
   /**
@@ -310,7 +310,7 @@ class Mdict {
    * @param record_start record start offset
    * @return record block id
    */
-  unsigned long reduce2(unsigned long record_start);
+  long reduce2(unsigned long record_start);
 
   /**
    *  search definiation from key_text:def pair vector

@@ -293,7 +293,7 @@ class Mdict {
    */
   void init();
   /**
-   *
+   * find the key word includes in which block
    * @param phrase
    * @param start
    * @param end

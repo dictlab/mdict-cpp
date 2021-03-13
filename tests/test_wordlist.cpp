@@ -41,7 +41,7 @@ int cmp_word_list() {
     std::string line;
     while (getline(myfile, line)) {
         words.push_back(line);
-        std::cout << line << std::endl;
+//        std::cout << line << std::endl;
     }
     std::cout << "total words : " << words.size() << std::endl;
 

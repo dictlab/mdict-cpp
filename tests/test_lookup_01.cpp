@@ -33,7 +33,9 @@ TEST(mdict, lookup_case) {
 }
 
 TEST(mdict, lookup_Satan) {
-    EXPECT_EQ("", test_lookup("Satan"));
+    EXPECT_EQ("<font size=+1 ><b>Satan</b></font> <br><br><font color=red ><b>noun.</b></font><br> <br><xr>See table at <a href=\"entry://devil\">devil</a>.</xr>\r\n"
+
+    , test_lookup("Satan"));
 }
 
 TEST(mdict, lookup_zoom) {
@@ -53,14 +55,58 @@ TEST(mdict, lookup_wisdom) {
 // America not found!
 
 TEST(mdict, lookup_ab_initio) {
-    EXPECT_EQ(""
+    EXPECT_EQ("<font size=+1 ><b>ab initio</b></font> <br><br><font color=red ><b>adverb &amp; adjective</b></font><br> <span style=\"COLOR: blue;\"><i>the transactions were void ab initio</i></span> <syn><br><font COLOR= darkblue><b>FROM THE BEGINNING </b></font>, from the start, initially, originally, from first principles, to begin with, to start with, primarily; <rl><font color=\"brown\">music</font></rl> da capo; <rl><font color=\"brown\">informal</font></rl> from scratch, from the word go.</syn>\r\n"
     , test_lookup("ab initio"));
 }
 
 TEST(mdict, lookup_Africa) {
-    EXPECT_EQ(""
+    EXPECT_EQ("<font size=+1 ><b>Africa</b></font> <br><br><font color=red ><b>noun.</b></font><br> <br><xr>See table.</xr>\r\n"
     , test_lookup("Africa"));
 }
+
+TEST(mdict, lookup_tableau) {
+    EXPECT_EQ("<font size=+1 ><b>tableau</b></font> <br><br><font color=red ><b>noun</b></font><br><b>1</b> <span style=\"COLOR: blue;\"><i>the sun and moon frequently appear in mythic tableaux and they are clearly there in some symbolic role</i></span> <syn><br><font COLOR= darkblue><b>PICTURE </b></font>, painting, representation, portrayal, illustration, image.</syn> <br><br><b>2</b> <span style=\"COLOR: blue;\"><i>in the first act the action is represented in a series of tableaux</i></span> <syn><br><font COLOR= darkblue><b>PAGEANT </b></font>, tableau vivant, human representation, parade, diorama, scene.</syn> <br><br><b>3</b> <span style=\"COLOR: blue;\"><i>our entrance disturbed the domestic tableau around the fireplace</i></span> <syn><br><font COLOR= darkblue><b>SCENE </b></font>, arrangement, grouping, group; picture, spectacle, image, view, vignette.</syn>\r\n"
+    , test_lookup("tableau"));
+}
+
+TEST(mdict, lookup_Table_BIOCHEMICAL) {
+    EXPECT_EQ(""
+            , test_lookup("Table_BIOCHEMICAL"));
+}
+
+/*
+tableau not found!
+Table_BIOCHEMICAL SUGARS not found!
+Table_BRANCHES OF MATHEMATICS not found!
+Table_BRANCHES OF PHILOSOPHY not found!
+Table_CARDINAL VIRTUES & THEOLOGICAL VIRTUES not found!
+Table_CHILDREN'S GAMES not found!
+Table_COCKTAILS AND MIXED DRINKS not found!
+Table_CONTINENTS OF THE WORLD not found!
+Table_CREATURES FROM MYTHOLOGY AND FOLKLORE not found!
+Table_CUTS OR JOINTS OF MEAT not found!
+Table_DANCES AND TYPES OF DANCING not found!
+Table_DIETARY HABITS not found!
+Table_DWELLINGS not found!
+Table_FAMOUS GANGSTERS not found!
+Table_FILM DIRECTORS not found!
+Table_FIREWORKS not found!
+Table_FLOWERING PLANTS AND SHRUBS not found!
+Table_INVENTORS not found!
+Table_JAZZ MUSICIANS AND SINGERS not found!
+Table_MARSUPIALS not found!
+Table_MEASUREMENT UNITS not found!
+Table_NAMES OF CANONICAL HOURS not found!
+Table_NOBEL PRIZEWINNERS FOR PEACE & NOBEL PRIZEWINNERS FOR ECONOMIC SCIENCES not found!
+Table_PHONETIC ALPHABET not found!
+Table_POISONOUS PLANTS AND FUNGI not found!
+Table_PSYCHIATRISTS, PSYCHOLOGISTS, AND PSYCHOANALYSTS not found!
+Table_PSYCHOLOGICAL ILLNESSES AND CONDITIONS not found!
+Table_rely on; depend; trust not found!
+Table_SALAD DRESSINGS not found!
+Table_SEASHELLS not found!
+tablet not found!
+ */
 
 int main(int argc, char **argv) {
     getpwd();

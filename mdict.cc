@@ -17,7 +17,7 @@
 #include <regex>
 #include <utility>
 
-const std::regex re_pattern(R"(\s|:|\.|,|-|'|\(|\)|#|<|>|!)");
+const std::regex re_pattern(R"(\s|:|\.|,|-|_|'|\(|\)|#|<|>|!)");
 
 namespace mdict {
 
@@ -1422,7 +1422,7 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
 std::string Mdict::lookup(const std::string word) {
   try {
     // search word in key block info list
-    long idx = this->reduce0(word, 0, this->key_block_info_list.size());
+    long idx = this->reduce0(_s(word), 0, this->key_block_info_list.size());
     //            std::cout << "==> lookup idx " << idx << std::endl;
     if (idx >= 0) {
       // decode key block by block id

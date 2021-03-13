@@ -24,31 +24,26 @@ class Timetool {
 };
 
 int main(int argc, char** argv) {
-    std::cout<<"arg count: "<<argc<<std::endl;
-    std::cout<<"executable file name: "<<argv[0]<<std::endl;
+  std::cout << "arg count: " << argc << std::endl;
+  std::cout << "executable file name: " << argv[0] << std::endl;
 
-    if (argc < 3) {
-        std::cout<<"please specific mdx file"<<std::endl;
-        return -1;
-    }
-    if (strcmp(argv[1], "") == 0) {
-        std::cout<<"please specific mdx file"<<std::endl;
-        return -1;
-    }
-    std::cout<<argv[1]<<std::endl;
+  if (argc < 3) {
+    std::cout << "please specific mdx file" << std::endl;
+    return -1;
+  }
+  if (strcmp(argv[1], "") == 0) {
+    std::cout << "please specific mdx file" << std::endl;
+    return -1;
+  }
+  std::cout << argv[1] << std::endl;
 
-    if (strcmp(argv[2], "") == 0) {
-        std::cout<<"please specific word"<<std::endl;
-        return -1;
-    }
+  if (strcmp(argv[2], "") == 0) {
+    std::cout << "please specific word" << std::endl;
+    return -1;
+  }
 
   int64 t1 = Timetool::getSystemTime();
-  void* dict =
-      mdict_init(
-              argv[1],
-              "en_US.aff",
-              "en_US.dic"
-                 );
+  void* dict = mdict_init(argv[1], "en_US.aff", "en_US.dic");
 
   int64 t2 = Timetool::getSystemTime();
   std::cout << "init cost time: " << t2 - t1 << "ms" << std::endl;

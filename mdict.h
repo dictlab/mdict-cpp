@@ -299,11 +299,9 @@ class Mdict {
    * @param end
    * @return
    */
-  long reduce0(std::string phrase, unsigned long start,
-                        unsigned long end);
+  long reduce0(std::string phrase, unsigned long start, unsigned long end);
 
-  long reduce1(std::vector<key_list_item *> wordlist,
-                        std::string phrase);
+  long reduce1(std::vector<key_list_item *> wordlist, std::string phrase);
 
   /**
    * reduce search in record_block_header

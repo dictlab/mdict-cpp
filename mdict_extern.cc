@@ -27,14 +27,13 @@ void *mdict_init(const char *dictionary_path, const char *aff_path,
   std::string dic_file_path(dic_path);
   auto *mydict = new mdict::Mdict(dict_file_path, aff_file_path, dic_file_path);
   mydict->init();
- return mydict;
+  return mydict;
 #else
-    std::string dict_file_path(dictionary_path);
-    auto *mydict = new mdict::Mdict(dict_file_path);
-    mydict->init();
-    return mydict;
+  std::string dict_file_path(dictionary_path);
+  auto *mydict = new mdict::Mdict(dict_file_path);
+  mydict->init();
+  return mydict;
 #endif
-
 }
 
 /**

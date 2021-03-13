@@ -32,6 +32,35 @@ TEST(mdict, lookup_case) {
               test_lookup("aback"));
 }
 
+TEST(mdict, lookup_Satan) {
+    EXPECT_EQ("", test_lookup("Satan"));
+}
+
+TEST(mdict, lookup_zoom) {
+    EXPECT_EQ("<font size=+1 ><b>zoom</b></font> <br><br><font color=red ><b>verb</b></font><br> <span style=\"COLOR: blue;\"><i>a motorbike zoomed across their path</i></span> <syn><br><font COLOR= darkblue><b>SPEED </b></font>, streak, dash, rush, pelt, race, tear, shoot, blast, flash, fly, wing, scurry, scud, hurry, hasten, scramble, charge, chase, career, go like lightning, go hell for leather; <rl><font color=\"brown\">informal</font></rl> whizz, whoosh, vroom, buzz, hare, zip, whip, belt, scoot, scorch, burn rubber, go like a bat out of hell; <rl><font color=\"brown\">Brit. informal</font></rl> bomb, bucket, shift, put one's foot down, go like the clappers; <rl><font color=\"brown\">Scottish informal</font></rl> wheech; <rl><font color=\"brown\">N. Amer. informal</font></rl> boogie, hightail, clip, barrel, lay rubber, get the lead out; <rl><font color=\"brown\">N. Amer. vulgar slang</font></rl> drag/tear/haul ass; <rl><font color=\"brown\">informal, dated</font></rl> cut along; <rl><font color=\"brown\">archaic</font></rl> post, hie, fleet.</syn>\r\n"
+
+    , test_lookup("zoom"));
+}
+
+TEST(mdict, lookup_wisdom) {
+    EXPECT_EQ("<font size=+1 ><b>wisdom</b></font> <br><br><font color=red ><b>noun</b></font><br><b>1</b> <span style=\"COLOR: blue;\"><i>a number of senior politicians questioned the wisdom of the decision</i></span> <syn><br><font COLOR= darkblue><b>SAGACITY </b></font>, sageness, intelligence, understanding, insight, perception, perceptiveness, percipience, penetration, perspicuity, acuity, discernment, sense, good sense, common sense, shrewdness, astuteness, acumen, smartness, judiciousness, judgement, foresight, clear-sightedness, prudence, circumspection; logic, rationale, rationality, soundness, saneness, advisability; <rl><font color=\"brown\">informal</font></rl> sharpness; <rl><font color=\"brown\">N. Amer. informal</font></rl> savvy, smarts; <rl><font color=\"brown\">rare</font></rl> sapience, arguteness.</syn> <br><font style=\"color: green; \"><b><i>-opposite(s): </i></b></font><font COLOR=darkblue><b><AX>STUPIDITY</AX>, <AX>FOLLY</AX>.</b></font> <br><br><b>2</b> <span style=\"COLOR: blue;\"><i>the wisdom of the East</i></span> <syn><br><font COLOR= darkblue><b>KNOWLEDGE </b></font>, learning, erudition, scholarship, philosophy; lore.</syn>\r\n"
+    , test_lookup("wisdom"));
+}
+
+ab initio not found!
+ab ovo not found!
+Africa not found!
+America not found!
+
+TEST(mdict, lookup_ab_initio) {
+    EXPECT_EQ(""
+    , test_lookup("ab initio"));
+}
+
+TEST(mdict, lookup_Africa) {
+    EXPECT_EQ(""
+    , test_lookup("Africa"));
+}
 
 int main(int argc, char **argv) {
     getpwd();

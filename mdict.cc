@@ -922,9 +922,14 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
 
     //    std::cout << "key text: " << key_text << std::endl;
     //    std::cout << "idx: " << idx << std::endl;
-    unsigned long expect_end =
-        this->key_list[i + 1]->record_start - this->key_list[i]->record_start;
-    unsigned long upbound = uncomp_size - this->key_list[i]->record_start;
+      unsigned long upbound = uncomp_size - this->key_list[i]->record_start;
+      unsigned long expect_end = 0;
+      if (i < this->key_list.size() - 1) {
+          expect_end =
+                  this->key_list[i + 1]->record_start - this->key_list[i]->record_start;
+      } else{
+          expect_end = uncomp_size - (this->key_list[i]->record_start - decomp_accu);
+      }
     upbound = expect_end < upbound ? expect_end : upbound;
     std::string def = be_bin_to_utf8(
         (char*)record_block, this->key_list[i]->record_start - decomp_accu,

@@ -47,10 +47,10 @@ TEST(mdict, lookup_wisdom) {
     , test_lookup("wisdom"));
 }
 
-ab initio not found!
-ab ovo not found!
-Africa not found!
-America not found!
+// ab initio not found!
+// ab ovo not found!
+// Africa not found!
+// America not found!
 
 TEST(mdict, lookup_ab_initio) {
     EXPECT_EQ(""

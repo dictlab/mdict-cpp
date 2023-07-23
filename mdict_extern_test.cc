@@ -10,6 +10,7 @@
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <cstring>
 typedef long long int64;
 class Timetool {
  public:

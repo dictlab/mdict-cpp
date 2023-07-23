@@ -20,6 +20,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <locale>
+#include <cstring>
 //#include "deps/miniz/miniz.h"
 #include <zlib.h>
 

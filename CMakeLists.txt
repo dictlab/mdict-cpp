@@ -27,31 +27,36 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/deps/hunspell/src/)
 LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 #添加子目录
-ADD_SUBDIRECTORY(deps)
-ADD_SUBDIRECTORY(tests)
+ADD_SUBDIRECTORY(deps/miniz)
 
 # 添加依赖
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/cmake/ProjectHunspell.cmake)
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/cmake/ProjectGTest.cmake)
-
 
 #设置链接库
 #SET(EXTRA_LIBS ${EXTRA_LIBS} test1 test2)
 #SET(EXTRA_LIBS ${EXTRA_LIBS} ${MY_LINK})
 
-
-ADD_EXECUTABLE(mydict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc mdict_extern_test.cc)
-TARGET_LINK_LIBRARIES(mydict miniz HUNSPELL)
-
 ADD_LIBRARY(mdict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc)
+TARGET_LINK_LIBRARIES(mdict miniz HUNSPELL)
 
-# adler32 test
-ADD_EXECUTABLE(adler32_test adler32.cc adler32_test.cc binutils.cc)
+# 测试用例，作为其他项目的依赖（通过ADD_SUBDIRECTORY添加）时不编译
+IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    ADD_SUBDIRECTORY(deps)
+    ADD_SUBDIRECTORY(tests)
 
-# ripemd128 test
-ADD_EXECUTABLE(ripemd128_test ripemd128_test.c ripemd128.c)
+    INCLUDE(${CMAKE_CURRENT_LIST_DIR}/cmake/ProjectGTest.cmake)
 
-# xmlutils
-ADD_EXECUTABLE(xmlutils_test xmlutils.cc xmlutils_test.cc)
+    ADD_EXECUTABLE(mydict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc mdict_extern_test.cc)
 
-ADD_EXECUTABLE(binutils_test binutils.cc binutils_test.cc)
+    TARGET_LINK_LIBRARIES(mydict miniz HUNSPELL)
+    # adler32 test
+    ADD_EXECUTABLE(adler32_test adler32.cc adler32_test.cc binutils.cc)
+
+    # ripemd128 test
+    ADD_EXECUTABLE(ripemd128_test ripemd128_test.c ripemd128.c)
+
+    # xmlutils
+    ADD_EXECUTABLE(xmlutils_test xmlutils.cc xmlutils_test.cc)
+
+    ADD_EXECUTABLE(binutils_test binutils.cc binutils_test.cc)
+ENDIF()

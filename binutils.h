@@ -1,24 +1,7 @@
-/*
- * =====================================================================================
- *
- *       Filename:  binutils.h
- *
- *    Description:  binutils header file
- *
- *        Version:  1.0
- *        Created:  01/24/2019 23:21:16
- *       Revision:  none
- *       Compiler:  g++
- *
- *         Author:  terasum (terasum@163.com)
- *
- * =====================================================================================
- */
 #ifndef MDICT_BINUTILS_H_
 #define MDICT_BINUTILS_H_
 
 #include <string>
-#include <cstdint>
 
 /*
  *
@@ -48,6 +31,8 @@ std::string le_bin_utf16_to_utf8(const char* bytes, int offset, int len);
 std::string be_bin_to_utf8(const char* bytes, unsigned long offset,
                            unsigned long len);
 
-int bintohex(char* bin, int len, char* target);
+std::string be_bin_to_utf16(const char* bytes, unsigned long offset,
+                            unsigned long len);
+int bintohex(const char* bin, unsigned long len, char* target);
 
 #endif

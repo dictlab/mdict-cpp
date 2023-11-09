@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <hunspell/hunspell.hxx>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -20,6 +19,7 @@
 #include "ripemd128.h"
 #include "xmlutils.h"
 #include "zlib_wrapper.h"
+#include "mdict_simple_key.h"
 
 /**
  * mdx struct analysis
@@ -137,6 +137,11 @@ namespace mdict {
 #define ENCODING_GB2312 4;
 #define ENCODING_GB18030 5;
 
+
+#define MDXTYPE "MDX";
+#define MDDTYPE "MDD";
+
+
 /**
  * key block info class definition
  */
@@ -181,17 +186,10 @@ class key_list_item {
  public:
   unsigned long record_start;
   std::string key_word;
-  unsigned long entry_accumulator;
-  unsigned long block_id;
   key_list_item(unsigned long kid, std::string kw)
       : record_start(kid), key_word(std::move(kw)) {}
-  key_list_item(unsigned long kid, std::string kw, unsigned long ent_acc,
-                unsigned long bid)
-      : record_start(kid),
-        key_word(kw),
-        entry_accumulator(ent_acc),
-        block_id(bid) {}
 };
+
 
 class record_header_item {
  public:
@@ -319,21 +317,25 @@ class Mdict {
   std::string reduce3(std::vector<std::pair<std::string, std::string>> vec,
                       std::string phrase);
 
- private:
+    std::vector<key_list_item *> keyList();
+
+    std::string parse_definition(const std::string word, unsigned long record_start);
+
+
+    std::string filetype;
+private:
   /********************************
    *     general section           *
    ********************************/
   // dictionary file name
   const std::string filename;
 
-  const std::string aff_file;
+    const std::string aff_file;
 
   const std::string dic_file;
 
   // file input stream
   std::ifstream instream;
-
-  Hunspell *hunspell_inst = nullptr;
 
   /********************************
    *     header section           *
@@ -503,6 +505,8 @@ class Mdict {
     //          std::cout<<"version: "<<this->version<<std::endl<<"encoding:
     //          "<<this->encoding<<std::endl;
   }
+
+  bool endsWith(const std::string &fullString, const std::string &ending);
 };
 }  // namespace mdict
 #endif

@@ -1,19 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  binutils_test.cc
- *
- *    Description:  binutils test file
- *
- *        Version:  1.0
- *        Created:  01/24/2019 23:49:13
- *       Revision:  none
- *       Compiler:  g++
- *
- *         Author:  terasum (terasum@163.com)
- *
- * =====================================================================================
- */
 #include "binutils.h"
 
 #include <cstdint>

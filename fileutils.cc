@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  fileutils.cc
- *
- *    Description:  file utils implements
- *
- *        Version:  1.0
- *        Created:  01/24/2019 21:43:24
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  YOUR NAME (),
- *   Organization:
- *
- * =====================================================================================
- */
-
 #include "fileutils.h"
 
 #include <cstdio>

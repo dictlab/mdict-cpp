@@ -1,3 +1,5 @@
+SET(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum OS X deployment version")
+
 PROJECT(minilzo C)
 cmake_minimum_required(VERSION 3.10)
 if(CMAKE_BUILD_TYPE STREQUAL "")

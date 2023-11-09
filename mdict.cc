@@ -1,41 +1,23 @@
-/**
- *
- * Author: terasum<terasum@163.com>
- * Date: 2019-01-24
- * Desc: Mdict mdd/mdx parser
- * License: LGPL TODO
- *
- */
-
 #include "mdict.h"
 
 #include <algorithm>
-#ifdef ENABLE_HUNSPELL
-#include <hunspell/hunspell.hxx>
-#endif
 #include <cstring>
 #include <regex>
 #include <utility>
 
-const std::regex re_pattern(R"(\s|:|\.|,|-|_|'|\(|\)|#|<|>|!)");
+const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
 
 namespace mdict {
 
 // constructor
 Mdict::Mdict(std::string fn) noexcept : filename(std::move(fn)) {
   instream = std::ifstream(filename, std::ios::binary);
-}
-
-#ifdef ENABLE_HUNSPELL
-// overloading constructor with hunspell dic file
-Mdict::Mdict(std::string fn, std::string aff_fn, std::string dic_fn) noexcept
-    : filename(fn), aff_file(aff_fn), dic_file(dic_fn) {
-  instream = std::ifstream(filename, std::ios::binary);
-  if (!aff_fn.empty() && !dic_fn.empty()) {
-    hunspell_inst = new Hunspell(aff_file.data(), dic_file.data());
+  if(endsWith(filename, ".mdd")) {
+      this->filetype = MDDTYPE;
+  } else {
+      this->filetype = MDXTYPE;
   }
 }
-#endif
 
 // distructor
 Mdict::~Mdict() {
@@ -53,6 +35,8 @@ std::string _s(std::string word) {
   std::transform(s.begin(), s.end(), s.begin(), ::tolower);
   return s;
 }
+
+
 
 /***************************************
  *             private part            *
@@ -193,6 +177,10 @@ void Mdict::read_header() {
     this->encoding = ENCODING_UTF16;
   } else {
     this->encoding = ENCODING_UTF8;
+  }
+  // FIX mdd
+  if (this->filetype == "MDD") {
+      this->encoding = ENCODING_UTF16;
   }
   /// passed
 }
@@ -564,7 +552,11 @@ std::vector<key_list_item*> Mdict::split_key_block(unsigned char* key_block,
     std::string key_text = "";
     if (this->encoding == 1 /* ENCODING_UTF16 */) {
       // TODO
-      throw std::runtime_error("NOT SUPPORT UTF16 YET");
+        key_text = be_bin_to_utf16(
+                (const char*)key_block, (key_start_idx + this->number_width),
+                static_cast<unsigned long>(key_end_idx - key_start_idx -
+                                           this->number_width));
+//      throw std::runtime_error("NOT SUPPORT UTF16 YET");
     } else if (this->encoding == 0 /* ENCODING_UTF8 */) {
       key_text = be_bin_to_utf8(
           (const char*)key_block, (key_start_idx + this->number_width),
@@ -574,7 +566,7 @@ std::vector<key_list_item*> Mdict::split_key_block(unsigned char* key_block,
     /// passed
     entry_acc++;
     inner_key_list.push_back(
-        new key_list_item(record_start, key_text, entry_acc, block_id));
+        new key_list_item(record_start, key_text));
 
     // TODO add to word list
 
@@ -842,6 +834,12 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
   uint64_t uncomp_size = record_header[idx]->decompressed_size;
   uint64_t comp_accu = record_header[idx]->compressed_size_accumulator;
   uint64_t decomp_accu = record_header[idx]->decompressed_size_accumulator;
+  uint64_t previous_end = 0;
+  uint64_t previous_uncomp_size = 0;
+  if (idx > 0) {
+      previous_end = record_header[idx-1]->decompressed_size_accumulator;
+      previous_uncomp_size = record_header[idx-1]->decompressed_size;
+  }
   //  std::cout << "record decomp accu " << decomp_accu << std::endl;
 
   char* record_block_cmp_buffer = (char*)calloc(comp_size, sizeof(char));
@@ -922,19 +920,28 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
 
     //    std::cout << "key text: " << key_text << std::endl;
     //    std::cout << "idx: " << idx << std::endl;
-    unsigned long upbound = uncomp_size - this->key_list[i]->record_start;
+    unsigned long upbound = uncomp_size; // - this->key_list[i]->record_start;
     unsigned long expect_end = 0;
+    auto expect_start = this->key_list[i]->record_start - decomp_accu;
     if (i < this->key_list.size() - 1) {
-      expect_end =
-          this->key_list[i + 1]->record_start - this->key_list[i]->record_start;
+      expect_end = this->key_list[i + 1]->record_start - this->key_list[i]->record_start;
+      expect_start = this->key_list[i]->record_start - decomp_accu;
     } else {
-      expect_end =
-          uncomp_size - (this->key_list[i]->record_start - decomp_accu);
+      // 前一个的 end + size 等于当前这个的开始
+      expect_end = this->record_block_size - (previous_end + previous_uncomp_size);
     }
     upbound = expect_end < upbound ? expect_end : upbound;
-    std::string def = be_bin_to_utf8(
-        (char*)record_block, this->key_list[i]->record_start - decomp_accu,
-        upbound - 1 /* to delete null character*/);
+
+    std::string def;
+      if (this->filetype == "MDD") {
+        def = be_bin_to_utf16(
+                (char*)record_block, expect_start,
+                upbound /* to delete null character*/);
+    } else {
+        def = be_bin_to_utf8(
+                (char*)record_block, expect_start,
+                upbound - 1 /* to delete null character*/);
+    }
     //    std::cout << "def: " << def << std::endl;
     std::pair<std::string, std::string> vp(key_text, def);
     vec.push_back(vp);
@@ -1322,8 +1329,8 @@ long Mdict::reduce0(std::string phrase, unsigned long start,
   for (int i = 0; i < end; ++i) {
     std::string first_key = this->key_block_info_list[i]->first_key;
     std::string last_key = this->key_block_info_list[i]->last_key;
-    //        std::cout << "index : " << i << ", first_key : " << first_key <<
-    //        ", last_key : " << last_key << std::endl;
+    // std::cout << "index : " << i << ", first_key : " << first_key <<
+    // ", last_key : " << last_key << std::endl;
     if (phrase.compare(first_key) >= 0 && phrase.compare(last_key) <= 0) {
       //            std::cout << ">>>>>>>>>>>> found index " << i << std::endl;
       return i;
@@ -1451,31 +1458,32 @@ std::string Mdict::lookup(const std::string word) {
   return std::string();
 }
 
+std::string Mdict::parse_definition(const std::string word, unsigned long record_start) {
+    // reduce search the record block index by word record start offset
+    unsigned long record_block_idx = reduce2(record_start);
+    // decode recode by record index
+    auto vec = decode_record_block_by_rid(record_block_idx);
+    // reduce the definition by word
+    std::string def = reduce3(vec, word);
+    return def;
+
+}
+
+
 /**
- * suggest sim word by hunspell
- * @param word
+ * look the file by word
+ * @param word the searching word
  * @return
  */
-#ifdef ENABLE_HUNSPELL
-std::vector<std::string> Mdict::suggest(const std::string word) {
-  std::vector<std::string> list;
-  if (this->hunspell_inst == nullptr) {
-    return list;
-  }
-
-  list = hunspell_inst->suggest(word);
-  return list;
+std::vector<key_list_item *>  Mdict::keyList() {
+  return this->key_list;
 }
 
-std::vector<std::string> Mdict::stem(const std::string word) {
-  std::vector<std::string> list;
-  if (this->hunspell_inst == nullptr) {
-    return list;
-  }
-
-  list = hunspell_inst->stem(word);
-
-  return list;
+bool Mdict::endsWith(std::string const &fullString, std::string const &ending) {
+        if (fullString.length() >= ending.length()) {
+            return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+        } else {
+            return false;
+        }
 }
-#endif
 }  // namespace mdict

@@ -19,7 +19,6 @@
 #define MDICT_XMLUTILS_H_
 
 #include <map>
-#include <string>
 
 // parse xml header info
 std::map<std::string, std::string> parseXMLHeader(std::string dicxml);

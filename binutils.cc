@@ -2,12 +2,18 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
+#include <locale>  // For std::wstring_convert
 #include <iostream>
 //#include "deps/miniz/miniz.h"
 #include <zlib.h>
 #include <codecvt>
 
+
 using namespace std;
+
+
+
 
 char const hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
                             '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};

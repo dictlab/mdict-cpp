@@ -1,19 +1,23 @@
 #设置工程名称
 
 CMAKE_POLICY(SET CMP0048 NEW)
-SET(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum OS X deployment version")
+#SET(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum OS X deployment version")
 PROJECT(MDictCpp VERSION 1.0.0)
 
 #设置CMAKE最小版本
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
+
 
 #设置构建类型，及相应的编译选项
 SET(CMAKE_BUILD_TYPE "Debug")
 
 # SET(CMAKE_OSX_SYSROOT "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk")
 # SET(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum OS X deployment version")
- SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb --std=c++11 -mmacosx-version-min=11.0")
- SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall --std=c++11 -mmacosx-version-min=11.0")
+ SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb --std=c++11 ")
+ SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall --std=c++11 ")
 
 #设置执行文件输出目录
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
@@ -32,6 +36,7 @@ LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
 ADD_SUBDIRECTORY(deps)
 
 # ADD_SUBDIRECTORY(tests)
+
 
 
 ADD_EXECUTABLE(mydict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc mdict_extern_test.cc)

@@ -19,6 +19,7 @@
 
 /*  header files */
 #include <stdio.h>
+#include <stdlib.h>
 #ifdef uint8_t
 #undef uint8_t
 #endif

@@ -1,4 +1,5 @@
 #include <xmlutils.h>
+#include <cassert>
 
 #include <iostream>
 

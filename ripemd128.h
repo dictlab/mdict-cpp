@@ -24,8 +24,10 @@
 #define RMDsize 128
 #endif
 
-#include <stdlib.h>
-
+#ifdef uint8_t
+#undef uint8_t
+#endif
+#include <stdint.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

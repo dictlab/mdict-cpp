@@ -1,6 +1,6 @@
 #include <xmlutils.h>
+#include <string>
 #include <cassert>
-
 #include <iostream>
 
 using namespace std;

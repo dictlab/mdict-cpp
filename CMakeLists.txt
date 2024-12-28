@@ -68,7 +68,7 @@ if(INSTALL_TO_SYSTEM)
         LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     )
     # Install headers
-    install(FILES mdict.h binutils.h xmlutils.h ripemd128.h adler32.h zlib_wrapper.h
-        DESTINATION ${INCLUDE_INSTALL_DIR}/mdict
-    )
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include/mdict-cpp
+        FILES_MATCHING PATTERN "*.h")
+    
 endif()

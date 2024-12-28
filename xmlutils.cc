@@ -16,6 +16,9 @@
  */
 #include <iostream>
 #include <map>
+#include <string>
+#include <cassert>
+#include "xmlutils.h"
 
 std::map<std::string, std::string> parseXMLHeader(std::string dicxml) {
   /// std::map<char*, char*> headTag;

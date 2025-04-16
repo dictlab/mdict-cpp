@@ -11,7 +11,8 @@
 #include <ctime>
 #include <iostream>
 #include <string>
-#include "base64.h"
+#include "encode/base64.h"
+#include "encode/api.h"
 #include <vector>
 #include <algorithm>
 
@@ -71,15 +72,30 @@ int main(int argc, char **argv) {
   auto key0 = key_list_result[0];
   auto keylen = key_list_result[key_list_len-1];
 
-  std::cout << "key list[0] word: "
-	    << key0->key_word << ":"
-	    << key0->record_start
-	    << std::endl;
-
-  std::cout << "key list[len-1] word: "
-	    << keylen->key_word << ":"
-	    << keylen->record_start
-	    << std::endl;
+  // Add this to process all keys
+  std::cout << "\nProcessing all keys:\n";
+  for (unsigned long i = 0; i < key_list_len; ++i) {
+    auto key = key_list_result[i];
+    char* definition = nullptr;
+    
+    // Get raw hex definition
+    mdict_parse_definition(dict, key->key_word, key->record_start, &definition);
+    
+    if (definition) {
+      // Convert using our function
+      char* utf8_def = hex_string_to_utf8(definition);
+        
+      std::cout << "Key: " << key->key_word 
+		<< "\nHex length: " << strlen(definition)
+		<< "\nUTF-8 length: " << (utf8_def ? strlen(utf8_def) : 0)
+		<< "\n-------------------------\n";
+        
+      if (utf8_def) {
+	free(utf8_def);
+      }
+      free(definition);
+    }
+  }
 
 
   char* result_len_1 = nullptr;  // Use a single pointer instead of an array.

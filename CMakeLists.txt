@@ -22,6 +22,7 @@ add_compile_options(-fpermissive)
 
 # Add include directories
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/deps/)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/Turbo-Base64)
 
 # Add library search directories
 LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
@@ -30,12 +31,12 @@ LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
 ADD_SUBDIRECTORY(deps)
 
 # Library target: mdict
-ADD_LIBRARY(mdict STATIC mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc deps/base64/Base64.hpp)
-target_link_libraries(mdict PRIVATE miniz)
+ADD_LIBRARY(mdict STATIC mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc)
+target_link_libraries(mdict PRIVATE miniz base64)
 
 # Executable target: mydict (for development/testing purposes only)
 ADD_EXECUTABLE(mydict mdict.cc binutils.cc xmlutils.cc ripemd128.c adler32.cc mdict_extern.cc mdict_extern_test.cc)
-target_link_libraries(mydict PRIVATE miniz)
+target_link_libraries(mydict PRIVATE miniz base64)
 
 # Test executables
 ADD_EXECUTABLE(adler32_test adler32.cc adler32_test.cc binutils.cc)

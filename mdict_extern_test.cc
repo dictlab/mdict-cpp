@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
   // Add this to process all keys
   std::cout << "\nProcessing all keys:\n";
-  for (unsigned long i = 0; i < key_list_len; ++i) {
+  for (unsigned long i = 0; i < 10; ++i) {
     auto key = key_list_result[i];
     char* definition = nullptr;
     
@@ -83,16 +83,17 @@ int main(int argc, char **argv) {
     
     if (definition) {
       // Convert using our function
-      char* utf8_def = hex_string_to_utf8(definition);
+      // char* utf8_def = hex_string_to_utf8(definition);
         
       std::cout << "Key: " << key->key_word 
 		<< "\nHex length: " << strlen(definition)
-		<< "\nUTF-8 length: " << (utf8_def ? strlen(utf8_def) : 0)
+		<< "\nUTF-8 length: " << (definition ? strlen(definition) : 0)
+    << "\n definition: " << definition
 		<< "\n-------------------------\n";
         
-      if (utf8_def) {
-	free(utf8_def);
-      }
+  //     if (utf8_def) {
+	// free(utf8_def);
+  //     }
       free(definition);
     }
   }
@@ -104,12 +105,12 @@ int main(int argc, char **argv) {
 
   // Ensure that result_len_1 is valid before using it.
   if (result_len_1 != nullptr) {
-        std::string encoded = base64_from_hex(result_len_1);
-        std::cout << "defintion encoded in base64:  " << encoded << std::endl;
-        
-    } 
-    // Free allocated memory.
+        // std::string encoded = base64_from_hex(result_len_1);
+        // std::cout << "defintion encoded in base64:  " << encoded << std::endl;
+            // Free allocated memory.
     free(result_len_1);
+    } 
+
    
 
   free_simple_key_list(key_list_result, key_list_len);

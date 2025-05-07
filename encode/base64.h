@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <cctype>
-#include "deps/base64/Base64.hpp"
+#include "deps/Turbo-Base64/turbob64.h"
 #include <cmath>
 
 constexpr char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -62,15 +62,16 @@ std::string base64_from_hex(const std::string& hex_str) {
 
 // Base64 encode binary data to string
 std::string encode_base64(const std::vector<uint8_t>& data) {
-    const size_t encoded_size = base64::get_encoded_length(data.size());
+    return std::string(data.begin(), data.end());
+
+    const size_t encoded_size = tb64enclen(data.size());
     std::string output;
     output.resize(encoded_size);
     
-    base64::encode(
+    tb64enc(
         data.data(),
         data.size(),
-        reinterpret_cast<uint8_t*>(output.data()),
-        output.size()
+        reinterpret_cast<uint8_t*>(output.data())
     );
     
     return output;
@@ -80,21 +81,21 @@ std::string encode_base64(const std::vector<uint8_t>& data) {
 std::string decode_base64(const std::string& encoded_input) {
 
 
-    const size_t decoded_size = base64::get_decoded_length(
+    const size_t decoded_size = tb64declen(
         reinterpret_cast<const uint8_t*>(encoded_input.data()),
         encoded_input.size()
     );
+    std::string output;
+    output.resize(decoded_size);
 
-    std::vector<uint8_t> buffer(decoded_size);
-    base64::decode(
+    tb64dec(
         reinterpret_cast<const uint8_t*>(encoded_input.data()),
         encoded_input.size(),
-        buffer.data(),
-        buffer.size()
+        reinterpret_cast<uint8_t*>(output.data())
     );
-
-    return std::string(buffer.begin(), buffer.end());
+    return output;
 }
+
 
 // Overload for vector<uint8_t> input
 std::string decode_base64(const std::vector<uint8_t>& encoded_input) {

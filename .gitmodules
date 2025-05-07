@@ -1,3 +1,6 @@
 [submodule "deps/googletest"]
 	path = deps/googletest
 	url = https://github.com/google/googletest.git
+[submodule "deps/Turbo-Base64"]
+	path = deps/Turbo-Base64
+	url = https://github.com/powturbo/Turbo-Base64.git

@@ -22,7 +22,7 @@ add_compile_options(-fpermissive)
 
 # Add include directories
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/deps/)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/Turbo-Base64)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/turbobase64)
 
 # Add library search directories
 LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)

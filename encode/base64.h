@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <cctype>
-#include "deps/Turbo-Base64/turbob64.h"
+#include "deps/turbobase64/turbob64.h"
 #include <cmath>
 
 constexpr char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

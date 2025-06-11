@@ -85,10 +85,10 @@ int main(int argc, char **argv) {
       // Convert using our function
       // char* utf8_def = hex_string_to_utf8(definition);
         
-      std::cout << "Key: " << key->key_word 
+      std::cout << "Key: " << hex_string_to_utf8(key->key_word) 
 		<< "\nHex length: " << strlen(definition)
 		<< "\nUTF-8 length: " << (definition ? strlen(definition) : 0)
-    << "\n definition: " << definition
+		<< "\n definition: " << base64_from_hex(definition)
 		<< "\n-------------------------\n";
         
   //     if (utf8_def) {

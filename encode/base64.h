@@ -71,7 +71,7 @@ std::string encode_base64(const std::vector<uint8_t>& data) {
     tb64enc(
         data.data(),
         data.size(),
-        reinterpret_cast<uint8_t*>(output.data())
+        reinterpret_cast<uint8_t*>(const_cast<char*>(output.data()))
     );
     
     return output;
@@ -91,7 +91,7 @@ std::string decode_base64(const std::string& encoded_input) {
     tb64dec(
         reinterpret_cast<const uint8_t*>(encoded_input.data()),
         encoded_input.size(),
-        reinterpret_cast<uint8_t*>(output.data())
+        reinterpret_cast<uint8_t*>(const_cast<char*>(output.data()))
     );
     return output;
 }

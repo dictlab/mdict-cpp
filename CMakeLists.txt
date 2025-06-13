@@ -1,9 +1,10 @@
+# Set the minimum required CMake version
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
+
 # Set the project name
 CMAKE_POLICY(SET CMP0048 NEW)
 PROJECT(MDictCpp VERSION 1.0.0)
 
-# Set the minimum required CMake version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 17)

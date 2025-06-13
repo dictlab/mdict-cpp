@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <ctype.h>
 
 // In Windows ssize_t is not standard.
 #ifdef _WIN32
@@ -31,7 +30,7 @@ static int hex_char_to_int(char c) {
 /**
  * Converts a hexadecimal string to a byte array.
  * Return is The number of bytes written on success, or -1 on any error. */
-ssize_t hex_to_bytes(const char *hex_str, unsigned char *byte_buf, size_t buf_len) {
+inline ssize_t hex_to_bytes(const char *hex_str, unsigned char *byte_buf, size_t buf_len) {
     if (!hex_str || !byte_buf) {
         fprintf(stderr, "Error: Null pointer passed to hex_to_bytes.\n");
         return -1;
@@ -69,7 +68,7 @@ ssize_t hex_to_bytes(const char *hex_str, unsigned char *byte_buf, size_t buf_le
  * I treat any invalid sequences as errors.
  * Return is the number of UTF-8 bytes written (ignoring null bytes), or -1 on any error.
  */
-ssize_t utf16le_to_utf8(const unsigned char *utf16le_data, size_t utf16le_len_bytes,
+inline ssize_t utf16le_to_utf8(const unsigned char *utf16le_data, size_t utf16le_len_bytes,
                         unsigned char *utf8_buf, size_t utf8_buf_len)
 {
     if (!utf16le_data || !utf8_buf) {

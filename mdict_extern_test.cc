@@ -15,6 +15,7 @@
 #include "encode/api.h"
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 typedef long long int64;
 
@@ -29,6 +30,27 @@ public:
     return t;
   }
 };
+
+void for_each_key(void* dict,
+                  std::function<void(simple_key_item*)> on_key) {
+    unsigned long len = 0;
+    simple_key_item** list = mdict_keylist(dict, &len);
+    std::cerr << "[for_each_key] got len=" << len << "\n";  // diagnostic
+
+    if (!list || len == 0) {
+        std::cerr << "[for_each_key] nothing to do\n";
+        return;
+    }
+
+    for (unsigned long i = 0; i < len; ++i) {
+        if (!list[i]) {
+            std::cerr << "[for_each_key] skipping null at i=" << i << "\n";
+            continue;
+        }
+        on_key(list[i]);
+    }
+    free_simple_key_list(list, len);
+}
 
 int main(int argc, char **argv) {
   std::cout << "arg count: " << argc << std::endl;
@@ -64,62 +86,73 @@ int main(int argc, char **argv) {
   std::cout << "lookup cost time: " << t3 - t2 << " ms" << std::endl;
 
 
-  unsigned long key_list_len = 0;
+uint64_t key_list_len = 0; // If the number of keys can exceed 2^32
 
-  simple_key_item** key_list_result = mdict_keylist(dict, &key_list_len);
-  std::cout << "key list length: " << key_list_len << std::endl;
+simple_key_item** key_list_result = mdict_keylist(dict, &key_list_len);
 
-  auto key0 = key_list_result[0];
-  auto keylen = key_list_result[key_list_len-1];
+if (key_list_len == 0) {
+    std::cerr << "No keys in dictionary\n";
+    mdict_destory(dict);
+    return 1;
+}
 
-  // Add this to process all keys
-  std::cout << "\nProcessing all keys:\n";
-  for (unsigned long i = 0; i < 10; ++i) {
-    auto key = key_list_result[i];
-    char* definition = nullptr;
-    
-    // Get raw hex definition
-    mdict_parse_definition(dict, key->key_word, key->record_start, &definition);
-    
-    if (definition) {
-      // Convert using our function
-      // char* utf8_def = hex_string_to_utf8(definition);
-        
-      std::cout << "Key: " << hex_string_to_utf8(key->key_word) 
-		<< "\nHex length: " << strlen(definition)
-		<< "\nUTF-8 length: " << (definition ? strlen(definition) : 0)
-		<< "\n definition: " << base64_from_hex(definition)
-		<< "\n-------------------------\n";
-        
-  //     if (utf8_def) {
-	// free(utf8_def);
-  //     }
-      free(definition);
+simple_key_item* first_key = key_list_result[0];
+simple_key_item* last_key  = key_list_result[key_list_len - 1];
+
+// Process all keys
+std::cout << "\nProcessing all keys:\n";
+for (unsigned long i = 0; i < key_list_len; ++i) {
+    simple_key_item* key = key_list_result[i];
+
+    // If the library inserted a NULL sentinel, stop right there
+    if (!key) {
+        std::cerr << "Stopping at key[" << i << "] = nullptr\n";
+        break;
     }
-  }
+
+    // Skip any entries with no key_word
+    if (!key->key_word) {
+        std::cerr << "Skipping key[" << i << "] with null key_word\n";
+        continue;
+    }
+
+    // Safe: key->key_word is a NUL-terminated hex string
+    std::string utf8 = hex_string_to_utf8(key->key_word);
+
+  
+    char* definition = nullptr;
+    mdict_parse_definition(dict,
+                           key->key_word,
+                           key->record_start,
+                           &definition);
+if (definition) {
+    constexpr size_t MAX_SAFE_LEN = 1024 * 1024; // 1 MB max read , still cant figure out the segfault...
+    size_t len = 0;
+
+    // Manually scan for null-byte OR cap at MAX_SAFE_LEN
+    while (len < MAX_SAFE_LEN && definition[len] != '\0') ++len;
+
+    std::cout
+        << "Key: " << utf8
+        << "\nHex length: " << len
+        << "\nUTF-8 length: " << len
+        << "\nDefiniton: \n" << base64_from_hex(definition)
+        << "\n-------------------------\n";
+
+    free(definition);
+}
 
 
-  char* result_len_1 = nullptr;  // Use a single pointer instead of an array.
+}
 
-  mdict_parse_definition(dict, keylen->key_word, keylen->record_start, &result_len_1);
-
-  // Ensure that result_len_1 is valid before using it.
-  if (result_len_1 != nullptr) {
-        // std::string encoded = base64_from_hex(result_len_1);
-        // std::cout << "defintion encoded in base64:  " << encoded << std::endl;
-            // Free allocated memory.
+// Parse the last key’s definition
+char* result_len_1 = nullptr;
+mdict_parse_definition(dict, last_key->key_word, last_key->record_start, &result_len_1);
+if (result_len_1) {
     free(result_len_1);
-    } 
+}
 
-   
-
-  free_simple_key_list(key_list_result, key_list_len);
-  mdict_destory(dict);
-
-
-  if (*result != nullptr) {
-    free(*result);
-  }
-
-
+// Clean up
+free_simple_key_list(key_list_result, key_list_len);
+mdict_destory(dict);
 }

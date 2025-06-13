@@ -33,7 +33,7 @@ public:
 
 void for_each_key(void* dict,
                   std::function<void(simple_key_item*)> on_key) {
-    unsigned long len = 0;
+    uint64_t len = 0;
     simple_key_item** list = mdict_keylist(dict, &len);
     std::cerr << "[for_each_key] got len=" << len << "\n";  // diagnostic
 

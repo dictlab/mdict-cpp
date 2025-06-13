@@ -44,7 +44,7 @@ void mdict_parse_definition(void *dict, const char *word, unsigned long record_s
     (*result)[s.size()] = '\0';
 }
 
-simple_key_item **mdict_keylist(void *dict, unsigned long *len) {
+simple_key_item **mdict_keylist(void *dict, uint64_t *len) {
     auto *self = (mdict::Mdict *) dict;
     auto keylist = self->keyList();
 
@@ -65,7 +65,7 @@ simple_key_item **mdict_keylist(void *dict, unsigned long *len) {
 }
 
 
-int free_simple_key_list(simple_key_item **key_items, unsigned long len) {
+int free_simple_key_list(simple_key_item **key_items, uint64_t len) {
     if (key_items == nullptr) {
         return 0;
     }

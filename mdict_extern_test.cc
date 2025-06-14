@@ -15,6 +15,10 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include "encode/api.h"
+#include "encode/base64.h"
+#include <algorithm>
+#include <functional>
 
 typedef long long int64;
 
@@ -83,10 +87,15 @@ bool is_mdd_file(const std::string &filename) {
   return ext == ".mdd";
 }
 
+
+
 int main(int argc, char **argv) {
-  bool list_keys = false;
-  bool verbose = false;
-  int opt;
+    bool list_keys = false;
+    bool verbose = false;
+    int opt;
+
+    std::string definition;
+    std::string definition_hex;
 
   // Parse command line options
   while ((opt = getopt(argc, argv, "lhv")) != -1) {

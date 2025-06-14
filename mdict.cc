@@ -17,6 +17,8 @@
 #include <cstring>
 #include <regex>
 #include <utility>
+#include <filesystem>
+
 #include "turbob64.h"
 
 const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
@@ -1409,7 +1411,7 @@ void Mdict::init() {
  */
 long Mdict::reduce0(std::string phrase, unsigned long start,
                     unsigned long end) { // non-recursive reduce implements
-  for (int i = 0; i < end; ++i) {
+  for (size_t i = 0; i < end; ++i) {
     std::string first_key = this->key_block_info_list[i]->first_key;
     std::string last_key = this->key_block_info_list[i]->last_key;
     if (phrase.compare(first_key) >= 0 && phrase.compare(last_key) <= 0) {

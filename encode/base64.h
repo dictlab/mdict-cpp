@@ -29,6 +29,22 @@ std::vector<uint8_t> hex_to_binary(const std::string& hex_str) {
     return binary;
 }
 
+void fix_padding(std::string &base64, size_t orig_size) {
+    // Remove existing padding
+    while (!base64.empty() && base64.back() == '=') {
+        base64.pop_back();
+    }
+
+    // Calculate required padding based on original data size
+    size_t mod = orig_size % 3;
+    if (mod == 1) {
+        base64.append(2, '=');
+    } else if (mod == 2) {
+        base64.append(1, '=');
+    }
+}
+
+
 std::string base64_from_hex(const std::string& hex_str) {
     std::vector<uint8_t> binary = hex_to_binary(hex_str);
     const size_t orig_size = binary.size();
@@ -48,14 +64,7 @@ std::string base64_from_hex(const std::string& hex_str) {
         base64 += b64[index2];
     }
 
-    // Handle padding
-    if(orig_size % 3 == 1) {
-        base64.pop_back();
-        base64 += "==";
-    } else if(orig_size % 3 == 2) {
-        base64 += "=";
-    }
-
+    //  fix_padding(base64, orig_size); doesnt work as by now, gives wrong output
     return base64;
 }
 

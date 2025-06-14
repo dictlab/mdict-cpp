@@ -1,2 +1,4 @@
-add_subdirectory(minilzo)
-add_subdirectory(miniz)
+ADD_SUBDIRECTORY(minilzo)
+ADD_SUBDIRECTORY(miniz)
+ADD_SUBDIRECTORY(googletest)
+ADD_SUBDIRECTORY(turbobase64)

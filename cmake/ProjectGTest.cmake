@@ -29,39 +29,25 @@ add_library(GMock IMPORTED STATIC GLOBAL)
 # define imported library libgtest_main
 add_library(GMockMain IMPORTED STATIC GLOBAL)
 
-
-#set_target_properties(libgtest PROPERTIES
-#        INTERFACE_INCLUDE_DIRECTORIES     "${libgtest_INCLUDES}"
-#        IMPORTED_LOCATION "${TARGET_LIBS}/libgtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
-#        "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
-#        )
-
 set_target_properties(GTest PROPERTIES
-        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgtest.a"
-        "INTERFACE_INCLUDE_DIRECTORIES"     "${libgtest_INCLUDES}"
-        "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
-        )
-
-set_target_properties(GTest PROPERTIES
-        IMPORTED_CONFIGURATIONS "DEBUG"
-        "IMPORTED_LOCATION_DEBUG" "${TARGET_LIBS}/libgtest.a"
+        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
         "INTERFACE_INCLUDE_DIRECTORIES"     "${libgtest_INCLUDES}"
         "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
         )
 
 set_target_properties(GTestMain PROPERTIES
-        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgtest_main.a"
+        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}"
         "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
         )
 
 
 set_target_properties(GMock PROPERTIES
-        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgmock.a"
+        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgmock${CMAKE_STATIC_LIBRARY_SUFFIX}"
         "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
         )
 
 set_target_properties(GMockMain PROPERTIES
-        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgmock_main.a"
+        "IMPORTED_LOCATION" "${TARGET_LIBS}/libgmock_main${CMAKE_STATIC_LIBRARY_SUFFIX}"
         "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
         )
 

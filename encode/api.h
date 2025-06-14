@@ -17,7 +17,7 @@ static inline ssize_t utf16le_to_utf8_compat(const char* src, size_t src_len,
                           dst_len);
 }
 
-char* hex_string_to_utf8(const char* hex_input) {
+static inline char* hex_string_to_utf8(const char* hex_input) {
     if (!hex_input) return NULL;
 
     size_t hex_len = strlen(hex_input);

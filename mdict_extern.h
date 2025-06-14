@@ -19,11 +19,13 @@ void *mdict_init(const char *dictionary_path);
  */
 void mdict_lookup(void *dict, const char *word, char **result);
 
+void mdict_locate(void *dict, const char *word, char **result);
+
 void mdict_parse_definition(void *dict, const char *word, unsigned long record_start, char **result);
 
-simple_key_item **mdict_keylist(void *dict, unsigned long *len);
+simple_key_item **mdict_keylist(void *dict, uint64_t *len);
 
-int free_simple_key_list(simple_key_item **key_items, unsigned long len);
+int free_simple_key_list(simple_key_item **key_items, uint64_t len);
 
 // 0 mdx, 1 mdd
 int mdict_filetype(void *dict);

@@ -3,23 +3,12 @@
 #ifndef MDICT_MDICT_H_
 #define MDICT_MDICT_H_
 
-#include <codecvt>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <iostream>
-#include <map>
-#include <stdexcept>
 #include <string>  // std::stof
 #include <vector>
-
-#include "adler32.h"
-#include "binutils.h"
-#include "fileutils.h"
 #include "ripemd128.h"
-#include "xmlutils.h"
-#include "zlib_wrapper.h"
-#include "mdict_simple_key.h"
 
 /**
  * mdx struct analysis
@@ -262,6 +251,9 @@ class Mdict {
    */
   std::string lookup(std::string word);
 
+
+  std::string locate(const std::string resource_name);
+
   /**
    * suggest simuler word which matches the prefix
    * @param word the word's prefix
@@ -330,7 +322,7 @@ private:
   // dictionary file name
   const std::string filename;
 
-    const std::string aff_file;
+  const std::string aff_file;
 
   const std::string dic_file;
 
@@ -343,6 +335,8 @@ private:
   // ---------------------
   //     header part
   // ---------------------
+
+  std::string header_buffer;
 
   // offset part (important)
   // dictionary header part
@@ -501,9 +495,17 @@ private:
   /**
    * print the header part (TODO delete)
    */
-  void printhead() {
-    //          std::cout<<"version: "<<this->version<<std::endl<<"encoding:
-    //          "<<this->encoding<<std::endl;
+  void printhead() {  
+    // std::cout << "version: " << this->version << std::endl
+    //           << "header_bytes_size: " << this->header_bytes_size << std::endl
+    //           << "encoding: " << this->encoding << std::endl
+    //           << "key_block_num: " << this->key_block_num << std::endl
+    //           << "entries_num: " << this->entries_num << std::endl
+    //           << "key_block_info_decompress_size: "
+    //           << this->key_block_info_decompress_size << std::endl
+    //           << "key_block_info_size: " << this->key_block_info_size
+    //           << std::endl
+    //           << "key_block_size: " << this->key_block_size << std::endl;
   }
 
   bool endsWith(const std::string &fullString, const std::string &ending);

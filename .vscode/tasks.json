@@ -1,0 +1,36 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cmake",
+			"label": "CMake configure",
+			"command": "configure",
+			"targets": [
+				"all"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake configure task"
+		},
+		{
+			"type": "cmake",
+			"label": "CMake build",
+			"command": "build",
+			"targets": [
+				"all"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake build task",
+			"dependsOn": [
+				"CMake configure"
+			]
+		},
+		{
+			"type": "cmake",
+			"label": "CMake clean",
+			"command": "clean",
+			"group": "build",
+		}
+	]
+}

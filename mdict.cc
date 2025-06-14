@@ -637,7 +637,6 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
                              utf8_bytes_written);
       free(utf16le_bytes);
       free(utf8_output);
-      std::cout << "key_text: " << key_text << std::endl;
 
     } else if (this->encoding == 0 /* ENCODING_UTF8 */) {
       key_text = be_bin_to_utf8(
@@ -997,8 +996,6 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
       break;
     }
 
-    //    std::cout << "key text: " << key_text << std::endl;
-    //    std::cout << "idx: " << idx << std::endl;
     unsigned long upbound = uncomp_size; // - this->key_list[i]->record_start;
     unsigned long expect_end = 0;
     auto expect_start = this->key_list[i]->record_start - decomp_accu;
@@ -1021,7 +1018,6 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
       def = be_bin_to_utf8((char *)record_block, expect_start,
                            upbound - 1 /* to delete null character*/);
     }
-    //    std::cout << "def: " << def << std::endl;
     std::pair<std::string, std::string> vp(key_text, def);
     vec.push_back(vp);
     i++;
@@ -1356,23 +1352,6 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
     assert(counter == this->key_block_num);
     assert(num_entries_counter == this->entries_num);
 
-    //  std::vector<key_block_info*>::iterator it;
-
-    // TODO WORKING HERE
-    //  for (auto it = key_block_info_list.begin(); it !=
-    //  key_block_info_list.end();
-    //       it++) {
-    //    std::cout << "fkey : " << (*it)->first_key << std::endl;
-    //    std::cout << "lkey : " << (*it)->last_key << std::endl;
-    //    std::cout << "comp_size : " << (*it)->key_block_comp_size <<
-    //    std::endl;
-    //    std::cout << "decomp_size : " << (*it)->key_block_decomp_size
-    //              << std::endl;
-    //    std::cout << "offset : " << (*it)->key_block_start_offset <<
-    //    std::endl;
-    //    break;
-    //  }
-
   } else {
     // doesn't compression
     throw std::logic_error("not implements yet");
@@ -1414,11 +1393,6 @@ void Mdict::init() {
   // this->printhead();
   this->read_key_block_header();
   this->read_key_block_info();
-  for (auto it = this->key_block_info_list.begin();
-       it != this->key_block_info_list.end(); it++) {
-    std::cout << "first_key: " << (*it)->first_key
-              << " last_key: " << (*it)->last_key << std::endl;
-  }
   this->read_record_block_header();
   //  this->decode_record_block();
 
@@ -1437,10 +1411,7 @@ long Mdict::reduce0(std::string phrase, unsigned long start,
   for (int i = 0; i < end; ++i) {
     std::string first_key = this->key_block_info_list[i]->first_key;
     std::string last_key = this->key_block_info_list[i]->last_key;
-    // std::cout << "index : " << i << ", first_key : " << first_key <<
-    // ", last_key : " << last_key << std::endl;
     if (phrase.compare(first_key) >= 0 && phrase.compare(last_key) <= 0) {
-      //            std::cout << ">>>>>>>>>>>> found index " << i << std::endl;
       return i;
     }
   }
@@ -1533,8 +1504,6 @@ std::string Mdict::locate(const std::string resource_name) {
   for (auto it = this->key_list.begin(); it != this->key_list.end(); it++) {
     std::string key_word = (*it)->key_word;
     if (key_word == resource_name) {
-      std::cout << "==> locate resource_name " << resource_name << " at "
-                << (*it)->record_start << std::endl;
       if ((*it)->record_start >= 0) {
         // reduce search the record block index by word record start offset
         unsigned long record_block_idx = reduce2((*it)->record_start);
@@ -1543,6 +1512,9 @@ std::string Mdict::locate(const std::string resource_name) {
         // reduce the definition by word
         std::string def = reduce3(vec, resource_name);
         return def;
+        // unsigned char *byte_buf = new unsigned char[def.length()];
+        // hex_to_bytes(def.c_str(), byte_buf, def.length());
+        // return std::string(reinterpret_cast<char *>(byte_buf), def.length());
       }
       return std::string("");
     }

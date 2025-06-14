@@ -63,4 +63,3 @@ pinentry*
 *.o
 *.a
 .cache/
-.vscode/

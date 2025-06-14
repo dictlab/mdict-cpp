@@ -1,0 +1,21 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "mdd query",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/build/bin/mydict",
+            "args": [
+                "-v",
+                "${workspaceFolder}/tests/testdict/旺文社漢字典/旺文社漢字典\\ 第四版.mdd",
+                "${workspaceFolder}/tests/testdict/旺文社漢字典/img/字韻054.png"
+            ],
+            "preLaunchTask": "CMake build"
+        },
+    ]
+}

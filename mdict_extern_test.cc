@@ -131,6 +131,8 @@ int main(int argc, char **argv) {
         std::cout << "Init cost time: " << t2 - t1 << "ms" << std::endl;
     }
 
+    bool is_mdd = is_mdd_file(dict_file);
+
     if (list_keys) {
         uint64_t key_list_len = 0;
         simple_key_item** key_list_result = mdict_keylist(dict, &key_list_len);
@@ -141,7 +143,7 @@ int main(int argc, char **argv) {
             return 1;
         }
 
-        bool is_mdd = is_mdd_file(dict_file);
+       
         std::cout << "Total keys: " << key_list_len << "\n";
         if (verbose) {
             std::cout << "File type: " << (is_mdd ? "MDD" : "MDX") << "\n\n";
@@ -172,8 +174,13 @@ int main(int argc, char **argv) {
 
         free_simple_key_list(key_list_result, key_list_len);
     } else {
+        std::cout << "==> query_key " << query_key << std::endl;
         char *result[0];
-        mdict_lookup(dict, query_key, result);
+        if (!is_mdd) {
+            mdict_lookup(dict, query_key, result);
+        } else {
+            mdict_locate(dict, query_key, result);
+        }
         std::string definition(*result);
         if (verbose) {
             std::cout << ">>[definition start] [" << query_key << "] length: " << definition.length() << " >>" << std::endl;

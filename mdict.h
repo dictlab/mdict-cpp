@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <iostream>
 #include <string>  // std::stof
 #include <vector>
 #include "ripemd128.h"
@@ -252,6 +251,9 @@ class Mdict {
    */
   std::string lookup(std::string word);
 
+
+  std::string locate(const std::string resource_name);
+
   /**
    * suggest simuler word which matches the prefix
    * @param word the word's prefix
@@ -320,7 +322,7 @@ private:
   // dictionary file name
   const std::string filename;
 
-    const std::string aff_file;
+  const std::string aff_file;
 
   const std::string dic_file;
 
@@ -333,6 +335,8 @@ private:
   // ---------------------
   //     header part
   // ---------------------
+
+  std::string header_buffer;
 
   // offset part (important)
   // dictionary header part

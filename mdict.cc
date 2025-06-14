@@ -1,14 +1,17 @@
 #include "mdict.h"
 
+#include "adler32.h"
+#include "binutils.h"
+#include <codecvt>
 #include <iostream>
 #include <map>
 #include <stdexcept>
-#include "adler32.h"
-#include "binutils.h"
 
+#include "encode/char_decoder.h"
 #include "xmlutils.h"
 #include "zlib_wrapper.h"
 
+#include <encode/api.h>
 
 #include <algorithm>
 #include <cstring>
@@ -76,11 +79,11 @@ void Mdict::read_header() {
   // -----------------------------------------
 
   // header buffer
-  char *head_buffer = (char *)std::calloc(header_bytes_size, sizeof(char));
-  readfile(4, header_bytes_size, head_buffer);
+  unsigned char *head_buffer =
+      (unsigned char *)std::calloc(header_bytes_size, sizeof(unsigned char));
+  readfile(4, header_bytes_size, (char *)head_buffer);
   /// passed
 
-  // -----------------------------------------
   // 3. alder32 checksum
   // -----------------------------------------
 
@@ -98,11 +101,17 @@ void Mdict::read_header() {
   // -----------------------------------------
 
   // header text utf16
-  std::string header_text =
-      le_bin_utf16_to_utf8(head_buffer, 0, header_bytes_size - 2);
-  if (header_text.empty()) {
-    std::cout << "len:" << header_bytes_size << std::endl;
-    std::cout << "this mdx file is invalid" << std::endl;
+  unsigned char *utf8_buffer =
+      (unsigned char *)std::calloc(header_bytes_size, sizeof(unsigned char));
+  int utf8_len = utf16le_to_utf8(head_buffer, header_bytes_size, utf8_buffer,
+                                 header_bytes_size);
+
+  this->header_buffer =
+      std::string(reinterpret_cast<char *>(utf8_buffer), utf8_len);
+
+  if (utf8_len == -1) {
+    std::cout << "this mdx file is invalid" << " len:" << header_bytes_size
+              << std::endl;
     return;
   }
   /// passed
@@ -111,6 +120,7 @@ void Mdict::read_header() {
   // 5. parse xml string into map
   // -----------------------------------------
 
+  std::string header_text(reinterpret_cast<char *>(utf8_buffer), utf8_len);
   std::map<std::string, std::string> headinfo = parseXMLHeader(header_text);
   /// passed
 
@@ -415,8 +425,9 @@ void Mdict::read_key_block_info() {
   // start at this->key_block_info_start_offset
   char *key_block_info_buffer = (char *)calloc(
       static_cast<size_t>(this->key_block_info_size), sizeof(char));
-  readfile(this->key_block_info_start_offset,
-           static_cast<int>(this->key_block_info_size), key_block_info_buffer);
+
+  readfile(this->key_block_info_start_offset, this->key_block_info_size,
+           key_block_info_buffer);
 
   // ------------------------------------
   // decode key_block_info
@@ -575,12 +586,59 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
 
     std::string key_text = "";
     if (this->encoding == 1 /* ENCODING_UTF16 */) {
-      // TODO
-      key_text = be_bin_to_utf16(
+      std::string hex_input = be_bin_to_utf16(
           (const char *)key_block, (key_start_idx + this->number_width),
           static_cast<unsigned long>(key_end_idx - key_start_idx -
                                      this->number_width));
-      //      throw std::runtime_error("NOT SUPPORT UTF16 YET");
+
+      size_t utf16le_buf_size =
+          (hex_input.length() / 2) +
+          1; // Add 1 just in case (though hex_to_bytes checks evenness)
+      unsigned char *utf16le_bytes = (unsigned char *)malloc(utf16le_buf_size);
+      if (!utf16le_bytes) {
+        perror("Error allocating memory for UTF-16LE buffer");
+        throw std::runtime_error("Error allocating memory for UTF-16LE buffer");
+      }
+
+      ssize_t utf16_bytes_written =
+          hex_to_bytes(hex_input.c_str(), utf16le_bytes, utf16le_buf_size);
+      if (utf16_bytes_written < 0) {
+        free(utf16le_bytes);
+        throw std::runtime_error("hex_to_bytes failed");
+      }
+
+      // UTF-16LE Bytes to UTF-8
+      // Allocate buffer for UTF-8 output.
+      // Estimate: Max 3 bytes UTF-8 per 1 byte UTF-16LE is generous and safe.
+      // (Max is 4 UTF-8 bytes per 4 UTF-16LE bytes for surrogates, which is
+      // 1x). (Max is 3 UTF-8 bytes per 2 UTF-16LE bytes for BMP, which
+      // is 1.5x). So, 3x the number of *UTF-16 bytes* is very safe. Add 1 for
+      // null terminator.
+      size_t utf8_buf_size = ((size_t)utf16_bytes_written * 3) + 1;
+      unsigned char *utf8_output = (unsigned char *)malloc(utf8_buf_size);
+      if (!utf8_output) {
+        perror("Error allocating memory for UTF-8 output buffer");
+        free(utf16le_bytes);
+        throw std::runtime_error(
+            "Error allocating memory for UTF-8 output buffer");
+      }
+
+      ssize_t utf8_bytes_written =
+          utf16le_to_utf8(utf16le_bytes, (size_t)utf16_bytes_written,
+                          utf8_output, utf8_buf_size);
+
+      if (utf8_bytes_written < 0) {
+        free(utf16le_bytes);
+        free(utf8_output);
+        throw std::runtime_error("utf16le_to_utf8 failed");
+      }
+
+      key_text = std::string(reinterpret_cast<char *>(utf8_output),
+                             utf8_bytes_written);
+      free(utf16le_bytes);
+      free(utf8_output);
+      std::cout << "key_text: " << key_text << std::endl;
+
     } else if (this->encoding == 0 /* ENCODING_UTF8 */) {
       key_text = be_bin_to_utf8(
           (const char *)key_block, (key_start_idx + this->number_width),
@@ -591,13 +649,6 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
     entry_acc++;
     inner_key_list.push_back(new key_list_item(record_start, key_text));
 
-    // TODO add to word list
-
-    // next round
-    //    int j = key_end_idx;
-    //    while((key_block[j] & 0xff) == 0){
-    //      j += width;
-    //    }
     key_start_idx = key_end_idx + width;
   }
   return inner_key_list;
@@ -773,9 +824,12 @@ int Mdict::read_record_block_header() {
 
   char *record_info_buffer =
       (char *)calloc(record_block_info_size, sizeof(char));
+
   this->readfile(record_block_info_offset, record_block_info_size,
                  record_info_buffer);
+
   if (this->version >= 2.0) {
+
     record_block_number = be_bin_to_u64((unsigned char *)record_info_buffer);
     record_block_entries_number = be_bin_to_u64(
         (unsigned char *)record_info_buffer + number_width * sizeof(char));
@@ -783,9 +837,8 @@ int Mdict::read_record_block_header() {
         (unsigned char *)record_info_buffer + 2 * number_width * sizeof(char));
     record_block_size = be_bin_to_u64((unsigned char *)record_info_buffer +
                                       3 * number_width * sizeof(char));
-
-  } else {
   }
+
   free(record_info_buffer);
   assert(record_block_entries_number == entries_num);
   /// passed
@@ -797,8 +850,10 @@ int Mdict::read_record_block_header() {
    *     decompressed size
    * }
    */
+
   char *record_header_buffer =
       (char *)calloc(record_block_header_size, sizeof(char));
+
   this->readfile(this->record_block_info_offset + record_block_info_size,
                  record_block_header_size, record_header_buffer);
 
@@ -840,6 +895,7 @@ int Mdict::read_record_block_header() {
 
 std::vector<std::pair<std::string, std::string>>
 Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
+
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
 
@@ -1199,10 +1255,21 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
       // DECODE first CODE
       // TODO here minus the terminal character size(1), but we still not sure
       // should minus this or not
-      std::string fkey =
-          be_bin_to_utf8((char *)(decompress_buff.data() + data_offset), 0,
-                         (unsigned long)step_gap - text_term);
-      //            std::cout<<"first key: "<<fkey<<std::endl;
+      std::string first_key;
+      if (this->filetype == "MDX") {
+        first_key =
+            be_bin_to_utf8((char *)(decompress_buff.data() + data_offset), 0,
+                           (unsigned long)step_gap - text_term);
+      } else {
+        unsigned char *utf16_point =
+            (unsigned char *)(decompress_buff.data() + data_offset);
+        unsigned long utf16_len = (unsigned long)step_gap - text_term;
+        unsigned char *utf8_buff =
+            (unsigned char *)calloc(utf16_len, sizeof(unsigned char));
+        utf16le_to_utf8(utf16_point, utf16_len - 1, utf8_buff, utf16_len);
+        first_key = std::string(reinterpret_cast<char *>(utf8_buff), utf16_len);
+        free(utf8_buff);
+      }
       // move forward
       data_offset += step_gap;
 
@@ -1224,9 +1291,21 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
         step_gap = last_key_size + text_term;
       }
 
-      std::string last_key =
-          be_bin_to_utf8((char *)(decompress_buff.data() + data_offset), 0,
-                         (unsigned long)step_gap - text_term);
+      std::string last_key;
+      if (this->filetype == "MDX") {
+        last_key =
+            be_bin_to_utf8((char *)(decompress_buff.data() + data_offset), 0,
+                           (unsigned long)step_gap - text_term);
+      } else {
+        unsigned char *utf16_point =
+            (unsigned char *)(decompress_buff.data() + data_offset);
+        unsigned long utf16_len = (unsigned long)step_gap - text_term;
+        unsigned char *utf8_buff =
+            (unsigned char *)calloc(utf16_len, sizeof(unsigned char));
+        utf16le_to_utf8(utf16_point, utf16_len - 1, utf8_buff, utf16_len);
+        last_key = std::string(reinterpret_cast<char *>(utf8_buff), utf16_len);
+        free(utf8_buff);
+      }
 
       // move forward
       data_offset += step_gap;
@@ -1260,7 +1339,7 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
       data_offset += this->number_width;
 
       key_block_info *kbinfo = new key_block_info(
-          fkey, last_key, previous_start_offset, key_block_compress_size,
+          first_key, last_key, previous_start_offset, key_block_compress_size,
           key_block_decompress_size, comp_acc, decomp_acc);
 
       // adjust ofset
@@ -1272,41 +1351,36 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
       // accumulate
       comp_acc += key_block_compress_size;
       decomp_acc += key_block_decompress_size;
-
       //          break;
     }
     assert(counter == this->key_block_num);
     assert(num_entries_counter == this->entries_num);
 
-    //    std::vector<key_block_info*>::iterator it;
+    //  std::vector<key_block_info*>::iterator it;
 
-    //     TODO WORKING HERE
-    //    for (auto it = key_block_info_list.begin(); it !=
-    //    key_block_info_list.end();
-    //         it++) {
-    //      std::cout << "fkey : " << (*it)->first_key << std::endl;
-    //      std::cout << "lkey : " << (*it)->last_key << std::endl;
-    //      std::cout << "comp_size : " << (*it)->key_block_comp_size <<
-    //      std::endl;
-    //      std::cout << "decomp_size : " << (*it)->key_block_decomp_size
-    //                << std::endl;
-    //      std::cout << "offset : " << (*it)->key_block_start_offset <<
-    //      std::endl;
-    //      break;
-    //    }
+    // TODO WORKING HERE
+    //  for (auto it = key_block_info_list.begin(); it !=
+    //  key_block_info_list.end();
+    //       it++) {
+    //    std::cout << "fkey : " << (*it)->first_key << std::endl;
+    //    std::cout << "lkey : " << (*it)->last_key << std::endl;
+    //    std::cout << "comp_size : " << (*it)->key_block_comp_size <<
+    //    std::endl;
+    //    std::cout << "decomp_size : " << (*it)->key_block_decomp_size
+    //              << std::endl;
+    //    std::cout << "offset : " << (*it)->key_block_start_offset <<
+    //    std::endl;
+    //    break;
+    //  }
 
   } else {
     // doesn't compression
     throw std::logic_error("not implements yet");
   }
 
-  //        std::cout<<"data offset: " << data_offset<<std::endl;
-  //        assert(data_offset == this->key_block_info_decompress_size);
   this->key_block_body_start =
       this->key_block_info_start_offset + this->key_block_info_size;
-  //        std::cout<<"key_block_body offset: " <<
-  //        this->key_block_body_start<<std::endl;
-  /// here passed
+  /// passed
   return 0;
 }
 
@@ -1337,9 +1411,14 @@ void Mdict::init() {
 
   /* indexing... */
   this->read_header();
-  this->printhead();
+  // this->printhead();
   this->read_key_block_header();
   this->read_key_block_info();
+  for (auto it = this->key_block_info_list.begin();
+       it != this->key_block_info_list.end(); it++) {
+    std::cout << "first_key: " << (*it)->first_key
+              << " last_key: " << (*it)->last_key << std::endl;
+  }
   this->read_record_block_header();
   //  this->decode_record_block();
 
@@ -1448,6 +1527,27 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
   }
   result = left;
   return vec[result].second;
+}
+
+std::string Mdict::locate(const std::string resource_name) {
+  for (auto it = this->key_list.begin(); it != this->key_list.end(); it++) {
+    std::string key_word = (*it)->key_word;
+    if (key_word == resource_name) {
+      std::cout << "==> locate resource_name " << resource_name << " at "
+                << (*it)->record_start << std::endl;
+      if ((*it)->record_start >= 0) {
+        // reduce search the record block index by word record start offset
+        unsigned long record_block_idx = reduce2((*it)->record_start);
+        // decode recode by record index
+        auto vec = decode_record_block_by_rid(record_block_idx);
+        // reduce the definition by word
+        std::string def = reduce3(vec, resource_name);
+        return def;
+      }
+      return std::string("");
+    }
+  }
+  return std::string("");
 }
 
 /**

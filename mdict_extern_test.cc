@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include "encode/api.h"
+#include "encode/base64.h"
 #include <algorithm>
 #include <functional>
 
@@ -73,10 +74,15 @@ bool is_mdd_file(const std::string& filename) {
     return ext == ".mdd";
 }
 
+
+
 int main(int argc, char **argv) {
     bool list_keys = false;
     bool verbose = false;
     int opt;
+
+    std::string definition;
+    std::string definition_hex;
 
     // Parse command line options
     while ((opt = getopt(argc, argv, "lhv")) != -1) {
@@ -119,7 +125,7 @@ int main(int argc, char **argv) {
     if (verbose) {
         std::cout << "Dictionary file: " << dict_file << std::endl;
         if (query_key) {
-            std::cout << "Query key: " << query_key << std::endl;
+	  std::cout << "Query key: " << query_key << std::endl;
         }
     }
 
@@ -172,22 +178,31 @@ int main(int argc, char **argv) {
             }
         }
 
+	
+	
         free_simple_key_list(key_list_result, key_list_len);
     } else {
-        std::cout << "==> query_key " << query_key << std::endl;
+        std::cout << "\n ==> query_key \n " << query_key << std::endl;
         char *result[0];
         if (!is_mdd) {
             mdict_lookup(dict, query_key, result);
+	  	  	    
         } else {
             mdict_locate(dict, query_key, result);
+
         }
-        std::string definition(*result);
+        
+	std::string definition(*result);
+	definition = base64_from_hex(definition);
+	    
         if (verbose) {
             std::cout << ">>[definition start] [" << query_key << "] length: " << definition.length() << " >>" << std::endl;
             std::cout << definition << std::endl;
             std::cout << "<<[definition   end] [" << query_key << "]"  << " <<" << std::endl;
         } else {
-            std::cout << definition << std::endl;
+	  std::cout << std::endl;
+	  std::cout.write(definition.data(), definition.size());
+	  std::cout << std::endl;
         }
 
         int64 t3 = Timetool::getSystemTime();

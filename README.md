@@ -2,6 +2,13 @@
 
 mdict *.mdx/*.mdd interpreter c++ implements
 
+## Clone the project
+
+```
+git clone git@github.com:dictlab/mdict-cpp.git
+git submodule init
+git submodule update --recursive # pull the gtest library
+```
 
 ## Executable
 

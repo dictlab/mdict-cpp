@@ -175,9 +175,13 @@ int main(int argc, char **argv) {
         char *result[0];
         mdict_lookup(dict, query_key, result);
         std::string definition(*result);
-        std::cout << ">>[definition start] [" << query_key << "] length: " << definition.length() << " >>" << std::endl;
-        std::cout << definition << std::endl;
-        std::cout << "<<[definition   end] [" << query_key << "]"  << " <<" << std::endl;
+        if (verbose) {
+            std::cout << ">>[definition start] [" << query_key << "] length: " << definition.length() << " >>" << std::endl;
+            std::cout << definition << std::endl;
+            std::cout << "<<[definition   end] [" << query_key << "]"  << " <<" << std::endl;
+        } else {
+            std::cout << definition << std::endl;
+        }
 
         int64 t3 = Timetool::getSystemTime();
         if (verbose) {

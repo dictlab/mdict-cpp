@@ -12,8 +12,9 @@
             "program": "${workspaceFolder}/build/bin/mydict",
             "args": [
                 "-v",
-                "${workspaceFolder}/tests/testdict/旺文社漢字典/旺文社漢字典\\ 第四版.mdd",
-                "${workspaceFolder}/tests/testdict/旺文社漢字典/img/字韻054.png"
+                "${workspaceFolder}/tests/testdict/旺文社漢字典/旺文社漢字典第四版.mdd",
+                // "𨆍",
+                "\\img\\字韻054.png"
             ],
             "preLaunchTask": "CMake build"
         },

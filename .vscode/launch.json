@@ -14,7 +14,8 @@
                 "-v",
                 "${workspaceFolder}/tests/testdict/旺文社漢字典/旺文社漢字典第四版.mdd",
                 // "𨆍",
-                "\\img\\字韻054.png"
+                // "\\img\\字韻054.png",
+                "\\img\\HJ474C.png"
             ],
             "preLaunchTask": "CMake build"
         },

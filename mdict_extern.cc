@@ -34,6 +34,19 @@ void mdict_lookup(void *dict, const char *word, char **result) {
     (*result)[s.size()] = '\0';
 }
 
+/**
+ locate a word
+ */
+void mdict_locate(void *dict, const char *word, char **result) {
+    auto *self = (mdict::Mdict *) dict;
+    std::string queryWord(word);
+    std::string s = self->locate(queryWord);
+
+    (*result) = (char *) calloc(sizeof(char), s.size() + 1);
+    std::copy(s.begin(), s.end(), (*result));
+    (*result)[s.size()] = '\0';
+}
+
 void mdict_parse_definition(void *dict, const char *word, unsigned long record_start, char **result) {
     auto *self = (mdict::Mdict *) dict;
     std::string queryWord(word);

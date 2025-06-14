@@ -21,7 +21,6 @@ ADD_COMPILE_OPTIONS(-Wno-unused-variable -fpermissive)
 
 # Add include directories
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/deps/ ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/deps/turbobase64)
 
 # Add library search directories
 LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)

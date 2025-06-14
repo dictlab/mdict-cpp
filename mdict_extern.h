@@ -19,6 +19,8 @@ void *mdict_init(const char *dictionary_path);
  */
 void mdict_lookup(void *dict, const char *word, char **result);
 
+void mdict_locate(void *dict, const char *word, char **result);
+
 void mdict_parse_definition(void *dict, const char *word, unsigned long record_start, char **result);
 
 simple_key_item **mdict_keylist(void *dict, uint64_t *len);

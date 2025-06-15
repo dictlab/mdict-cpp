@@ -1,13 +1,8 @@
-//
-// Created by 陈权 on 2019/2/7.
-//
-
 #include "mdict_extern.h"
 
 #include <sys/time.h>
 #include <unistd.h> // for getopt
 
-#include "encode/api.h"
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -15,8 +10,6 @@
 #include <functional>
 #include <iostream>
 #include <string>
-#include "encode/api.h"
-#include "encode/base64.h"
 #include <algorithm>
 #include <functional>
 

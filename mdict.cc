@@ -19,6 +19,7 @@
 #include <utility>
 #include <filesystem>
 
+#include "turbob64.h"
 
 const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
 
@@ -1513,10 +1514,17 @@ std::string Mdict::locate(const std::string resource_name) {
         auto vec = decode_record_block_by_rid(record_block_idx);
         // reduce the definition by word
         std::string def = reduce3(vec, resource_name);
-        return def;
-        // unsigned char *byte_buf = new unsigned char[def.length()];
-        // hex_to_bytes(def.c_str(), byte_buf, def.length());
-        // return std::string(reinterpret_cast<char *>(byte_buf), def.length());
+
+        // convert hex string to bytes
+        unsigned char *byte_buf = new unsigned char[def.length()];
+        const auto def_length =def.length();
+        hex_to_bytes(def.c_str(), byte_buf, def_length);
+
+        // convert bytes to base64 string
+        const size_t base64_len = tb64enclen(def_length);
+        unsigned char *base64_buf = new unsigned char[base64_len];
+        tb64enc(byte_buf, def_length, base64_buf);
+        return std::string(reinterpret_cast<char *>(base64_buf), base64_len);
       }
       return std::string("");
     }

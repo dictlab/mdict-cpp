@@ -12,6 +12,7 @@
 #include "zlib_wrapper.h"
 
 #include <encode/api.h>
+#include <encode/base64.h>
 
 #include <algorithm>
 #include <cstring>
@@ -19,7 +20,7 @@
 #include <utility>
 #include <filesystem>
 
-#include "turbob64.h"
+
 
 const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
 
@@ -1514,17 +1515,13 @@ std::string Mdict::locate(const std::string resource_name) {
         auto vec = decode_record_block_by_rid(record_block_idx);
         // reduce the definition by word
         std::string def = reduce3(vec, resource_name);
-
-        // convert hex string to bytes
-        unsigned char *byte_buf = new unsigned char[def.length()];
-        const auto def_length =def.length();
-        hex_to_bytes(def.c_str(), byte_buf, def_length);
-
-        // convert bytes to base64 string
-        const size_t base64_len = tb64enclen(def_length);
-        unsigned char *base64_buf = new unsigned char[base64_len];
-        tb64enc(byte_buf, def_length, base64_buf);
-        return std::string(reinterpret_cast<char *>(base64_buf), base64_len);
+	
+	if (def.length() % 2 != 0) {
+	  def = "0" + def;  // prepend a zero to fix odd length (if makes sense in your app)
+	}
+	
+        auto treated_output = trim_nulls(def); // "def" doesn't return a valid hex, so we trim all the nulls.
+	return base64_from_hex(treated_output); 
       }
       return std::string("");
     }

@@ -2,7 +2,6 @@
 
 #include "adler32.h"
 #include "binutils.h"
-#include <codecvt>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -1518,12 +1517,22 @@ std::string Mdict::locate(const std::string resource_name) {
         // convert hex string to bytes
         unsigned char *byte_buf = new unsigned char[def.length()];
         const auto def_length =def.length();
-        hex_to_bytes(def.c_str(), byte_buf, def_length);
+        const size_t bytes_buf_len = hex_to_bytes(def.c_str(), byte_buf, def_length);
+        // ensure bytes_buf[bytes_buf_len] is 0
+        byte_buf[bytes_buf_len] = 0;
 
+        // write the byte_buf into a file
+        // replace resource_name's \\ into _
+        std::string output_file = resource_name;
+        std::replace(output_file.begin(), output_file.end(), '\\', '_');
+        std::ofstream outfile(output_file, std::ios::binary);
+        outfile.write(reinterpret_cast<char *>(byte_buf), bytes_buf_len);
+        outfile.close();
+        
         // convert bytes to base64 string
-        const size_t base64_len = tb64enclen(def_length);
+        const size_t base64_len = tb64enclen(bytes_buf_len);
         unsigned char *base64_buf = new unsigned char[base64_len];
-        tb64enc(byte_buf, def_length, base64_buf);
+        tb64enc(byte_buf, bytes_buf_len, base64_buf);
         return std::string(reinterpret_cast<char *>(base64_buf), base64_len);
       }
       return std::string("");

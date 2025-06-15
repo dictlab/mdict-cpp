@@ -1,3 +1,6 @@
+#ifndef MDICT_BASE64_H
+#define MDICT_BASE64_H
+
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -151,3 +154,5 @@ std::string bytes_to_hex(const std::vector<uint8_t>& bytes) {
     
     return hex_str;
 }
+
+#endif // MDICT_BASE64_H

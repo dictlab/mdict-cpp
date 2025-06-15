@@ -16,7 +16,6 @@
 #include <iostream>
 #include <string>
 #include "encode/api.h"
-#include "encode/base64.h"
 #include <algorithm>
 #include <functional>
 
@@ -198,54 +197,47 @@ int main(int argc, char **argv) {
     std::string definition(*result);
     if (verbose) {
       std::cout << ">>[definition start] [" << query_key
-                << "] length: " << definition.length() << " >>" << std::endl;
+		<< "] length: " << definition.length() << " >>" << std::endl;
     }
-    // if query_key ends with png, output data:image/png;base64, for html
-    if (ends_with(query_key, "png")) {
-      std::cout << "data:image/png;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "jpg")) {
-      std::cout << "data:image/jpeg;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "gif")) {
-      std::cout << "data:image/gif;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "ico")) {
-      std::cout << "data:image/x-icon;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "webp")) {
-      std::cout << "data:image/webp;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "svg")) {
-      std::cout << "data:image/svg+xml;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "mp3")) {
-      std::cout << "data:audio/mpeg;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "mp4")) {
-      std::cout << "data:video/mp4;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "wav")) {
-      std::cout << "data:audio/wav;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "m4a")) {
-      std::cout << "data:audio/m4a;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "m4v")) {
-      std::cout << "data:video/m4v;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "m4b")) {
-      std::cout << "data:audio/m4b;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "js")) {
-      std::cout << "data:application/javascript;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "css")) {
-      std::cout << "data:text/css;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "html")) {
-      std::cout << "data:text/html;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "txt")) {
-      std::cout << "data:text/plain;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "ttf")) {
-      std::cout << "data:font/ttf;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "otf")) {
-      std::cout << "data:font/otf;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "woff")) {
-      std::cout << "data:font/woff;base64," << definition << std::endl;
-    } else if (ends_with(query_key, "woff2")) {
-      std::cout << "data:font/woff2;base64," << definition << std::endl;
+
+    std::string ext;
+    const char* dot = strrchr(query_key, '.');
+    if (dot && *(dot + 1)) {
+      ext = dot + 1;
+      std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
     }
-    else {
-      std::cout << "query key:" <<query_key << "| def:" << definition << std::endl;
+
+    const std::unordered_map<std::string, std::string> mime_map = {
+      {"png",  "image/png"},
+      {"jpg",  "image/jpeg"},
+      {"gif",  "image/gif"},
+      {"ico",  "image/x-icon"},
+      {"webp", "image/webp"},
+      {"svg",  "image/svg+xml"},
+      {"mp3",  "audio/mpeg"},
+      {"mp4",  "video/mp4"},
+      {"wav",  "audio/wav"},
+      {"m4a",  "audio/m4a"},
+      {"m4v",  "video/m4v"},
+      {"m4b",  "audio/m4b"},
+      {"js",   "application/javascript"},
+      {"css",  "text/css"},
+      {"html", "text/html"},
+      {"txt",  "text/plain"},
+      {"ttf",  "font/ttf"},
+      {"otf",  "font/otf"},
+      {"woff", "font/woff"},
+      {"woff2","font/woff2"}
+    };
+
+    auto it = mime_map.find(ext);
+    if (it != mime_map.end()) {
+      std::cout << "data:" << it->second << ";base64," << definition << std::endl;
+    } else {
+      std::cout << "query key:" << query_key << " | def:" << definition << std::endl;
     }
-    
+
+
     if (verbose) {
       std::cout << "<<[definition   end] [" << query_key << "]" << " <<"
                 << std::endl;

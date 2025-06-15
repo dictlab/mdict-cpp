@@ -1,18 +1,9 @@
 /*
- * =====================================================================================
+ * Copyright (c) 2020-2025
+ * All rights reserved.
  *
- *       Filename:  xmlutils.h
- *
- *    Description:  xml parser utils tool functions
- *
- *        Version:  1.0
- *        Created:  01/25/2019 13:45:05
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  terasum (terasum@163.com)
- *
- * =====================================================================================
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
  */
 
 #ifndef MDICT_XMLUTILS_H_
@@ -21,7 +12,6 @@
 #include <map>
 #include <string>
 #include <cassert>
-#include <iostream>
 
 // parse xml header info
 std::map<std::string, std::string> parseXMLHeader(std::string dicxml);

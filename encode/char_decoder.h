@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#pragma once
 
 // In Windows ssize_t is not standard.
 #ifdef _WIN32
@@ -170,7 +171,7 @@ inline ssize_t utf16le_to_utf8(const unsigned char *utf16le_data, size_t utf16le
     return (ssize_t)utf8_idx; // Return number of bytes written (excluding null)
 }
 
-int example_main(int argc, char *argv[]) {
+inline int example_main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <hex_string>\n", argv[0]);
         return 1;

@@ -1,11 +1,11 @@
 # Set the minimum required CMake version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10) # for windows XP compatibility 
 
 # Set the project name
 PROJECT(MDictCpp VERSION 1.0.0)
 
 # C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17) # for windows XP compatibility 
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 # Set build type and compilation flags
@@ -21,7 +21,6 @@ ADD_COMPILE_OPTIONS(-Wno-unused-variable -fpermissive)
 
 # Add include directories
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/deps/ ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/deps/turbobase64)
 
 # Add library search directories
 LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)

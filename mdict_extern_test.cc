@@ -62,12 +62,15 @@ void print_usage(const char *program_name) {
             << "  -l, --list        List all keys in the dictionary\n"
             << "  -h, --help        Display this help message\n"
             << "  -v, --verbose     Enable verbose output\n"
+            << "  -x, --hex         Output in hex format for MDD files\n"
             << "\n"
             << "Examples:\n"
             << "  " << program_name
             << " dictionary.mdx word        # Look up a word\n"
             << "  " << program_name
-            << " -l dictionary.mdx          # List all keys\n";
+            << " -l dictionary.mdx          # List all keys\n"
+            << "  " << program_name
+            << " -x dictionary.mdd image    # Get image in hex format\n";
 }
 
 bool is_mdd_file(const std::string &filename) {
@@ -85,19 +88,23 @@ bool is_mdd_file(const std::string &filename) {
 int main(int argc, char **argv) {
     bool list_keys = false;
     bool verbose = false;
+    bool hex_output = false;
     int opt;
 
     std::string definition;
     std::string definition_hex;
 
   // Parse command line options
-  while ((opt = getopt(argc, argv, "lhv")) != -1) {
+  while ((opt = getopt(argc, argv, "lhvx")) != -1) {
     switch (opt) {
     case 'l':
       list_keys = true;
       break;
     case 'v':
       verbose = true;
+      break;
+    case 'x':
+      hex_output = true;
       break;
     case 'h':
       print_usage(argv[0]);
@@ -186,12 +193,14 @@ int main(int argc, char **argv) {
     if (!is_mdd) {
       mdict_lookup(dict, query_key, result);
     } else {
-      mdict_locate(dict, query_key, result);
+      // For MDD files, use hex encoding if -x option is specified, otherwise use base64
+      mdict_encoding_t encoding = hex_output ? MDICT_ENCODING_HEX : MDICT_ENCODING_BASE64;
+      mdict_locate(dict, query_key, result, encoding);
     }
     std::string definition(*result);
     if (verbose) {
       std::cout << ">>[definition start] [" << query_key
-		<< "] length: " << definition.length() << " >>" << std::endl;
+        << "] length: " << definition.length() << " >>" << std::endl;
     }
 
     std::string ext;
@@ -201,32 +210,13 @@ int main(int argc, char **argv) {
       std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
     }
 
-    const std::unordered_map<std::string, std::string> mime_map = {
-      {"png",  "image/png"},
-      {"jpg",  "image/jpeg"},
-      {"gif",  "image/gif"},
-      {"ico",  "image/x-icon"},
-      {"webp", "image/webp"},
-      {"svg",  "image/svg+xml"},
-      {"mp3",  "audio/mpeg"},
-      {"mp4",  "video/mp4"},
-      {"wav",  "audio/wav"},
-      {"m4a",  "audio/m4a"},
-      {"m4v",  "video/m4v"},
-      {"m4b",  "audio/m4b"},
-      {"js",   "application/javascript"},
-      {"css",  "text/css"},
-      {"html", "text/html"},
-      {"txt",  "text/plain"},
-      {"ttf",  "font/ttf"},
-      {"otf",  "font/otf"},
-      {"woff", "font/woff"},
-      {"woff2","font/woff2"}
-    };
-
-    auto it = mime_map.find(ext);
-    if (it != mime_map.end()) {
-      std::cout << "data:" << it->second << ";base64," << definition << std::endl;
+    std::string mime_type = mime_detect(query_key);
+    if (mime_type != "application/octet-stream") {
+      if (is_mdd && hex_output) {
+        std::cout << definition << std::endl;  // Output raw hex for MDD with -x option
+      } else {
+        std::cout << "data:" << mime_type << ";base64," << definition << std::endl;
+      }
     } else {
       std::cout << "query key:" << query_key << " | def:" << definition << std::endl;
     }

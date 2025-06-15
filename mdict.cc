@@ -1,4 +1,5 @@
 #include "mdict.h"
+#include "mdict_extern.h"
 
 #include "adler32.h"
 #include "binutils.h"
@@ -15,11 +16,9 @@
 
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <regex>
 #include <utility>
-#include <filesystem>
-
-
 
 const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
 
@@ -1030,6 +1029,7 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
   return vec;
 }
 
+// this function is used to decode the record block, it will read the record block from the file, avoid use this function
 int Mdict::decode_record_block() {
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
@@ -1217,11 +1217,11 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
     unsigned long decomp_acc = 0l;
     while (counter < this->key_block_num) {
       if (this->version >= 2.0) {
-        current_entries = be_bin_to_u64(decompress_buff.data() +
-                                        data_offset * sizeof(uint8_t));
+        auto bin_pointer = decompress_buff.data() + data_offset * sizeof(uint8_t);
+        current_entries = be_bin_to_u64(bin_pointer);
       } else {
-        current_entries = be_bin_to_u32(decompress_buff.data() +
-                                        data_offset * sizeof(uint8_t));
+        auto bin_pointer = decompress_buff.data() + data_offset * sizeof(uint8_t);
+        current_entries = be_bin_to_u32(bin_pointer);
       }
       num_entries_counter += current_entries;
 
@@ -1393,13 +1393,10 @@ void Mdict::init() {
 
   /* indexing... */
   this->read_header();
-  // this->printhead();
   this->read_key_block_header();
   this->read_key_block_info();
   this->read_record_block_header();
   //  this->decode_record_block();
-
-  // TODO delete this  this->decode_record_block(); // very slow!!!
 }
 
 /**
@@ -1503,7 +1500,7 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
   return vec[result].second;
 }
 
-std::string Mdict::locate(const std::string resource_name) {
+std::string Mdict::locate(const std::string resource_name, mdict_encoding_t encoding) {
   for (auto it = this->key_list.begin(); it != this->key_list.end(); it++) {
     std::string key_word = (*it)->key_word;
     if (key_word == resource_name) {
@@ -1514,9 +1511,14 @@ std::string Mdict::locate(const std::string resource_name) {
         auto vec = decode_record_block_by_rid(record_block_idx);
         // reduce the definition by word
         std::string def = reduce3(vec, resource_name);
-	
-        auto treated_output = trim_nulls(def); // "def" doesn't return a valid hex, so we trim all the nulls.
-	return base64_from_hex(treated_output); 
+
+        auto treated_output = trim_nulls(def);
+        
+        if (encoding == MDICT_ENCODING_HEX) {
+            return treated_output;  // Return raw hex string
+        } else {
+            return base64_from_hex(treated_output);  // Return base64 encoded string
+        }
       }
       return std::string("");
     }

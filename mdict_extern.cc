@@ -2,10 +2,56 @@
 #include "mdict.h"
 
 #include <algorithm>
+#include <unordered_map>
+#include <string>
 
 /**
   实现 mdict_extern.h中的方法
  */
+
+std::string mime_detect(const std::string& filename) {
+    static const std::unordered_map<std::string, std::string> mime_map = {
+        {"png",  "image/png"},
+        {"jpg",  "image/jpeg"},
+        {"gif",  "image/gif"},
+        {"ico",  "image/x-icon"},
+        {"jpeg", "image/jpeg"},
+        {"webp", "image/webp"},
+        {"svg",  "image/svg+xml"},
+        {"mp3",  "audio/mpeg"},
+        {"mp4",  "video/mp4"},
+        {"wav",  "audio/wav"},
+        {"m4a",  "audio/m4a"},
+        {"m4v",  "video/m4v"},
+        {"m4b",  "audio/m4b"},
+        {"js",   "application/javascript"},
+        {"css",  "text/css"},
+        {"html", "text/html"},
+        {"txt",  "text/plain"},
+        {"ttf",  "font/ttf"},
+        {"otf",  "font/otf"},
+        {"woff", "font/woff"},
+        {"woff2","font/woff2"}
+    };
+
+    // Find the last dot in the filename
+    size_t dot_pos = filename.find_last_of('.');
+    if (dot_pos == std::string::npos) {
+        return "application/octet-stream";  // Default MIME type for unknown extensions
+    }
+
+    // Get the extension and convert to lowercase
+    std::string ext = filename.substr(dot_pos + 1);
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+    // Look up the MIME type
+    auto it = mime_map.find(ext);
+    if (it != mime_map.end()) {
+        return it->second;
+    }
+
+    return "application/octet-stream";  // Default MIME type for unknown extensions
+}
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,10 +83,10 @@ void mdict_lookup(void *dict, const char *word, char **result) {
 /**
  locate a word
  */
-void mdict_locate(void *dict, const char *word, char **result) {
+void mdict_locate(void *dict, const char *word, char **result, mdict_encoding_t encoding) {
     auto *self = (mdict::Mdict *) dict;
     std::string queryWord(word);
-    std::string s = self->locate(queryWord);
+    std::string s = self->locate(queryWord, encoding);
 
     (*result) = (char *) calloc(sizeof(char), s.size() + 1);
     std::copy(s.begin(), s.end(), (*result));

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #pragma once
 #include "char_decoder.h"
 
@@ -74,4 +75,10 @@ static inline char* hex_string_to_utf8(const char* hex_input) {
     }
 
     return utf8_output;
+}
+
+inline std::string trim_nulls(const std::string& s) {
+    size_t end = s.find_last_not_of('\0');
+    if (end == std::string::npos) return ""; // all nulls
+    return s.substr(0, end + 1);
 }

@@ -1516,10 +1516,6 @@ std::string Mdict::locate(const std::string resource_name) {
         // reduce the definition by word
         std::string def = reduce3(vec, resource_name);
 	
-	if (def.length() % 2 != 0) {
-	  def = "0" + def;  // prepend a zero to fix odd length (if makes sense in your app)
-	}
-	
         auto treated_output = trim_nulls(def); // "def" doesn't return a valid hex, so we trim all the nulls.
 	return base64_from_hex(treated_output); 
       }

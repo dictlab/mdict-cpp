@@ -7,17 +7,6 @@
  */
 
 #include "mdict.h"
-#include "mdict_extern.h"
-
-#include "adler32.h"
-#include "binutils.h"
-#include <iostream>
-#include <map>
-#include <stdexcept>
-
-#include "encode/char_decoder.h"
-#include "xmlutils.h"
-#include "zlib_wrapper.h"
 
 #include <encode/api.h>
 #include <encode/base64.h>
@@ -25,8 +14,18 @@
 #include <algorithm>
 #include <cstring>
 #include <filesystem>
+#include <iostream>
+#include <map>
 #include <regex>
+#include <stdexcept>
 #include <utility>
+
+#include "adler32.h"
+#include "binutils.h"
+#include "encode/char_decoder.h"
+#include "mdict_extern.h"
+#include "xmlutils.h"
+#include "zlib_wrapper.h"
 
 const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
 
@@ -34,7 +33,6 @@ namespace mdict {
 
 // constructor
 Mdict::Mdict(std::string fn) noexcept : filename(std::move(fn)) {
-
   if (endsWith(filename, ".mdd")) {
     this->filetype = MDDTYPE;
   } else {
@@ -176,7 +174,7 @@ void Mdict::read_header() {
   // before version 2.0, number is 4 bytes integer
   // version 2.0 and above use 8 bytes
   std::string sver = headinfo["GeneratedByEngineVersion"];
-  std::string::size_type sz; // alias of size_t
+  std::string::size_type sz;  // alias of size_t
 
   float version = std::stof(sver, &sz);
   this->version = version;
@@ -250,8 +248,7 @@ void Mdict::read_key_block_header() {
   if (this->encrypt == ENCRYPT_RECORD_ENC) {
     std::cout << "user identification is needed to read encrypted file"
               << std::endl;
-    if (key_block_info_buffer)
-      std::free(key_block_info_buffer);
+    if (key_block_info_buffer) std::free(key_block_info_buffer);
     throw std::invalid_argument("invalid encrypted file");
   }
 
@@ -272,10 +269,8 @@ void Mdict::read_key_block_header() {
   int eno = bin_slice(key_block_info_buffer, key_block_info_bytes_num, 0,
                       this->number_width, key_block_nums_bytes);
   if (eno != 0) {
-    if (key_block_info_buffer)
-      std::free(key_block_info_buffer);
-    if (key_block_nums_bytes)
-      std::free(key_block_nums_bytes);
+    if (key_block_info_buffer) std::free(key_block_info_buffer);
+    if (key_block_nums_bytes) std::free(key_block_nums_bytes);
     std::cout << "eno: " << eno << std::endl;
     throw std::logic_error("get key block bin slice failed");
   }
@@ -286,8 +281,7 @@ void Mdict::read_key_block_header() {
     key_block_num = be_bin_to_u64((const unsigned char *)key_block_nums_bytes);
   else if (this->number_width == 4)
     key_block_num = be_bin_to_u32((const unsigned char *)key_block_nums_bytes);
-  if (key_block_nums_bytes)
-    std::free(key_block_nums_bytes);
+  if (key_block_nums_bytes) std::free(key_block_nums_bytes);
   /// passed
 
   // 2. [8:16]  - number of entries
@@ -296,10 +290,8 @@ void Mdict::read_key_block_header() {
   eno = bin_slice(key_block_info_buffer, key_block_info_bytes_num,
                   this->number_width, this->number_width, entries_num_bytes);
   if (eno != 0) {
-    if (key_block_info_buffer)
-      std::free(key_block_info_buffer);
-    if (entries_num_bytes)
-      std::free(entries_num_bytes);
+    if (key_block_info_buffer) std::free(key_block_info_buffer);
+    if (entries_num_bytes) std::free(entries_num_bytes);
     throw std::logic_error("get key block bin slice failed");
   }
   /// passed
@@ -309,8 +301,7 @@ void Mdict::read_key_block_header() {
     entries_num = be_bin_to_u64((const unsigned char *)entries_num_bytes);
   else if (this->number_width == 4)
     key_block_num = be_bin_to_u32((const unsigned char *)entries_num_bytes);
-  if (entries_num_bytes)
-    std::free(entries_num_bytes);
+  if (entries_num_bytes) std::free(entries_num_bytes);
   /// passed
 
   int key_block_info_size_start_offset = 0;
@@ -324,8 +315,7 @@ void Mdict::read_key_block_header() {
                     this->number_width * 2, this->number_width,
                     key_block_info_decompress_size_bytes);
     if (eno != 0) {
-      if (key_block_info_buffer)
-        std::free(key_block_info_buffer);
+      if (key_block_info_buffer) std::free(key_block_info_buffer);
       if (key_block_info_decompress_size_bytes)
         std::free(key_block_info_decompress_size_bytes);
       throw std::logic_error("decode key block decompress size failed");
@@ -358,8 +348,7 @@ void Mdict::read_key_block_header() {
                   key_block_info_size_start_offset, this->number_width,
                   key_block_info_size_buffer);
   if (eno != 0) {
-    if (key_block_info_buffer != nullptr)
-      std::free(key_block_info_buffer);
+    if (key_block_info_buffer != nullptr) std::free(key_block_info_buffer);
     if (key_block_info_size_buffer != nullptr)
       std::free(key_block_info_size_buffer);
     throw std::logic_error("decode key block info size failed");
@@ -383,10 +372,8 @@ void Mdict::read_key_block_header() {
                   key_block_info_size_start_offset + this->number_width,
                   this->number_width, key_block_size_buffer);
   if (eno != 0) {
-    if (key_block_info_buffer)
-      std::free(key_block_info_buffer);
-    if (key_block_size_buffer)
-      std::free(key_block_size_buffer);
+    if (key_block_info_buffer) std::free(key_block_info_buffer);
+    if (key_block_size_buffer) std::free(key_block_size_buffer);
     throw std::logic_error("decode key block size failed");
   }
   /// passed
@@ -398,16 +385,14 @@ void Mdict::read_key_block_header() {
   else if (this->number_width == 4)
     key_block_size =
         be_bin_to_u32((const unsigned char *)key_block_size_buffer);
-  if (key_block_size_buffer)
-    std::free(key_block_size_buffer);
+  if (key_block_size_buffer) std::free(key_block_size_buffer);
   /// passed
 
   // 6. [40:44] - 4bytes checksum
   // TODO if version > 2.0, skip 4bytes checksum
 
   // free key block info buffer
-  if (key_block_info_buffer != nullptr)
-    std::free(key_block_info_buffer);
+  if (key_block_info_buffer != nullptr) std::free(key_block_info_buffer);
 
   this->key_block_num = key_block_num;
   this->entries_num = entries_num;
@@ -470,8 +455,7 @@ void Mdict::read_key_block_info() {
     throw std::runtime_error("decode key block error");
   }
 
-  if (key_block_info_buffer != nullptr)
-    std::free(key_block_info_buffer);
+  if (key_block_info_buffer != nullptr) std::free(key_block_info_buffer);
   if (key_block_compressed_buffer != nullptr)
     std::free(key_block_compressed_buffer);
 }
@@ -509,7 +493,7 @@ void fast_decrypt(byte *data, const byte *k, int data_len, int key_len) {
 byte *mdx_decrypt(byte *comp_block, const int comp_block_len) {
   byte *key_buffer = (byte *)calloc(8, sizeof(byte));
   memcpy(key_buffer, comp_block + 4 * sizeof(char), 4 * sizeof(char));
-  key_buffer[4] = 0x95; // comp_block[4:8] + [0x95,0x36,0x00,0x00]
+  key_buffer[4] = 0x95;  // comp_block[4:8] + [0x95,0x36,0x00,0x00]
   key_buffer[5] = 0x36;
 
   byte *key = ripemd128bytes(key_buffer, 8);
@@ -561,7 +545,7 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
     // key text ends with '\x00'
     // version >= 2.0 delimiter == '0x0000'
     // else delimiter == '0x00'  (< 2.0)
-    int i = key_start_idx + number_width; // ver > 2.0, move 8, else move 4
+    int i = key_start_idx + number_width;  // ver > 2.0, move 8, else move 4
     if (i >= key_block_len) {
       throw std::runtime_error("key start idx > key block length");
     }
@@ -603,7 +587,7 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
 
       size_t utf16le_buf_size =
           (hex_input.length() / 2) +
-          1; // Add 1 just in case (though hex_to_bytes checks evenness)
+          1;  // Add 1 just in case (though hex_to_bytes checks evenness)
       unsigned char *utf16le_bytes = (unsigned char *)malloc(utf16le_buf_size);
       if (!utf16le_bytes) {
         perror("Error allocating memory for UTF-16LE buffer");
@@ -668,8 +652,8 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
  * @param block_id key_block id
  * @return return key list item
  */
-std::vector<key_list_item *>
-Mdict::decode_key_block_by_block_id(unsigned long block_id) {
+std::vector<key_list_item *> Mdict::decode_key_block_by_block_id(
+    unsigned long block_id) {
   // ------------------------------------
   // decode key_block_compressed
   // ------------------------------------
@@ -696,8 +680,8 @@ Mdict::decode_key_block_by_block_id(unsigned long block_id) {
       be_bin_to_u32((unsigned char *)key_block_buffer + 4 * sizeof(char));
 
   unsigned char *key_block = nullptr;
-  std::vector<uint8_t> kb_uncompressed; // note: ensure kb_uncompressed not
-                                        // die when out of uncompress scope
+  std::vector<uint8_t> kb_uncompressed;  // note: ensure kb_uncompressed not
+                                         // die when out of uncompress scope
 
   if ((key_block_comp_type[0] & 255) == 0) {
     // none compressed
@@ -760,8 +744,8 @@ int Mdict::decode_key_block(unsigned char *key_block_buffer,
 
     unsigned char *key_block = nullptr;
 
-    std::vector<uint8_t> kb_uncompressed; // note: ensure kb_uncompressed not
-                                          // die when out of uncompress scope
+    std::vector<uint8_t> kb_uncompressed;  // note: ensure kb_uncompressed not
+                                           // die when out of uncompress scope
 
     if ((key_block_comp_type[0] & 255) == 0) {
       // none compressed
@@ -838,7 +822,6 @@ int Mdict::read_record_block_header() {
                  record_info_buffer);
 
   if (this->version >= 2.0) {
-
     record_block_number = be_bin_to_u64((unsigned char *)record_info_buffer);
     record_block_entries_number = be_bin_to_u64(
         (unsigned char *)record_info_buffer + number_width * sizeof(char));
@@ -904,7 +887,6 @@ int Mdict::read_record_block_header() {
 
 std::vector<std::pair<std::string, std::string>>
 Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
-
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
 
@@ -1006,7 +988,7 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
       break;
     }
 
-    unsigned long upbound = uncomp_size; // - this->key_list[i]->record_start;
+    unsigned long upbound = uncomp_size;  // - this->key_list[i]->record_start;
     unsigned long expect_end = 0;
     auto expect_start = this->key_list[i]->record_start - decomp_accu;
     if (i < this->key_list.size() - 1) {
@@ -1037,7 +1019,8 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
   return vec;
 }
 
-// this function is used to decode the record block, it will read the record block from the file, avoid use this function
+// this function is used to decode the record block, it will read the record
+// block from the file, avoid use this function
 int Mdict::decode_record_block() {
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
@@ -1225,10 +1208,12 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
     unsigned long decomp_acc = 0l;
     while (counter < this->key_block_num) {
       if (this->version >= 2.0) {
-        auto bin_pointer = decompress_buff.data() + data_offset * sizeof(uint8_t);
+        auto bin_pointer =
+            decompress_buff.data() + data_offset * sizeof(uint8_t);
         current_entries = be_bin_to_u64(bin_pointer);
       } else {
-        auto bin_pointer = decompress_buff.data() + data_offset * sizeof(uint8_t);
+        auto bin_pointer =
+            decompress_buff.data() + data_offset * sizeof(uint8_t);
         current_entries = be_bin_to_u32(bin_pointer);
       }
       num_entries_counter += current_entries;
@@ -1415,7 +1400,7 @@ void Mdict::init() {
  * @return
  */
 long Mdict::reduce0(std::string phrase, unsigned long start,
-                    unsigned long end) { // non-recursive reduce implements
+                    unsigned long end) {  // non-recursive reduce implements
   for (size_t i = 0; i < end; ++i) {
     std::string first_key = this->key_block_info_list[i]->first_key;
     std::string last_key = this->key_block_info_list[i]->last_key;
@@ -1427,7 +1412,7 @@ long Mdict::reduce0(std::string phrase, unsigned long start,
 }
 
 long Mdict::reduce1(std::vector<key_list_item *> wordlist,
-                    std::string phrase) { // non-recursive reduce implements
+                    std::string phrase) {  // non-recursive reduce implements
   unsigned long left = 0;
   unsigned long right = wordlist.size() - 1;
   unsigned long mid = 0;
@@ -1460,7 +1445,7 @@ long Mdict::reduce1(std::vector<key_list_item *> wordlist,
  * @return
  */
 long Mdict::reduce2(
-    unsigned long record_start) { // non-recursive reduce implements
+    unsigned long record_start) {  // non-recursive reduce implements
   // TODO OPTIMISE
   unsigned long left = 0l;
   unsigned long right = this->record_header.size() - 1;
@@ -1508,7 +1493,8 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
   return vec[result].second;
 }
 
-std::string Mdict::locate(const std::string resource_name, mdict_encoding_t encoding) {
+std::string Mdict::locate(const std::string resource_name,
+                          mdict_encoding_t encoding) {
   for (auto it = this->key_list.begin(); it != this->key_list.end(); it++) {
     std::string key_word = (*it)->key_word;
     if (key_word == resource_name) {
@@ -1521,11 +1507,12 @@ std::string Mdict::locate(const std::string resource_name, mdict_encoding_t enco
         std::string def = reduce3(vec, resource_name);
 
         auto treated_output = trim_nulls(def);
-        
+
         if (encoding == MDICT_ENCODING_HEX) {
-            return treated_output;  // Return raw hex string
+          return treated_output;  // Return raw hex string
         } else {
-            return base64_from_hex(treated_output);  // Return base64 encoded string
+          return base64_from_hex(
+              treated_output);  // Return base64 encoded string
         }
       }
       return std::string("");
@@ -1597,4 +1584,4 @@ bool Mdict::endsWith(std::string const &fullString, std::string const &ending) {
     return false;
   }
 }
-} // namespace mdict
+}  // namespace mdict

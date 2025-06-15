@@ -8,6 +8,9 @@
 
 #include "adler32.h"
 
+#include <cstdio>
+#include <exception>
+
 /// ADLER-32 checksum calculations
 class Adler32 {
  public:

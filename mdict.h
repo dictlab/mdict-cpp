@@ -16,9 +16,9 @@
 #include <fstream>
 #include <string>  // std::stof
 #include <vector>
-#include "ripemd128.h"
+
 #include "mdict_extern.h"
-#include "mdict_simple_key.h"
+#include "ripemd128.h"
 
 /**
  * mdx struct analysis
@@ -136,10 +136,8 @@ namespace mdict {
 #define ENCODING_GB2312 4;
 #define ENCODING_GB18030 5;
 
-
 #define MDXTYPE "MDX";
 #define MDDTYPE "MDD";
-
 
 /**
  * key block info class definition
@@ -189,7 +187,6 @@ class key_list_item {
       : record_start(kid), key_word(std::move(kw)) {}
 };
 
-
 class record_header_item {
  public:
   unsigned long block_id;
@@ -204,7 +201,7 @@ class record_header_item {
         compressed_size(comp_size),
         decompressed_size(uncomp_size),
         compressed_size_accumulator(comp_accu),
-        decompressed_size_accumulator(decomp_accu){};
+        decompressed_size_accumulator(decomp_accu) {};
 };
 
 class record {
@@ -261,14 +258,15 @@ class Mdict {
    */
   std::string lookup(std::string word);
 
-
   /**
    * Locate a resource in the dictionary
    * @param resource_name The name of the resource to locate
-   * @param encoding The encoding type for the result (MDICT_ENCODING_BASE64 or MDICT_ENCODING_HEX)
+   * @param encoding The encoding type for the result (MDICT_ENCODING_BASE64 or
+   * MDICT_ENCODING_HEX)
    * @return The located resource content in the specified encoding
    */
-  std::string locate(const std::string resource_name, mdict_encoding_t encoding = MDICT_ENCODING_BASE64);
+  std::string locate(const std::string resource_name,
+                     mdict_encoding_t encoding = MDICT_ENCODING_BASE64);
 
   /**
    * suggest simuler word which matches the prefix
@@ -325,13 +323,14 @@ class Mdict {
   std::string reduce3(std::vector<std::pair<std::string, std::string>> vec,
                       std::string phrase);
 
-    std::vector<key_list_item *> keyList();
+  std::vector<key_list_item *> keyList();
 
-    std::string parse_definition(const std::string word, unsigned long record_start);
+  std::string parse_definition(const std::string word,
+                               unsigned long record_start);
 
+  std::string filetype;
 
-    std::string filetype;
-private:
+ private:
   /********************************
    *     general section           *
    ********************************/
@@ -440,8 +439,8 @@ private:
    * @param key_block the key block buffer
    * @param key_block_len the key block buffer length
    */
-  //# void split_key_block(unsigned char *key_block, unsigned long
-  // key_block_len);
+  // # void split_key_block(unsigned char *key_block, unsigned long
+  //  key_block_len);
   std::vector<key_list_item *> split_key_block(unsigned char *key_block,
                                                unsigned long key_block_len,
                                                unsigned long block_id);
@@ -507,9 +506,10 @@ private:
   /**
    * print the header part (TODO delete)
    */
-  void printhead() {  
+  void printhead() {
     // std::cout << "version: " << this->version << std::endl
-    //           << "header_bytes_size: " << this->header_bytes_size << std::endl
+    //           << "header_bytes_size: " << this->header_bytes_size <<
+    //           std::endl
     //           << "encoding: " << this->encoding << std::endl
     //           << "key_block_num: " << this->key_block_num << std::endl
     //           << "entries_num: " << this->entries_num << std::endl

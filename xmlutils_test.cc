@@ -1,7 +1,7 @@
 #include <xmlutils.h>
-#include <string>
+
 #include <cassert>
-#include <iostream>
+#include <string>
 
 using namespace std;
 

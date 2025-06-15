@@ -13,9 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <cstdio>
 #include <cstdlib>
-#include <exception>
 
 typedef unsigned char byte;
 typedef unsigned short word16;

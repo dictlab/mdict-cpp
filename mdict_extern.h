@@ -29,14 +29,15 @@ extern "C" {
  * Encoding type for locate function
  */
 typedef enum {
-    MDICT_ENCODING_BASE64 = 0,  // Default encoding, returns base64 string
-    MDICT_ENCODING_HEX = 1      // Returns raw hex string
+  MDICT_ENCODING_BASE64 = 0,  // Default encoding, returns base64 string
+  MDICT_ENCODING_HEX = 1      // Returns raw hex string
 } mdict_encoding_t;
 
 /**
  * Initialize a dictionary from a file
  * @param dictionary_path Path to the dictionary file (.mdx or .mdd)
- * @return A pointer to the initialized dictionary object, or NULL if initialization fails
+ * @return A pointer to the initialized dictionary object, or NULL if
+ * initialization fails
  */
 void *mdict_init(const char *dictionary_path);
 
@@ -44,7 +45,8 @@ void *mdict_init(const char *dictionary_path);
  * Look up a word in the dictionary and get its definition
  * @param dict Dictionary object pointer returned by mdict_init
  * @param word The word to look up
- * @param result Pointer to store the definition result (memory will be allocated)
+ * @param result Pointer to store the definition result (memory will be
+ * allocated)
  */
 void mdict_lookup(void *dict, const char *word, char **result);
 
@@ -53,16 +55,19 @@ void mdict_lookup(void *dict, const char *word, char **result);
  * @param dict Dictionary object pointer returned by mdict_init
  * @param word The word to locate
  * @param result Pointer to store the location result (memory will be allocated)
- * @param encoding The encoding type for the result (MDICT_ENCODING_BASE64 or MDICT_ENCODING_HEX)
+ * @param encoding The encoding type for the result (MDICT_ENCODING_BASE64 or
+ * MDICT_ENCODING_HEX)
  */
-void mdict_locate(void *dict, const char *word, char **result, mdict_encoding_t encoding);
+void mdict_locate(void *dict, const char *word, char **result,
+                  mdict_encoding_t encoding);
 
 /**
  * Parse a word's definition from its record start position
  * @param dict Dictionary object pointer returned by mdict_init
  * @param word The word to parse
  * @param record_start The starting position of the record
- * @param result Pointer to store the parsed definition (memory will be allocated)
+ * @param result Pointer to store the parsed definition (memory will be
+ * allocated)
  */
 void mdict_parse_definition(void *dict, const char *word,
                             unsigned long record_start, char **result);

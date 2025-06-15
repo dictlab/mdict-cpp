@@ -1,4 +1,5 @@
 #include "mdict.h"
+#include "mdict_extern.h"
 
 #include "adler32.h"
 #include "binutils.h"
@@ -15,11 +16,9 @@
 
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <regex>
 #include <utility>
-#include <filesystem>
-
-
 
 const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
 
@@ -1503,7 +1502,7 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
   return vec[result].second;
 }
 
-std::string Mdict::locate(const std::string resource_name) {
+std::string Mdict::locate(const std::string resource_name, mdict_encoding_t encoding) {
   for (auto it = this->key_list.begin(); it != this->key_list.end(); it++) {
     std::string key_word = (*it)->key_word;
     if (key_word == resource_name) {
@@ -1514,9 +1513,14 @@ std::string Mdict::locate(const std::string resource_name) {
         auto vec = decode_record_block_by_rid(record_block_idx);
         // reduce the definition by word
         std::string def = reduce3(vec, resource_name);
-	
-        auto treated_output = trim_nulls(def); // "def" doesn't return a valid hex, so we trim all the nulls.
-	return base64_from_hex(treated_output); 
+
+        auto treated_output = trim_nulls(def);
+        
+        if (encoding == MDICT_ENCODING_HEX) {
+            return treated_output;  // Return raw hex string
+        } else {
+            return base64_from_hex(treated_output);  // Return base64 encoded string
+        }
       }
       return std::string("");
     }

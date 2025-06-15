@@ -9,6 +9,8 @@
 #include <string>  // std::stof
 #include <vector>
 #include "ripemd128.h"
+#include "mdict_extern.h"
+#include "mdict_simple_key.h"
 
 /**
  * mdx struct analysis
@@ -252,7 +254,13 @@ class Mdict {
   std::string lookup(std::string word);
 
 
-  std::string locate(const std::string resource_name);
+  /**
+   * Locate a resource in the dictionary
+   * @param resource_name The name of the resource to locate
+   * @param encoding The encoding type for the result (MDICT_ENCODING_BASE64 or MDICT_ENCODING_HEX)
+   * @return The located resource content in the specified encoding
+   */
+  std::string locate(const std::string resource_name, mdict_encoding_t encoding = MDICT_ENCODING_BASE64);
 
   /**
    * suggest simuler word which matches the prefix

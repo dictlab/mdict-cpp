@@ -1029,6 +1029,7 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
   return vec;
 }
 
+// this function is used to decode the record block, it will read the record block from the file, avoid use this function
 int Mdict::decode_record_block() {
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
@@ -1216,11 +1217,11 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
     unsigned long decomp_acc = 0l;
     while (counter < this->key_block_num) {
       if (this->version >= 2.0) {
-        current_entries = be_bin_to_u64(decompress_buff.data() +
-                                        data_offset * sizeof(uint8_t));
+        auto bin_pointer = decompress_buff.data() + data_offset * sizeof(uint8_t);
+        current_entries = be_bin_to_u64(bin_pointer);
       } else {
-        current_entries = be_bin_to_u32(decompress_buff.data() +
-                                        data_offset * sizeof(uint8_t));
+        auto bin_pointer = decompress_buff.data() + data_offset * sizeof(uint8_t);
+        current_entries = be_bin_to_u32(bin_pointer);
       }
       num_entries_counter += current_entries;
 
@@ -1392,13 +1393,10 @@ void Mdict::init() {
 
   /* indexing... */
   this->read_header();
-  // this->printhead();
   this->read_key_block_header();
   this->read_key_block_info();
   this->read_record_block_header();
   //  this->decode_record_block();
-
-  // TODO delete this  this->decode_record_block(); // very slow!!!
 }
 
 /**

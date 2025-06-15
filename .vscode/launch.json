@@ -7,7 +7,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "mdd query",
+            "name": "旺文社漢字典第四版.mdd",
             "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/build/bin/mydict",
             "args": [
@@ -16,6 +16,18 @@
                 // "𨆍",
                 "\\img\\字韻078.png",
                 // "\\img\\HJ474C.png"
+            ],
+            "preLaunchTask": "CMake build"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "柯林斯学习词典.mdx",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/build/bin/mydict",
+            "args": [
+                "-l",
+                "${workspaceFolder}/tests/testdict/柯林斯学习词典.mdx",
             ],
             "preLaunchTask": "CMake build"
         },

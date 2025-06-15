@@ -1,6 +1,9 @@
 // adler32.cpp - originally written and placed in the public domain by Wei Dai
 
 #include "adler32.h"
+
+#include <cstdio>
+
 int main() {
   //  Adler32 adler32hasher;
   char *str = const_cast<char *>("helloworld");

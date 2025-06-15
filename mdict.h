@@ -330,10 +330,6 @@ private:
   // dictionary file name
   const std::string filename;
 
-  const std::string aff_file;
-
-  const std::string dic_file;
-
   // file input stream
   std::ifstream instream;
 

@@ -52,7 +52,7 @@ ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler3
 target_link_libraries(mdict PRIVATE Miniz TurboBase64)
 
 # Executable target: mydict (for development/testing purposes only)
-ADD_EXECUTABLE(mydict example/mydict.cc)
+ADD_EXECUTABLE(mydict src/mydict.cc)
 target_link_libraries(mydict PRIVATE mdict Miniz TurboBase64)
 
 # Define installation behavior for the mdict library

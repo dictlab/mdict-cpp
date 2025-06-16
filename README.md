@@ -46,12 +46,27 @@ cmake ..
 make mydict
 ```
 
-The executable will be generated at `target/bin/mydict`
+The executable will be generated at `build/bin/mydict`
 
 ### Running the Dictionary Tool
 
+#### Query a word
+
 ```bash
-./target/bin/mydict your_mdx_file.mdx yourword
+./build/bin/mydict your_mdx_file.mdx yourword
+# output the resource binary as base64 format
+./build/bin/mydict your_mdx_file.mdd \\xxx\\xx.png
+
+# output the resource binary as hex string format
+./build/bin/mydict -x your_mdx_file.mdd \\xxx\\xx.png
+```
+
+#### list all keys
+
+```bash
+./build/bin/mydict -l your_mdx_file.mdx
+
+./build/bin/mydict -l your_mdx_file.mdd
 ```
 
 ### Building the Library
@@ -69,7 +84,7 @@ The library will be generated at `target/lib/libmdict.a`
 
 1. Include the header files:
 ```cpp
-#include "mdict/mdict.h"
+#include "mdict_extern.h"
 ```
 
 2. Link against the library:

@@ -57,7 +57,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -G "Visual Studio 16 2019" -A x86 -DCMAKE_CXX_FLAGS="/D_WIN32_WINNT=0x0501 /DNTDDI_VERSION=0x05010000"
+        cmake .. -G "Visual Studio 17 2022" -A x86 -DCMAKE_CXX_FLAGS="/D_WIN32_WINNT=0x0501 /DNTDDI_VERSION=0x05010000"
         cmake --build . --config Release
 
     - name: Run tests (Ubuntu)

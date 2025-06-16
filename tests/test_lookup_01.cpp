@@ -12,6 +12,7 @@ int getpwd() {
         return 1;
     }
     printf("getcwd: %s\n", pwd);
+    return 0;
 }
 
 std::string test_lookup(const std::string& word) {

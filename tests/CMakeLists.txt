@@ -5,8 +5,10 @@ include_directories(${PROJECT_SOURCE_DIR}/deps/googletest/googlemock/include)
 
 # Copy testdict and wordlist to binary directory
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/testdict)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tests)
 file(COPY testdict/testdict.mdx DESTINATION ${PROJECT_BINARY_DIR}/testdict)
 file(COPY testdict/wordlist.txt DESTINATION ${PROJECT_BINARY_DIR}/testdict)
+file(COPY text_xml.xml DESTINATION ${PROJECT_BINARY_DIR}/tests)
 
 
 # Test executables

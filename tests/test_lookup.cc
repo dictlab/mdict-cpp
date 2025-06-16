@@ -17,6 +17,12 @@ int getpwd() {
   return 0;
 }
 
+std::string get_expect_start(const std::string &word) {
+  auto *mydict = new mdict::Mdict("../testdict/testdict.mdx");
+  mydict->init();
+  return mydict->lookup(word);
+}
+
 std::string test_lookup(const std::string &word) {
   auto *mydict = new mdict::Mdict("../testdict/testdict.mdx");
   mydict->init();
@@ -24,7 +30,8 @@ std::string test_lookup(const std::string &word) {
 }
 
 TEST(mdict, lookup_cake) {
-  EXPECT_EQ(
+  std::string result = test_lookup("cake");
+  EXPECT_STREQ(
       "<font size=+1 ><b>cake</b></font> <br><br><font color=red "
       "><b>noun</b></font><br><b>1</b> <span style=\"COLOR: blue;\"><i>a plate "
       "of cream cakes</i></span> <syn><br><font COLOR= darkblue><b>BUN "
@@ -390,11 +397,13 @@ TEST(mdict, lookup_cake) {
       "<tr><td bgcolor=\"EFEFDF\" width=\"3\">&nbsp;</td><td "
       "bgcolor=\"EFEFDF\">zabaglione <rl><font "
       "color=\"brown\">(Italian)</font></rl></td></tr></table>\r\n",
-      test_lookup("cake"));
+      result.c_str());
 }
 
 TEST(mdict, lookup_case) {
-  EXPECT_EQ(
+  std::string result = test_lookup("aback");
+
+  EXPECT_STREQ(
       "<font size=+1 ><b>aback</b></font> <br><br><font color=red "
       "><b>adverb</b></font><br> <br><font style=\"COLOR: darkblue;\"><b>take "
       "someone aback</b></font> <span style=\"COLOR: blue;\"><i>Joanna was "
@@ -406,21 +415,23 @@ TEST(mdict, lookup_case) {
       "discompose, bewilder; <rl><font color=\"brown\">informal</font></rl> "
       "flabbergast, knock for six, knock sideways, knock out, floor, strike "
       "dumb.</syn>\r\n",
-      test_lookup("aback"));
+      result.c_str());
 }
 
 TEST(mdict, lookup_Satan) {
-  EXPECT_EQ(
+    std::string result = test_lookup("Satan");
+  EXPECT_STREQ(
       "<font size=+1 ><b>Satan</b></font> <br><br><font color=red "
       "><b>noun.</b></font><br> <br><xr>See table at <a "
       "href=\"entry://devil\">devil</a>.</xr>\r\n"
 
       ,
-      test_lookup("Satan"));
+      result.c_str());
 }
 
 TEST(mdict, lookup_zoom) {
-  EXPECT_EQ(
+  std::string result = test_lookup("zoom");
+  EXPECT_STREQ(
       "<font size=+1 ><b>zoom</b></font> <br><br><font color=red "
       "><b>verb</b></font><br> <span style=\"COLOR: blue;\"><i>a motorbike "
       "zoomed across their path</i></span> <syn><br><font COLOR= "
@@ -437,13 +448,13 @@ TEST(mdict, lookup_zoom) {
       "Amer. vulgar slang</font></rl> drag/tear/haul ass; <rl><font "
       "color=\"brown\">informal, dated</font></rl> cut along; <rl><font "
       "color=\"brown\">archaic</font></rl> post, hie, fleet.</syn>\r\n"
-
       ,
-      test_lookup("zoom"));
+      result.c_str());
 }
 
 TEST(mdict, lookup_wisdom) {
-  EXPECT_EQ(
+  std::string result = test_lookup("wisdom");
+  EXPECT_STREQ(
       "<font size=+1 ><b>wisdom</b></font> <br><br><font color=red "
       "><b>noun</b></font><br><b>1</b> <span style=\"COLOR: blue;\"><i>a "
       "number of senior politicians questioned the wisdom of the "
@@ -463,7 +474,7 @@ TEST(mdict, lookup_wisdom) {
       "East</i></span> <syn><br><font COLOR= darkblue><b>KNOWLEDGE "
       "</b></font>, learning, erudition, scholarship, philosophy; "
       "lore.</syn>\r\n",
-      test_lookup("wisdom"));
+      result.c_str());
 }
 
 // ab initio not found!
@@ -472,7 +483,8 @@ TEST(mdict, lookup_wisdom) {
 // America not found!
 
 TEST(mdict, lookup_ab_initio) {
-  EXPECT_EQ(
+  std::string result = test_lookup("ab initio");
+  EXPECT_STREQ(
       "<font size=+1 ><b>ab initio</b></font> <br><br><font color=red "
       "><b>adverb &amp; adjective</b></font><br> <span style=\"COLOR: "
       "blue;\"><i>the transactions were void ab initio</i></span> "
@@ -481,18 +493,20 @@ TEST(mdict, lookup_ab_initio) {
       "to start with, primarily; <rl><font color=\"brown\">music</font></rl> "
       "da capo; <rl><font color=\"brown\">informal</font></rl> from scratch, "
       "from the word go.</syn>\r\n",
-      test_lookup("ab initio"));
+      result.c_str());
 }
 
 TEST(mdict, lookup_Africa) {
-  EXPECT_EQ(
+  std::string result = test_lookup("Africa");
+  EXPECT_STREQ(
       "<font size=+1 ><b>Africa</b></font> <br><br><font color=red "
       "><b>noun.</b></font><br> <br><xr>See table.</xr>\r\n",
-      test_lookup("Africa"));
+      result.c_str());
 }
 
 TEST(mdict, lookup_tableau) {
-  EXPECT_EQ(
+  std::string result = test_lookup("tableau");
+  EXPECT_STREQ(
       "<font size=+1 ><b>tableau</b></font> <br><br><font color=red "
       "><b>noun</b></font><br><b>1</b> <span style=\"COLOR: blue;\"><i>the sun "
       "and moon frequently appear in mythic tableaux and they are clearly "
@@ -506,11 +520,12 @@ TEST(mdict, lookup_tableau) {
       "entrance disturbed the domestic tableau around the fireplace</i></span> "
       "<syn><br><font COLOR= darkblue><b>SCENE </b></font>, arrangement, "
       "grouping, group; picture, spectacle, image, view, vignette.</syn>\r\n",
-      test_lookup("tableau"));
+      result.c_str());
 }
 
 TEST(mdict, lookup_Table_BIOCHEMICAL) {
-  EXPECT_EQ("", test_lookup("Table_BIOCHEMICAL"));
+  std::string result = test_lookup("Table_BIOCHEMICAL");
+  EXPECT_STREQ("", result.c_str());
 }
 
 /*

@@ -908,7 +908,6 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
     previous_end = record_header[idx - 1]->decompressed_size_accumulator;
     previous_uncomp_size = record_header[idx - 1]->decompressed_size;
   }
-  //  std::cout << "record decomp accu " << decomp_accu << std::endl;
 
   char *record_block_cmp_buffer = (char *)calloc(comp_size, sizeof(char));
 
@@ -1006,7 +1005,7 @@ Mdict::decode_record_block_by_rid(unsigned long rid /* record id */) {
                             upbound /* to delete null character*/);
     } else {
       def = be_bin_to_utf8((char *)record_block, expect_start,
-                           upbound - 1 /* to delete null character*/);
+                           upbound /* to delete null character*/);
     }
     std::pair<std::string, std::string> vp(key_text, def);
     vec.push_back(vp);
@@ -1475,7 +1474,6 @@ std::string Mdict::reduce3(std::vector<std::pair<std::string, std::string>> vec,
   unsigned int result = 0;
   while (left < right) {
     mid = left + ((right - left) >> 1);
-    // std::cout << _s(vec[mid].first) << std::endl;
     if (_s(phrase).compare(_s(vec[mid].first)) > 0) {
       left = mid + 1;
     } else if (_s(phrase).compare(_s(vec[mid].first)) == 0) {
@@ -1539,10 +1537,6 @@ std::string Mdict::lookup(const std::string word) {
         unsigned long record_block_idx = reduce2(tlist[word_id]->record_start);
         // decode recode by record index
         auto vec = decode_record_block_by_rid(record_block_idx);
-        //  for(auto it= vec.begin(); it != vec.end(); ++it){
-        //   std::cout<<"word: "<<(*it).first<<" \n def:
-        //   "<<(*it).second<<std::endl;
-        //  }
         // reduce the definition by word
         std::string def = reduce3(vec, word);
         return def;

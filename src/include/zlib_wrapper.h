@@ -11,10 +11,15 @@
 
 #include "miniz/miniz.h"
 
-/*
- * 调用zlib解压缩数据
- * uncompress_bound为压缩前的数据长度,如果不知道数据源长度设置为0
- * */
+/**
+ * Decompresses zlib-compressed data into a vector
+ * This function automatically handles buffer sizing and retries with larger buffers if needed
+ * 
+ * @param source Pointer to the compressed data
+ * @param sourceLen Length of the compressed data in bytes
+ * @param uncompress_bound Expected size of decompressed data (if known). If 0, will estimate based on source length
+ * @return std::vector<uint8_t> The decompressed data, or empty vector if decompression fails
+ */
 inline std::vector<uint8_t> zlib_mem_uncompress(const void *source,
                                                 size_t sourceLen,
                                                 size_t uncompress_bound = 0) {
@@ -41,9 +46,15 @@ inline std::vector<uint8_t> zlib_mem_uncompress(const void *source,
   }
 }
 
-/*
- * 调用zlib解压缩数据
- * */
+/**
+ * Decompresses zlib-compressed data into a pre-allocated buffer
+ * 
+ * @param dest Pointer to the destination buffer where decompressed data will be stored
+ * @param destLen Pointer to the size of the destination buffer. Will be updated with actual decompressed size
+ * @param source Pointer to the compressed data
+ * @param sourceLen Length of the compressed data in bytes
+ * @return int Z_OK on success, or a zlib error code on failure
+ */
 inline int zlib_mem_uncompress(void *dest, size_t *destLen, const void *source,
                                size_t sourceLen) {
   //  throw_if(nullptr==source||0==sourceLen||nullptr==dest||nullptr==destLen||0==*destLen)

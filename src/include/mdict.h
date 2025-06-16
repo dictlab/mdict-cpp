@@ -243,6 +243,12 @@ class Mdict {
    */
   Mdict(std::string fn) noexcept;
 
+  /**
+   * constructor with additional files
+   * @param fn dictionary file name
+   * @param aff_fn affix file name
+   * @param dic_fn dictionary file name
+   */
   Mdict(std::string fn, std::string aff_fn, std::string dic_fn) noexcept;
 
   /**
@@ -282,34 +288,40 @@ class Mdict {
    */
   std::vector<std::string> stem(const std::string word);
 
-  // contains key or not
   /**
-   * contains the word or not
-   * @param word the searching word
-   * @param word_len the searching word length
-   * @return true means hit, otherwise, not exists
+   * Check if a word exists in the dictionary
+   * @param word The word to check
+   * @param word_len Length of the word
+   * @return true if the word exists, false otherwise
    */
   bool contains(char *word, int word_len);
 
   /**
-   * init the dictionary
+   * Initialize the dictionary by reading its header and block information
    */
   void init();
+
   /**
-   * find the key word includes in which block
-   * @param phrase
-   * @param start
-   * @param end
-   * @return
+   * Reduce search range for a phrase
+   * @param phrase The phrase to search for
+   * @param start Starting position in the dictionary
+   * @param end Ending position in the dictionary
+   * @return The reduced range
    */
   long reduce0(std::string phrase, unsigned long start, unsigned long end);
 
+  /**
+   * Reduce search range using a word list
+   * @param wordlist List of words to search for
+   * @param phrase The phrase to search for
+   * @return The reduced range
+   */
   long reduce1(std::vector<key_list_item *> wordlist, std::string phrase);
 
   /**
-   * reduce search in record_block_header
-   * @param record_start record start offset
-   * @return record block id
+   * Reduce search range from a record start position
+   * @param record_start Starting position of the record
+   * @return The reduced range
    */
   long reduce2(unsigned long record_start);
 
@@ -328,6 +340,93 @@ class Mdict {
                                unsigned long record_start);
 
   std::string filetype;
+
+  /**
+   * Read data from the dictionary file
+   * @param offset Starting offset in the file
+   * @param len Number of bytes to read
+   * @param buf Buffer to store the read data
+   */
+  void readfile(uint64_t offset, uint64_t len, char *buf);
+
+  /**
+   * Read and parse the dictionary header
+   */
+  void read_header();
+
+  /**
+   * Read the key block header
+   */
+  void read_key_block_header();
+
+  /**
+   * Read the key block information
+   */
+  void read_key_block_info();
+
+  /**
+   * Decode key block information from a buffer
+   * @param key_block_info_buffer Buffer containing key block information
+   * @param kb_info_buff_len Length of the buffer
+   * @param key_block_num Number of key blocks
+   * @param entries_num Number of entries
+   * @return 0 on success, non-zero on failure
+   */
+  int decode_key_block_info(char *key_block_info_buffer,
+                            unsigned long kb_info_buff_len, int key_block_num,
+                            int entries_num);
+
+  /**
+   * Decode a key block from a buffer
+   * @param key_block_buffer Buffer containing the key block
+   * @param kb_buff_len Length of the buffer
+   * @return 0 on success, non-zero on failure
+   */
+  int decode_key_block(unsigned char *key_block_buffer,
+                       unsigned long kb_buff_len);
+
+  std::vector<key_list_item *> decode_key_block_by_block_id(
+      unsigned long block_id);
+
+  /**
+   * Read the record block header
+   * @return 0 on success, non-zero on failure
+   */
+  int read_record_block_header();
+
+  /**
+   * Decode the record block
+   * @return 0 on success, non-zero on failure
+   */
+  int decode_record_block();
+
+  std::vector<std::pair<std::string, std::string>> decode_record_block_by_rid(
+      unsigned long rid /* record id */);
+
+  /**
+   * Print the dictionary header information
+   */
+  void printhead() {
+    // std::cout << "version: " << this->version << std::endl
+    //           << "header_bytes_size: " << this->header_bytes_size <<
+    //           std::endl
+    //           << "encoding: " << this->encoding << std::endl
+    //           << "key_block_num: " << this->key_block_num << std::endl
+    //           << "entries_num: " << this->entries_num << std::endl
+    //           << "key_block_info_decompress_size: "
+    //           << this->key_block_info_decompress_size << std::endl
+    //           << "key_block_info_size: " << this->key_block_info_size
+    //           << std::endl
+    //           << "key_block_size: " << this->key_block_size << std::endl;
+  }
+
+  /**
+   * Check if a string ends with a specific suffix
+   * @param fullString The string to check
+   * @param ending The suffix to look for
+   * @return true if the string ends with the suffix, false otherwise
+   */
+  bool endsWith(const std::string &fullString, const std::string &ending);
 
  private:
   /********************************
@@ -426,14 +525,6 @@ class Mdict {
   std::vector<record *> key_data;
 
   /**
-   * read in length bytes from stream
-   * @param offset the start offset
-   * @param len the length of the buffer
-   * @param buf the target buffer
-   */
-  void readfile(uint64_t offset, uint64_t len, char *buf);
-
-  /**
    * split key block from key block buffer
    * @param key_block the key block buffer
    * @param key_block_len the key block buffer length
@@ -452,73 +543,13 @@ class Mdict {
    *     header section           *
    ********************************/
 
-  /**
-   * read in the dictionary header
-   */
-  void read_header();
-
   /********************************
    *     key block info section   *
    ********************************/
 
-  /**
-   * read the key block header
-   */
-  void read_key_block_header();
-
-  /**
-   * read the key block info
-   */
-  void read_key_block_info();
-
-  /**
-   * decode the key block info into key block list
-   * @param key_block_info_buffer key block info buffer
-   * @param kb_info_buff_len key block info buffer length
-   * @param key_block_num key block number (optional)
-   * @param entries_num word entries number (optional)
-   * @return 0 - successful, otherwise failed
-   */
-  int decode_key_block_info(char *key_block_info_buffer,
-                            unsigned long kb_info_buff_len, int key_block_num,
-                            int entries_num);
-
-  /**
-   * decode the key block part
-   * @param key_block_buffer key block buffer
-   * @param kb_buff_len key block length
-   * @return
-   */
-  int decode_key_block(unsigned char *key_block_buffer,
-                       unsigned long kb_buff_len);
-
-  std::vector<key_list_item *> decode_key_block_by_block_id(
-      unsigned long block_id);
-
-  int read_record_block_header();
-
-  int decode_record_block();
-
-  std::vector<std::pair<std::string, std::string>> decode_record_block_by_rid(
-      unsigned long rid /* record id */);
-
-  /**
-   * print the header part (TODO delete)
-   */
-  void printhead() {
-    // std::cout << "version: " << this->version << std::endl
-    //           << "header_bytes_size: " << this->header_bytes_size <<
-    //           std::endl
-    //           << "encoding: " << this->encoding << std::endl
-    //           << "key_block_num: " << this->key_block_num << std::endl
-    //           << "entries_num: " << this->entries_num << std::endl
-    //           << "key_block_info_decompress_size: "
-    //           << this->key_block_info_decompress_size << std::endl
-    //           << "key_block_info_size: " << this->key_block_info_size
-    //           << std::endl
-    //           << "key_block_size: " << this->key_block_size << std::endl;
-  }
-
-  bool endsWith(const std::string &fullString, const std::string &ending);
+  /********************************
+   *     record block section     *
+   ********************************/
 };
 }  // namespace mdict
+

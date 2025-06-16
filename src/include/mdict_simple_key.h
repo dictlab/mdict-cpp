@@ -9,6 +9,10 @@
 #pragma once
 #include <stdint.h>
 
+/**
+ * Structure representing a single entry in a simple key list
+ * Used for storing dictionary entries with their corresponding file positions
+ */
 typedef struct simple_key_list_item {
   uint64_t record_start;  // Supports files >4GB
   char* key_word;

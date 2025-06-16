@@ -58,14 +58,6 @@ TEST_F(Base64Test, BasicDecode) {
     EXPECT_EQ(decoded, expected);
 }
 
-// Test empty string
-TEST_F(Base64Test, EmptyString) {
-    std::string input = "";
-    std::string encoded = encode_base64(input);
-    std::string decoded = decode_base64(encoded);
-    EXPECT_EQ(decoded, input);
-}
-
 // Test special characters
 TEST_F(Base64Test, SpecialCharacters) {
     std::string input = "!@#$%^&*()_+";

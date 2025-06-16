@@ -1,8 +1,15 @@
 # Set the minimum required CMake version
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10) # for windows XP compatibility 
-
 # Set the project name
 PROJECT(mdict-cpp VERSION 1.0.0)
+
+# Suppress developer warnings
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS TRUE)
+
+# Set default build type to Release if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 17) # for windows XP compatibility 

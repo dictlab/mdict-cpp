@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "xmlutils.h"
+#include "include/xmlutils.h"
 #include <map>
 #include <string>
 #include <fstream>

@@ -8,8 +8,7 @@
 
 #include <utility>
 
-#ifndef MDICT_MDICT_H_
-#define MDICT_MDICT_H_
+#pragma once  
 
 #include <cstdlib>
 #include <cstring>
@@ -523,4 +522,3 @@ class Mdict {
   bool endsWith(const std::string &fullString, const std::string &ending);
 };
 }  // namespace mdict
-#endif

@@ -6,13 +6,14 @@
  * See the LICENSE file for details.
  */
 
-#include "xmlutils.h"
+#pragma once
 
 #include <cassert>
 #include <map>
 #include <string>
 
-void parse_xml_header(const std::string& dicxml, std::map<std::string, std::string>& tagm) {
+// parse xml header info
+inline void parse_xml_header(const std::string& dicxml, std::map<std::string, std::string>& tagm) {
     // Check if the string is too short or doesn't end with "/>"
     int length = dicxml.length();
     if (length <= 2) {

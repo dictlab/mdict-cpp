@@ -17,9 +17,7 @@
  *
 \********************************************************************/
 
-#ifndef MDICT_RIPEMD128_H_ /* make sure this file is read only once */
-#define MDICT_RIPEMD128_H_ /* make sure this file is read only once */
-
+#pragma once
 #ifndef RMDsize
 #define RMDsize 128
 #endif
@@ -141,8 +139,6 @@ int ripemd128PaddingISO7816(uint8_t **data, int data_len);
  */
 
 byte *ripemd128bytes(uint8_t *message, int length);
-
-#endif /* RMD128H */
 
 /*********************** end of file rmd128.h ***********************/
 

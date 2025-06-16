@@ -18,6 +18,6 @@ add_executable(test_wordlist test_wordlist.cpp)
 target_link_libraries(test_wordlist gtest gtest_main mdict miniz)
 add_test(NAME test_wordlist COMMAND test_wordlist)
 
-add_executable(test_xmlutils test_xmlutils.cpp ../xmlutils.cc)
+add_executable(test_xmlutils test_xmlutils.cpp)
 target_link_libraries(test_xmlutils gtest gtest_main mdict miniz)
 add_test(NAME test_xmlutils COMMAND test_xmlutils)

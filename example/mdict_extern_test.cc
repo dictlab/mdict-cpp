@@ -1,4 +1,4 @@
-#include "mdict_extern.h"
+#include "include/mdict_extern.h"
 
 #include <sys/time.h>
 #include <unistd.h>  // for getopt

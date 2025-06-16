@@ -6,8 +6,7 @@
  * See the LICENSE file for details.
  */
 
-#ifndef MDICT_BINUTILS_H_
-#define MDICT_BINUTILS_H_
+#pragma once
 
 #include <string>
 #include <cstdint>
@@ -43,5 +42,3 @@ std::string be_bin_to_utf8(const char* bytes, unsigned long offset,
 std::string be_bin_to_utf16(const char* bytes, unsigned long offset,
                             unsigned long len);
 int bintohex(const char* bin, unsigned long len, char* target);
-
-#endif

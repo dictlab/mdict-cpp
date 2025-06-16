@@ -6,9 +6,7 @@
  * See the LICENSE file for details.
  */
 
-#ifndef mdict_extern_h
-#define mdict_extern_h
-
+#pragma once
 #include <string>
 
 // C++ function declarations
@@ -125,5 +123,3 @@ int mdict_destory(void *dict);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* mdict_extern_h */

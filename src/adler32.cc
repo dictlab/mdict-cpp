@@ -6,7 +6,7 @@
  * See the LICENSE file for details.
  */
 
-#include "adler32.h"
+#include "include/adler32.h"
 
 #include <cstdio>
 #include <exception>

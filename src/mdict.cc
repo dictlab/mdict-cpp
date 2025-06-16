@@ -6,7 +6,7 @@
  * See the LICENSE file for details.
  */
 
-#include "mdict.h"
+#include "include/mdict.h"
 
 #include <encode/api.h>
 #include <encode/base64.h>
@@ -20,12 +20,12 @@
 #include <stdexcept>
 #include <utility>
 
-#include "adler32.h"
-#include "binutils.h"
+#include "include/adler32.h"
+#include "include/binutils.h"
 #include "encode/char_decoder.h"
-#include "mdict_extern.h"
-#include "xmlutils.h"
-#include "zlib_wrapper.h"
+#include "include/mdict_extern.h"
+#include "include/xmlutils.h"
+#include "include/zlib_wrapper.h"
 
 const std::regex re_pattern("(\\s|:|\\.|,|-|_|'|\\(|\\)|#|<|>|!)");
 

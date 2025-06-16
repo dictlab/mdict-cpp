@@ -1,7 +1,7 @@
-#include "adler32.h"
+#include "include/adler32.h"
 #include <iostream>
 #include <gtest/gtest.h>
-#include "mdict.h"
+#include "include/mdict.h"
 
 #define LENTH 255
 

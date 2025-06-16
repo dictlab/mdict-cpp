@@ -64,19 +64,19 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         cd build/bin
-        ./adler32_test
-        ./ripemd128_test
-        ./xmlutils_test
-        ./binutils_test
-        ./mydict
+        for test_file in test_*; do
+          if [ -f "$test_file" ] && [ -x "$test_file" ]; then
+            echo "Running test: $test_file"
+            ./"$test_file"
+          fi
+        done
 
     - name: Run tests (Windows)
       if: runner.os == 'Windows'
       shell: cmd
       run: |
         cd build\bin\Release
-        adler32_test.exe
-        ripemd128_test.exe
-        xmlutils_test.exe
-        binutils_test.exe
-        mydict.exe 
+        for %%f in (test_*.exe) do (
+          echo Running test: %%f
+          %%f
+        ) 

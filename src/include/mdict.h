@@ -264,6 +264,13 @@ class Mdict {
   std::string lookup(std::string word);
 
   /**
+   * lookup the definition of a word by system search finction from all keys list
+   * @param word the word wich we want to search
+   * @return
+   */
+  std::string lookup0(std::string word);
+
+  /**
    * Locate a resource in the dictionary
    * @param resource_name The name of the resource to locate
    * @param encoding The encoding type for the result (MDICT_ENCODING_BASE64 or
@@ -308,7 +315,7 @@ class Mdict {
    * @param end Ending position in the dictionary
    * @return The reduced range
    */
-  long reduce0(std::string phrase, unsigned long start, unsigned long end);
+  long reduce_key_info_block(std::string phrase, unsigned long start, unsigned long end);
 
   /**
    * Reduce search range using a word list
@@ -316,14 +323,14 @@ class Mdict {
    * @param phrase The phrase to search for
    * @return The reduced range
    */
-  long reduce1(std::vector<key_list_item *> wordlist, std::string phrase);
+  long reduce_key_info_block_items_vector(std::vector<key_list_item *> wordlist, std::string phrase);
 
   /**
    * Reduce search range from a record start position
    * @param record_start Starting position of the record
    * @return The reduced range
    */
-  long reduce2(unsigned long record_start);
+  long reduce_record_block_offset(unsigned long record_start);
 
   /**
    *  search definiation from key_text:def pair vector
@@ -331,7 +338,7 @@ class Mdict {
    * @param phrase the target word phrase
    * @return definition
    */
-  std::string reduce3(std::vector<std::pair<std::string, std::string>> vec,
+  std::string reduce_particial_keys_vector(std::vector<std::pair<std::string, std::string>>& vec,
                       std::string phrase);
 
   std::vector<key_list_item *> keyList();

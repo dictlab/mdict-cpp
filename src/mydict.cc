@@ -70,6 +70,8 @@ void print_usage(const char *program_name) {
             << "  -h, --help        Display this help message\n"
             << "  -v, --verbose     Enable verbose output\n"
             << "  -x, --hex         Output in hex format for MDD files\n"
+            << "  -n, --no-content  Only show definition existence and length\n"
+            << "  -t, --timing      Show lookup/locate timing in milliseconds\n"
             << "\n"
             << "Examples:\n"
             << "  " << program_name
@@ -77,7 +79,9 @@ void print_usage(const char *program_name) {
             << "  " << program_name
             << " -l dictionary.mdx          # List all keys\n"
             << "  " << program_name
-            << " -x dictionary.mdd image    # Get image in hex format\n";
+            << " -x dictionary.mdd image    # Get image in hex format\n"
+            << "  " << program_name
+            << " -n dictionary.mdx word     # Show only definition length\n";
 }
 
 bool is_mdd_file(const std::string &filename) {
@@ -94,13 +98,15 @@ int main(int argc, char **argv) {
   bool list_keys = false;
   bool verbose = false;
   bool hex_output = false;
+  bool no_content = false;
+  bool show_timing = false;
   int opt;
 
   std::string definition;
   std::string definition_hex;
 
   // Parse command line options
-  while ((opt = getopt(argc, argv, "lhvx")) != -1) {
+  while ((opt = getopt(argc, argv, "lhvxnt")) != -1) {
     switch (opt) {
       case 'l':
         list_keys = true;
@@ -110,6 +116,12 @@ int main(int argc, char **argv) {
         break;
       case 'x':
         hex_output = true;
+        break;
+      case 'n':
+        no_content = true;
+        break;
+      case 't':
+        show_timing = true;
         break;
       case 'h':
         print_usage(argv[0]);
@@ -194,6 +206,7 @@ int main(int argc, char **argv) {
     free_simple_key_list(key_list_result, key_list_len);
   } else {
     char *result[0];
+    int64 lookup_start = Timetool::getSystemTime();
     if (!is_mdd) {
       mdict_lookup(dict, query_key, result);
     } else {
@@ -203,36 +216,47 @@ int main(int argc, char **argv) {
           hex_output ? MDICT_ENCODING_HEX : MDICT_ENCODING_BASE64;
       mdict_locate(dict, query_key, result, encoding);
     }
+    int64 lookup_end = Timetool::getSystemTime();
+    
+    if (show_timing) {
+      std::cout << "Lookup/Locate time: " << (lookup_end - lookup_start) << "ms" << std::endl;
+    }
+    
     std::string definition(*result);
+    
     if (verbose) {
       std::cout << ">>[definition start] [" << query_key
                 << "] length: " << definition.length() << " >>" << std::endl;
     }
 
-    std::string ext;
-    const char *dot = strrchr(query_key, '.');
-    if (dot && *(dot + 1)) {
-      ext = dot + 1;
-      std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-    }
-
-    std::string mime_type = mime_detect(query_key);
-    if (mime_type != "application/octet-stream") {
-      if (is_mdd && hex_output) {
-        std::cout << definition
-                  << std::endl;  // Output raw hex for MDD with -x option
+    if (no_content) {
+      if (definition.empty()) {
+        std::cout << "-1" << std::endl;
       } else {
-        std::cout << "data:" << mime_type << ";base64," << definition
-                  << std::endl;
+        std::cout << definition.length() << std::endl;
       }
     } else {
-      std::cout << "query key:" << query_key << " | def:" << definition
-                << std::endl;
+      std::string ext;
+      const char *dot = strrchr(query_key, '.');
+      if (dot && *(dot + 1)) {
+        ext = dot + 1;
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+      }
+
+      std::string mime_type = mime_detect(query_key);
+      if (mime_type != "application/octet-stream") {
+        if (is_mdd && hex_output) {
+          std::cout << definition << std::endl;  // Output raw hex for MDD with -x option
+        } else {
+          std::cout << "data:" << mime_type << ";base64," << definition << std::endl;
+        }
+      } else {
+        std::cout << "query key:" << query_key << " | def:" << definition << std::endl;
+      }
     }
 
     if (verbose) {
-      std::cout << "<<[definition   end] [" << query_key << "]" << " <<"
-                << std::endl;
+      std::cout << "<<[definition   end] [" << query_key << "]" << " <<" << std::endl;
     }
 
     int64 t3 = Timetool::getSystemTime();

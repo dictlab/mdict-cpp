@@ -66,14 +66,17 @@ if(INSTALL_TO_SYSTEM)
         # For Linux
         set(LIB_INSTALL_DIR "/usr/lib")
         set(INCLUDE_INSTALL_DIR "/usr/include")
+        set(BIN_INSTALL_DIR "/usr/bin")
     elseif(APPLE)
         # For macOS
         set(LIB_INSTALL_DIR "/usr/local/lib")
         set(INCLUDE_INSTALL_DIR "/usr/local/include")
+        set(BIN_INSTALL_DIR "/usr/local/bin")
     elseif(${CMAKE_SYSTEM_NAME} MATCHES ".*BSD")
         # For BSD systems
         set(LIB_INSTALL_DIR "/usr/local/lib")
         set(INCLUDE_INSTALL_DIR "/usr/local/include")
+        set(BIN_INSTALL_DIR "/usr/local/bin")
     else()
         message(FATAL_ERROR "Unsupported operating system for installation")
     endif()
@@ -82,13 +85,19 @@ if(INSTALL_TO_SYSTEM)
     install(TARGETS mdict
         ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
         LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-        RUNTIME DESTINATION ${LIB_INSTALL_DIR}
+        RUNTIME DESTINATION ${BIN_INSTALL_DIR}
         COMPONENT mdict
     )
     
     # Install headers
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/include DESTINATION include/mdict
         FILES_MATCHING PATTERN "*.h"
+    )
+
+    # Install mydict executable
+    install(TARGETS mydict
+        RUNTIME DESTINATION bin
+        COMPONENT mydict
     )
 endif()
 

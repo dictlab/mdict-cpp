@@ -68,6 +68,7 @@ it will install those files:
 -- Up-to-date: /usr/local/include/mdict/include/binutils.h
 -- Up-to-date: /usr/local/include/mdict/include/mdict.h
 -- Up-to-date: /usr/local/include/mdict/include/mdict_extern.h
+-- Installing: /usr/local/bin/mydict
 ```
 
 

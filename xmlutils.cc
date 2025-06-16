@@ -12,106 +12,97 @@
 #include <map>
 #include <string>
 
-std::map<std::string, std::string> parseXMLHeader(std::string dicxml) {
-  /// std::map<char*, char*> headTag;
-
-  // scaner loop
-  //  bool start = false, end = false;
-  bool endCorrect = false;
-  char endPrevChar = 0, endChar = 0;
-
-  std::map<std::string, std::string> tagm;
-  // end correct with "/>" ?
-  if (dicxml.length() > 2) {
-    endPrevChar = dicxml.at(dicxml.length() - 2);
-    endChar = dicxml.at(dicxml.length() - 1);
-    if (endPrevChar == '/' && endChar == '>') {
-      endCorrect = true;
+void parse_xml_header(const std::string& dicxml, std::map<std::string, std::string>& tagm) {
+    // Check if the string is too short or doesn't end with "/>"
+    int length = dicxml.length();
+    if (length <= 2) {
+        return;
     }
-  } else {
-    return tagm;
-  }
-
-  unsigned i = 0;
-
-  // get start index
-  for (; i < dicxml.length(); ++i) {
-    char c = dicxml.at(i);
-    if (c != ' ')
-      continue;
-    else
-      break;
-  }
-
-  int r = i;
-
-  // loop to length -2 (for '/>')
-  for (; r < dicxml.length() - 2; r++) {
-  stringloop:
-    std::string tmpK;
-    std::string tmpV;
-    // split flag
-    bool sflag = false;
-    bool openQuo = false, closeQuo = false;
-    bool finished = false;
-    int tj = 0;
-    for (int j = 0; r + j <= dicxml.length() - 2; ++j) {
-      tj = j;
-      char c = dicxml.at(r + j);
-      // cout << c;
-
-      bool getKey = !sflag;
-      bool getValue = openQuo && !closeQuo;
-
-      // ensure get value station
-      // sflag == true means key has already getted
-      // and openQuo and !closeQuo means current getting value
-      if (!getKey && !getValue && c == ' ' && !(r + j == dicxml.length() - 2)) {
-        //				std::cout << tmpK
-        //<<":"<<tmpV<<std::endl;
-        tagm[tmpK] = tmpV;
-        r += j;
-        // cout<<"bbb"<<r<<endl;
-        goto stringloop;
-      } else if (!getKey && !getValue && (r + j == dicxml.length() - 2)) {
-        //				std::cout << tmpK
-        //<<":"<<tmpV<<std::endl;
-        tagm[tmpK] = tmpV;
-        r = dicxml.length();  // this is for exit tagloop
-        // cout<<"aaa"<<r+j<<endl;
-        break;
-      }
-      // get key station, c cannot be space
-      else if (getKey && c == ' ') {
-        continue;
-        // split station, should not in value getting station
-      }
-      // store key
-      else if (getKey && c != ' ' && c != '=') {
-        tmpK += c;
-      }
-      // end getKey start get value
-      else if (getKey && c == '=') {
-        sflag = true;
-        continue;
-        // can be key and value getting station
-      }
-      // ----- get key end, get value start -----
-      else if (!getKey && !getValue && c == '"') {
-        openQuo = true;
-        continue;
-      } else if (!getKey && getValue && c != '"') {
-        tmpV += c;
-        continue;
-      } else if (!getKey && getValue && c == '"') {
-        closeQuo = true;
-        finished = true;
-        continue;
-      }
+    // trim trailing spaces, newline \n and null character\0
+    int i = length - 1;
+    while (i >= 0 && (dicxml[i] == ' ' || dicxml[i] == '\n' || dicxml[i] == '\0' || dicxml[i] == '\r')) {
+        --i;
     }
-    //		printf(" |(r:%d, j:%d) l: %d, gk: %d, gv %d \n", r, tj,
-    // dicxml.length(),!sflag,openQuo && !closeQuo);
-  }
-  //	printf("585: %c", dicxml.at(585));
-  return tagm;
+    if (i < 0) {
+        return;
+    }
+
+    std::string trimedxml = dicxml.substr(0, i + 1);
+    length = trimedxml.length();
+    if (length <= 2) {
+        return;
+    }
+    trimedxml[length] = '\0';
+
+    // check if the string ends with "/>"
+    const char last2 = trimedxml[length - 2];
+    const char last1 = trimedxml[length - 1];
+    if (last2 != '/' || last1 != '>') {
+        return;
+    }
+
+    // Skip leading spaces and '<'
+    size_t pos = 0;
+    while (pos < trimedxml.length() && (trimedxml[pos] == ' ' || trimedxml[pos] == '<')) {
+        ++pos;
+    }
+
+    // Parse attributes
+    while (pos < trimedxml.length() - 3) {
+        // Skip spaces between attributes
+        while (pos < trimedxml.length() && trimedxml[pos] == ' ') {
+            ++pos;
+        }
+        
+        // Get key
+        std::string key;
+        while (pos < trimedxml.length() && trimedxml[pos] != '=' && trimedxml[pos] != ' ') {
+            key += trimedxml[pos++];
+        }
+        
+        // Skip spaces and '='
+        while (pos < trimedxml.length() && (trimedxml[pos] == ' ' || trimedxml[pos] == '=')) {
+            ++pos;
+        }
+
+        if (pos < trimedxml.length() && trimedxml[pos] == '\'') {
+            ++pos;
+            while (pos < trimedxml.length() && trimedxml[pos] != '\'') {
+                ++pos;
+            }
+            ++pos;
+        }
+
+        // Get value
+        if (pos < trimedxml.length() && (trimedxml[pos] == '"')) {
+            ++pos; // Skip opening quote
+            std::string value;
+            while (pos < trimedxml.length()) {
+                // Check for end of tag before adding to value
+                if (pos + 1 < trimedxml.length() && trimedxml[pos] == '/' && trimedxml[pos + 1] == '>') {
+                    break;
+                }
+                if (trimedxml[pos] == '\\') {
+                    ++pos;
+                }
+                if (trimedxml[pos] == '"') {
+                    ++pos; // Skip closing quote
+                    break;
+                }
+                value += trimedxml[pos++];
+            }
+            
+            if (!key.empty()) {
+                tagm[key] = value;
+            }
+        }
+        
+        // Check if we've reached the end of the tag
+        while (pos < trimedxml.length() && trimedxml[pos] == ' ') {
+            ++pos;
+        }
+        if (pos + 1 < trimedxml.length() && trimedxml[pos] == '/' && trimedxml[pos + 1] == '>') {
+            break;
+        }
+    }
 }

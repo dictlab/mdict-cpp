@@ -129,7 +129,8 @@ void Mdict::read_header() {
   // -----------------------------------------
 
   std::string header_text(reinterpret_cast<char *>(utf8_buffer), utf8_len);
-  std::map<std::string, std::string> headinfo = parseXMLHeader(header_text);
+  std::map<std::string, std::string> headinfo;
+  parse_xml_header(header_text, headinfo);
   /// passed
 
   // -----------------------------------------
@@ -524,7 +525,6 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
   int key_start_idx = 0;
   int key_end_idx = 0;
   std::vector<key_list_item *> inner_key_list;
-  unsigned long entry_acc = 0l;
 
   while (key_start_idx < key_block_len) {
     // # the corresponding record's offset in record block
@@ -638,8 +638,6 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
           static_cast<unsigned long>(key_end_idx - key_start_idx -
                                      this->number_width));
     }
-    /// passed
-    entry_acc++;
     inner_key_list.push_back(new key_list_item(record_start, key_text));
 
     key_start_idx = key_end_idx + width;
@@ -1025,7 +1023,6 @@ int Mdict::decode_record_block() {
   // record block start offset: record_block_offset
   uint64_t record_offset = this->record_block_offset;
 
-  uint64_t item_counter = 0;
   uint64_t size_counter = 0l;
 
   // key list index counter
@@ -1114,7 +1111,6 @@ int Mdict::decode_record_block() {
           comp_size, uncomp_size, comp_type, (this->encrypt == 1),
           record_start - offset, record_end - offset));
       i++;
-      item_counter++;
     }
     // offset += record_block.length
     offset += uncomp_size;

@@ -6,14 +6,11 @@
  * See the LICENSE file for details.
  */
 
-#ifndef MDICT_XMLUTILS_H_
-#define MDICT_XMLUTILS_H_
+#pragma once
 
 #include <cassert>
 #include <map>
 #include <string>
 
 // parse xml header info
-std::map<std::string, std::string> parseXMLHeader(std::string dicxml);
-
-#endif
+void parse_xml_header(const std::string& dicxml, std::map<std::string, std::string>& tagm);

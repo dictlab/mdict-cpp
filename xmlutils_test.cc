@@ -1,4 +1,4 @@
-#include <xmlutils.h>
+#include "xmlutils.h"
 
 #include <cassert>
 #include <string>
@@ -17,7 +17,8 @@ int main() {
       "Modified By roamlog&lt;br/&gt;\" Title=\"\" Encoding=\"UTF-8\" "
       "CreationDate=\"2018-2-18\" Compact=\"Yes\" Compat=\"Yes\" "
       "Left2Right=\"Yes\" DataSourceFormat=\"106\" StyleSheet=\"a\"/>";
-  map<string, string> headinfo = parseXMLHeader(dicxml);
+  map<string, string> headinfo;
+  parse_xml_header(dicxml, headinfo);
   //	cout<<headinfo["Encoding"]<<endl;
   assert(headinfo["Encoding"] == "UTF-8");
 }

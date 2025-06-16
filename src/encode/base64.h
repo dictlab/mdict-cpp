@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-present
+ * Copyright (c) 2025-Present
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause License.

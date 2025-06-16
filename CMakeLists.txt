@@ -28,7 +28,6 @@ ADD_COMPILE_OPTIONS(-Wno-unused-variable -fpermissive)
 # Add cmake modules path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-INCLUDE(cmake/ProjectTurbobase64.cmake)
 INCLUDE(cmake/ProjectMiniz.cmake)
 INCLUDE(cmake/ProjectMinilzo.cmake)
 INCLUDE(cmake/ProjectGTest.cmake)
@@ -38,22 +37,24 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/include
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/
+    ${CMAKE_CURRENT_SOURCE_DIR}/deps/b64/include
 )
+
 
 # Add library search directories
 LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 # Add subdirectories
-# ADD_SUBDIRECTORY(deps)
 ADD_SUBDIRECTORY(tests)
+ADD_SUBDIRECTORY(deps/turbobase64)
 
 # Library target: mdict
 ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler32.cc src/mdict_extern.cc)
-target_link_libraries(mdict PRIVATE Miniz TurboBase64)
+TARGET_LINK_LIBRARIES(mdict PRIVATE Miniz base64)
 
 # Executable target: mydict (for development/testing purposes only)
 ADD_EXECUTABLE(mydict src/mydict.cc)
-target_link_libraries(mydict PRIVATE mdict Miniz TurboBase64)
+TARGET_LINK_LIBRARIES(mydict PRIVATE mdict Miniz base64)
 
 # Define installation behavior for the mdict library
 OPTION(INSTALL_TO_SYSTEM "Install the mdict library to the system" OFF)

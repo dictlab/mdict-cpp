@@ -120,8 +120,9 @@ libtb64.so: $(LIB)
 	$(CC) -shared $^ -o $@
 	
 install:
-	cp libtb64.so ~/.local/lib/
-	cp libtb64.a ~/.local/lib/
+	echo "skip install"
+	# cp libtb64.so ~/.local/lib/
+	# cp libtb64.a ~/.local/lib/
 	# FIXME: how does one build _tb64.so?
 	# ./python/tb64/build.py
 	# cp _tb64.so ~/.local/lib/

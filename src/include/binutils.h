@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 /*
  * Utility functions for binary data manipulation and conversion
@@ -60,7 +60,8 @@ int bin_slice(const char* srcByte, int srcByteLen, int offset, int len,
  * Prints bytes in either binary or hexadecimal format
  * @param bytes Source byte array to print
  * @param len Length of the byte array
- * @param hex If true, prints in hexadecimal format; if false, prints in binary format
+ * @param hex If true, prints in hexadecimal format; if false, prints in binary
+ * format
  * @param start_ofset Starting offset for display (default: 0)
  */
 void putbytes(const char* bytes, int len, bool hex,

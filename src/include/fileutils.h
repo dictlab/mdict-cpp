@@ -14,7 +14,7 @@
  * Gets the size of a binary file in bytes
  * Opens the file in binary read mode, seeks to the end to determine size,
  * then closes the file
- * 
+ *
  * @param fpath Path to the file to measure
  * @return int The size of the file in bytes, or -1 if the file cannot be opened
  */

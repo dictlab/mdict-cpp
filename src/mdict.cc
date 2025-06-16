@@ -20,9 +20,9 @@
 #include <stdexcept>
 #include <utility>
 
+#include "encode/char_decoder.h"
 #include "include/adler32.h"
 #include "include/binutils.h"
-#include "encode/char_decoder.h"
 #include "include/mdict_extern.h"
 #include "include/xmlutils.h"
 #include "include/zlib_wrapper.h"

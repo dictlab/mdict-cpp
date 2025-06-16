@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#pragma once  
+#pragma once
 
 #include <cstdlib>
 #include <cstring>
@@ -552,4 +552,3 @@ class Mdict {
    ********************************/
 };
 }  // namespace mdict
-

@@ -108,44 +108,45 @@ using facet_codecvt = usable_facet<std::codecvt<internT, externT, stateT> >;
  **************************************************/
 
 // Helper function to convert UTF-16 to UTF-8
-std::string utf16_to_utf8(const std::u16string& utf16) {
-    std::string utf8;
-    utf8.reserve(utf16.length() * 3); // UTF-8 can be up to 3 bytes per UTF-16 char
-    
-    for (char16_t c : utf16) {
-        if (c <= 0x7F) {
-            // ASCII character
-            utf8.push_back(static_cast<char>(c));
-        } else if (c <= 0x7FF) {
-            // 2-byte UTF-8
-            utf8.push_back(static_cast<char>(0xC0 | (c >> 6)));
-            utf8.push_back(static_cast<char>(0x80 | (c & 0x3F)));
-        } else {
-            // 3-byte UTF-8
-            utf8.push_back(static_cast<char>(0xE0 | (c >> 12)));
-            utf8.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
-            utf8.push_back(static_cast<char>(0x80 | (c & 0x3F)));
-        }
+std::string utf16_to_utf8(const std::u16string &utf16) {
+  std::string utf8;
+  utf8.reserve(utf16.length() *
+               3);  // UTF-8 can be up to 3 bytes per UTF-16 char
+
+  for (char16_t c : utf16) {
+    if (c <= 0x7F) {
+      // ASCII character
+      utf8.push_back(static_cast<char>(c));
+    } else if (c <= 0x7FF) {
+      // 2-byte UTF-8
+      utf8.push_back(static_cast<char>(0xC0 | (c >> 6)));
+      utf8.push_back(static_cast<char>(0x80 | (c & 0x3F)));
+    } else {
+      // 3-byte UTF-8
+      utf8.push_back(static_cast<char>(0xE0 | (c >> 12)));
+      utf8.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
+      utf8.push_back(static_cast<char>(0x80 | (c & 0x3F)));
     }
-    return utf8;
+  }
+  return utf8;
 }
 
 // binary to utf16->utf8
 std::string le_bin_utf16_to_utf8(const char *bytes, int offset, int len) {
-    char *cbytes = (char *)calloc(len, sizeof(char));
-    if (cbytes == nullptr) {
-        return "";
-    }
-    // TODO insecure
-    std::memcpy(cbytes, bytes + (offset * sizeof(char)), len * sizeof(char));
-    // convert char* to char16_t*
-    char16_t *wcbytes = reinterpret_cast<char16_t *>(cbytes);
+  char *cbytes = (char *)calloc(len, sizeof(char));
+  if (cbytes == nullptr) {
+    return "";
+  }
+  // TODO insecure
+  std::memcpy(cbytes, bytes + (offset * sizeof(char)), len * sizeof(char));
+  // convert char* to char16_t*
+  char16_t *wcbytes = reinterpret_cast<char16_t *>(cbytes);
 
-    std::u16string u16 = std::u16string(wcbytes);
-    std::string u8 = utf16_to_utf8(u16);
-    
-    if (len > 0) std::free(cbytes);
-    return u8;
+  std::u16string u16 = std::u16string(wcbytes);
+  std::string u8 = utf16_to_utf8(u16);
+
+  if (len > 0) std::free(cbytes);
+  return u8;
 }
 
 std::string be_bin_to_utf8(const char *bytes, unsigned long offset,

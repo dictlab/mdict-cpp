@@ -20,7 +20,7 @@ typedef unsigned short word16;
 /**
  * Calculates the Adler-32 checksum for a given data buffer
  * Adler-32 is a checksum algorithm that is faster than CRC-32 but less reliable
- * 
+ *
  * @param data Pointer to the input data buffer
  * @param len Length of the data buffer in bytes
  * @return uint32_t The calculated Adler-32 checksum value

@@ -11,7 +11,7 @@
  *      FILE:     rmd128.c
  *
  *      CONTENTS: A sample C-implementation of the RIPEMD-128
- *                hash-function. This function is a plug-in substitute 
+ *                hash-function. This function is a plug-in substitute
  *                for RIPEMD. A 160-bit hash result is obtained using
  *                RIPEMD-160.
  *      TARGET:   any computer with an ANSI C compiler

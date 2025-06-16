@@ -18,28 +18,41 @@ SET(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 ADD_COMPILE_OPTIONS(-Wno-unused-variable -fpermissive)
 
+# Add cmake modules path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+INCLUDE(cmake/ProjectTurbobase64.cmake)
+INCLUDE(cmake/ProjectMiniz.cmake)
+INCLUDE(cmake/ProjectMinilzo.cmake)
+INCLUDE(cmake/ProjectGTest.cmake)
+
 # Add include directories
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/deps/ ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+INCLUDE_DIRECTORIES(
+    ${PROJECT_SOURCE_DIR}/src 
+    ${CMAKE_CURRENT_SOURCE_DIR}/deps/
+)
 
 # Add library search directories
 LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 # Add subdirectories
-ADD_SUBDIRECTORY(deps)
+# ADD_SUBDIRECTORY(deps)
 ADD_SUBDIRECTORY(tests)
 
 # Library target: mdict
 ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler32.cc src/mdict_extern.cc)
-target_link_libraries(mdict PRIVATE miniz base64)
+target_link_libraries(mdict PRIVATE Miniz TurboBase64)
 
 # Executable target: mydict (for development/testing purposes only)
 ADD_EXECUTABLE(mydict example/mdict_extern_test.cc)
-target_link_libraries(mydict PRIVATE mdict miniz base64)
+target_link_libraries(mydict PRIVATE mdict Miniz TurboBase64)
 
 # Define installation behavior for the mdict library
 OPTION(INSTALL_TO_SYSTEM "Install the mdict library to the system" OFF)
 
 if(INSTALL_TO_SYSTEM)
+    # Prevent subdirectories from installing their targets
+    set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
     # Detect operating system and set library installation paths accordingly
     if(UNIX AND NOT APPLE)
         # For Linux
@@ -61,9 +74,14 @@ if(INSTALL_TO_SYSTEM)
     install(TARGETS mdict
         ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
         LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+        RUNTIME DESTINATION ${LIB_INSTALL_DIR}
+        COMPONENT mdict
     )
-    # Install headers
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/src DESTINATION include/mdict
-        FILES_MATCHING PATTERN "*.h")
     
+    # Install headers
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/include DESTINATION include/mdict
+        FILES_MATCHING PATTERN "*.h"
+    )
 endif()
+
+

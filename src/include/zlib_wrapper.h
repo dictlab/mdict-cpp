@@ -1,8 +1,15 @@
+/*
+ * Copyright (c) 2020-2025
+ * All rights reserved.
+ *
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
+ */
+
 #pragma once
 #include <vector>
 
 #include "miniz/miniz.h"
-// #include "zlib.h"
 
 /*
  * 调用zlib解压缩数据

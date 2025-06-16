@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2025-present
+ * All rights reserved.
+ *
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
+ */
+
 #ifndef MDICT_BASE64_H
 #define MDICT_BASE64_H
 

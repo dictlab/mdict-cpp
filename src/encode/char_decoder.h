@@ -1,7 +1,11 @@
-/* Copyright © 2025-present MrPetals */
-// this is written in pure C and must not be modified. 
-// the api.h and other headers can be used to modify the behavior
-// of other functions if needed.
+/*
+ * Copyright (c) 2025-present
+ * All rights reserved.
+ *
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

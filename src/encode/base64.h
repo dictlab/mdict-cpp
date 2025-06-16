@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2025-Present
+ * All rights reserved.
+ *
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
+ */
+
 #ifndef MDICT_BASE64_H
 #define MDICT_BASE64_H
 
@@ -6,7 +14,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <cctype>
-#include "deps/turbobase64/turbob64.h"
+#include "turbobase64/turbob64.h"
 #include <cmath>
 
 constexpr char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

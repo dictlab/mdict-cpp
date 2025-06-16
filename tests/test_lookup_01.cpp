@@ -1,7 +1,7 @@
-#include "adler32.h"
+#include "include/adler32.h"
 #include <iostream>
 #include <gtest/gtest.h>
-#include "mdict.h"
+#include "include/mdict.h"
 
 #define LENTH 255
 
@@ -12,6 +12,7 @@ int getpwd() {
         return 1;
     }
     printf("getcwd: %s\n", pwd);
+    return 0;
 }
 
 std::string test_lookup(const std::string& word) {

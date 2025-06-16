@@ -1,14 +1,12 @@
 /*
- * Copyright (c) 2020-2025
+ * Copyright (c) 2025-Present
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause License.
  * See the LICENSE file for details.
  */
 
-#ifndef mdict_extern_h
-#define mdict_extern_h
-
+#pragma once
 #include <string>
 
 // C++ function declarations
@@ -125,5 +123,3 @@ int mdict_destory(void *dict);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* mdict_extern_h */

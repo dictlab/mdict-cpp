@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2025-Present
+ * All rights reserved.
+ *
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <string>

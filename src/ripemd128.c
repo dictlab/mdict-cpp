@@ -25,7 +25,7 @@
 #endif
 #include <stdint.h>
 #include <string.h>
-#include "ripemd128.h"
+#include "include/ripemd128.h"
 
 
 #ifdef __cplusplus

@@ -1,25 +1,31 @@
+/*
+ * Copyright (c) 2025-Present
+ * All rights reserved.
+ *
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
+ */
+
 /********************************************************************\
  *
- *      FILE:     rupemd128.h
+ *      FILE:     rmd128.c
  *
- *      CONTENTS: Header file for a sample C-implementation of the
- *                RIPEMD-128 hash-function. This function is a
- *                plug-in substitute for RIPEMD. A 128-bit hash
- *                result is obtained using RIPEMD-128.
+ *      CONTENTS: A sample C-implementation of the RIPEMD-128
+ *                hash-function. This function is a plug-in substitute 
+ *                for RIPEMD. A 160-bit hash result is obtained using
+ *                RIPEMD-160.
  *      TARGET:   any computer with an ANSI C compiler
  *
- *      AUTHOR:   Chen Quan
- *      DATE:     5 Feb 2018
+ *      AUTHOR:   Antoon Bosselaers, ESAT-COSIC
+ *      DATE:     1 March 1996
  *      VERSION:  1.0
  *
- *      Ref: Antoon Bosselaers, ESAT-COSIC version rmd128.h
- *
+ *      Copyright (c) Katholieke Universiteit Leuven
+ *      1996, All Rights Reserved
  *
 \********************************************************************/
 
-#ifndef MDICT_RIPEMD128_H_ /* make sure this file is read only once */
-#define MDICT_RIPEMD128_H_ /* make sure this file is read only once */
-
+#pragma once
 #ifndef RMDsize
 #define RMDsize 128
 #endif
@@ -141,8 +147,6 @@ int ripemd128PaddingISO7816(uint8_t **data, int data_len);
  */
 
 byte *ripemd128bytes(uint8_t *message, int length);
-
-#endif /* RMD128H */
 
 /*********************** end of file rmd128.h ***********************/
 

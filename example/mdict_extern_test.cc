@@ -1,4 +1,12 @@
-#include "mdict_extern.h"
+/*
+ * Copyright (c) 2025-Present
+ * All rights reserved.
+ *
+ * This code is licensed under the BSD 3-Clause License.
+ * See the LICENSE file for details.
+ */
+
+#include "include/mdict_extern.h"
 
 #include <sys/time.h>
 #include <unistd.h>  // for getopt

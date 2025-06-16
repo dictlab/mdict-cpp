@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2020-2025
+ * Copyright (c) 2025-Present
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause License.
  * See the LICENSE file for details.
  */
 
-#include "adler32.h"
+#include "include/adler32.h"
 
 #include <cstdio>
 #include <exception>

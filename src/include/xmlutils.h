@@ -1,18 +1,28 @@
 /*
- * Copyright (c) 2020-2025
+ * Copyright (c) 2025-Present
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause License.
  * See the LICENSE file for details.
  */
 
-#include "xmlutils.h"
+#pragma once
 
 #include <cassert>
 #include <map>
 #include <string>
 
-void parse_xml_header(const std::string& dicxml, std::map<std::string, std::string>& tagm) {
+/**
+ * Parses XML header information from a string and extracts attributes into a map
+ * This function handles a simplified XML format where the input is expected to be a single self-closing tag
+ * with attributes in the format key="value"
+ * 
+ * @param dicxml The XML string to parse
+ * @param tagm A map to store the parsed key-value pairs
+ * 
+ * Example input: <Dictionary GeneratedByEngineVersion="2.0" RequiredEngineVersion="2.0" Encrypted="0"/>
+ */
+inline void parse_xml_header(const std::string& dicxml, std::map<std::string, std::string>& tagm) {
     // Check if the string is too short or doesn't end with "/>"
     int length = dicxml.length();
     if (length <= 2) {

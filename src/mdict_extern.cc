@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2020-2025
+ * Copyright (c) 2025-Present
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause License.
  * See the LICENSE file for details.
  */
 
-#include "mdict_extern.h"
+#include "include/mdict_extern.h"
 
 #include <algorithm>
 #include <string>
 #include <unordered_map>
 
-#include "mdict.h"
+#include "include/mdict.h"
 
 /**
   实现 mdict_extern.h中的方法

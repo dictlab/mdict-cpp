@@ -1,5 +1,5 @@
-#include "mdict_extern.h"
-#include "mdict.h"
+#include "include/mdict_extern.h"
+#include "include/mdict.h"
 
 #include <sys/time.h>
 

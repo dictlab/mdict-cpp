@@ -35,6 +35,46 @@ git submodule init
 git submodule update --recursive
 ```
 
+3. Build the project:
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
+### System Installation
+
+To install the library system-wide (requires root privileges):
+
+```bash
+mkdir build
+cd build
+cmake -DINSTALL_TO_SYSTEM=ON ..
+make
+sudo make install
+```
+
+it will install those files:
+```
+-- Installing: /usr/local/lib/libmdict.a
+-- Up-to-date: /usr/local/include/mdict/include
+-- Up-to-date: /usr/local/include/mdict/include/fileutils.h
+-- Up-to-date: /usr/local/include/mdict/include/mdict_simple_key.h
+-- Up-to-date: /usr/local/include/mdict/include/zlib_wrapper.h
+-- Up-to-date: /usr/local/include/mdict/include/adler32.h
+-- Up-to-date: /usr/local/include/mdict/include/xmlutils.h
+-- Up-to-date: /usr/local/include/mdict/include/ripemd128.h
+-- Up-to-date: /usr/local/include/mdict/include/binutils.h
+-- Up-to-date: /usr/local/include/mdict/include/mdict.h
+-- Up-to-date: /usr/local/include/mdict/include/mdict_extern.h
+```
+
+
+This will install:
+- The library to `/usr/lib` (Linux) or `/usr/local/lib` (macOS/BSD)
+- Headers to `/usr/include` (Linux) or `/usr/local/include` (macOS/BSD)
+
 ## Usage
 
 ### Building the Executable

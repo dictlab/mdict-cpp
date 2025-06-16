@@ -10,6 +10,7 @@
 #define MDICT_BINUTILS_H_
 
 #include <string>
+#include <cstdint>
 
 /*
  *

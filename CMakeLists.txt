@@ -43,8 +43,8 @@ if(INSTALL_TO_SYSTEM)
     # Detect operating system and set library installation paths accordingly
     if(UNIX AND NOT APPLE)
         # For Linux
-        set(LIB_INSTALL_DIR "/usr/local/lib")
-        set(INCLUDE_INSTALL_DIR "/usr/local/include")
+        set(LIB_INSTALL_DIR "/usr/lib")
+        set(INCLUDE_INSTALL_DIR "/usr/include")
     elseif(APPLE)
         # For macOS
         set(LIB_INSTALL_DIR "/usr/local/lib")

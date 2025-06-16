@@ -1,39 +1,98 @@
 # MDICT CPP
 
-mdict *.mdx/*.mdd interpreter c++ implements
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![Stars](https://img.shields.io/github/stars/dictlab/mdict-cpp?style=social)](https://github.com/dictlab/mdict-cpp/stargazers)
+[![Forks](https://img.shields.io/github/forks/dictlab/mdict-cpp?style=social)](https://github.com/dictlab/mdict-cpp/network/members)
 
-## Clone the project
+A C++ implementation for interpreting MDX/MDD dictionary files. This library provides functionality to read and parse MDX/MDD dictionary files commonly used in electronic dictionaries.
 
-```
+## Features
+
+- Parse MDX/MDD dictionary files
+- Extract dictionary entries and definitions
+- Support for both MDX (dictionary content) and MDD (resource files)
+- Simple and efficient C++ implementation
+
+## Installation
+
+### Prerequisites
+
+- CMake (version 3.10 or higher)
+- C++ compiler with C++11 support
+- Git
+
+### Building from Source
+
+1. Clone the repository:
+```bash
 git clone git@github.com:dictlab/mdict-cpp.git
+cd mdict-cpp
+```
+
+2. Initialize and update submodules:
+```bash
 git submodule init
-git submodule update --recursive # pull the gtest library
+git submodule update --recursive
 ```
 
-## Executable
+## Usage
 
-### Cmake
+### Building the Executable
 
-```
+```bash
 mkdir build
-cd build && cmake .. && make mydict
-target/bin/mydict your_mdx_file.mdx yourword
-```
-the executable binary will generate at `bin/mdict`
-
-
-## Library
-
-### Library
-
-```
-mkdir build 
-cd buid && cmake .. && make mdict
-ls target/lib/libmdict.a
+cd build
+cmake ..
+make mydict
 ```
 
+The executable will be generated at `target/bin/mydict`
 
-## format
-ref: [mdx format](https://www.zhihu.com/question/22143768)
+### Running the Dictionary Tool
 
-![mdx_format](https://tva1.sinaimg.cn/large/008eGmZEly1go066lnewfj30u01bdb29.jpg)
+```bash
+./target/bin/mydict your_mdx_file.mdx yourword
+```
+
+### Building the Library
+
+```bash
+mkdir build
+cd build
+cmake ..
+make mdict
+```
+
+The library will be generated at `target/lib/libmdict.a`
+
+### Using the Library in Your Project
+
+1. Include the header files:
+```cpp
+#include "mdict/mdict.h"
+```
+
+2. Link against the library:
+```cmake
+target_link_libraries(your_project mdict)
+```
+
+## MDX File Format
+
+The MDX/MDD file format is a dictionary format commonly used in electronic dictionaries. MDX files contain the dictionary content (text, HTML, etc.), while MDD files contain associated resources (images, audio, etc.).
+
+### Format References
+- [MDX Format Documentation](https://www.zhihu.com/question/22143768)
+- [MDX/MDD File Format Specification](https://github.com/ilius/pyglossary/blob/master/doc/mdx.md)
+- [MDict Format](https://www.mdict.cn/wp/?page_id=5227&lang=en)
+
+### Format Structure
+![MDX Format Structure](https://tva1.sinaimg.cn/large/008eGmZEly1go066lnewfj30u01bdb29.jpg)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the BSD-3-Clause License - see the LICENSE file for details.

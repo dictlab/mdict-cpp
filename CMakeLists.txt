@@ -31,6 +31,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 INCLUDE(cmake/ProjectMiniz.cmake)
 INCLUDE(cmake/ProjectMinilzo.cmake)
 INCLUDE(cmake/ProjectGTest.cmake)
+INCLUDE(cmake/ProjectTurbobase64.cmake)
 
 # Add include directories
 INCLUDE_DIRECTORIES(
@@ -46,7 +47,6 @@ LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 # Add subdirectories
 ADD_SUBDIRECTORY(tests)
-ADD_SUBDIRECTORY(deps/turbobase64)
 
 # Library target: mdict
 ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler32.cc src/mdict_extern.cc)

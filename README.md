@@ -4,6 +4,7 @@
 [![Stars](https://img.shields.io/github/stars/dictlab/mdict-cpp?style=social)](https://github.com/dictlab/mdict-cpp/stargazers)
 [![Forks](https://img.shields.io/github/forks/dictlab/mdict-cpp?style=social)](https://github.com/dictlab/mdict-cpp/network/members)
 [![Build Status](https://github.com/dictlab/mdict-cpp/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/dictlab/mdict-cpp/actions/workflows/build-and-test.yml)
+[![Latest Release](https://img.shields.io/github/release/dictlab/mdict-cpp.svg)](https://github.com/dictlab/mdict-cpp/releases/latest)
 
 A C++ implementation for interpreting MDX/MDD dictionary files. This library provides functionality to read and parse MDX/MDD dictionary files commonly used in electronic dictionaries.
 
@@ -59,12 +60,17 @@ sudo make install
 it will install those files:
 ```
 -- Installing: /usr/local/lib/libmdict.a
--- Installing: /usr/local/lib/libmdictminiz.a
--- Installing: /usr/local/lib/libmdictbase64.a
--- Up-to-date: /usr/local/include/mdict/mdict.h
--- Up-to-date: /usr/local/include/mdict/mdict_extern.h
+-- Up-to-date: /usr/local/include/mdict/include
+-- Up-to-date: /usr/local/include/mdict/include/fileutils.h
+-- Up-to-date: /usr/local/include/mdict/include/mdict_simple_key.h
+-- Up-to-date: /usr/local/include/mdict/include/zlib_wrapper.h
+-- Up-to-date: /usr/local/include/mdict/include/adler32.h
+-- Up-to-date: /usr/local/include/mdict/include/xmlutils.h
+-- Up-to-date: /usr/local/include/mdict/include/ripemd128.h
+-- Up-to-date: /usr/local/include/mdict/include/binutils.h
+-- Up-to-date: /usr/local/include/mdict/include/mdict.h
+-- Up-to-date: /usr/local/include/mdict/include/mdict_extern.h
 -- Installing: /usr/local/bin/mydict
-
 ```
 
 
@@ -84,20 +90,6 @@ make mydict
 ```
 
 The executable will be generated at `build/bin/mydict`
-
-### Using the library
-```
-mkdir build
-cd build
-cmake ..
-make install
-
-# take src/mydict.cc as example
-cd src
-g++ -std=c++17 -I/usr/local/ -I. -L/usr/local/lib -lmdict -lmdictminiz -lmdictbase64 mydict.cc -o mmdict
-
-```
-
 
 ### Running the Dictionary Tool
 

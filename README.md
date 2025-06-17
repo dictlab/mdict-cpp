@@ -3,6 +3,7 @@
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Stars](https://img.shields.io/github/stars/dictlab/mdict-cpp?style=social)](https://github.com/dictlab/mdict-cpp/stargazers)
 [![Forks](https://img.shields.io/github/forks/dictlab/mdict-cpp?style=social)](https://github.com/dictlab/mdict-cpp/network/members)
+[![Build Status](https://github.com/dictlab/mdict-cpp/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/dictlab/mdict-cpp/actions/workflows/build-and-test.yml)
 
 A C++ implementation for interpreting MDX/MDD dictionary files. This library provides functionality to read and parse MDX/MDD dictionary files commonly used in electronic dictionaries.
 

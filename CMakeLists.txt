@@ -1,5 +1,5 @@
 # Set the minimum required CMake version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10) # for windows XP compatibility 
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10) # for windows XP compatibility
 # Set the project name
 PROJECT(mdict-cpp VERSION 1.0.0)
 
@@ -12,7 +12,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # C++ standard
-set(CMAKE_CXX_STANDARD 17) # for windows XP compatibility 
+set(CMAKE_CXX_STANDARD 17) # for windows XP compatibility
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 # Set build type and compilation flags
@@ -50,11 +50,11 @@ ADD_SUBDIRECTORY(tests)
 
 # Library target: mdict
 ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler32.cc src/mdict_extern.cc)
-TARGET_LINK_LIBRARIES(mdict PRIVATE Miniz base64)
+TARGET_LINK_LIBRARIES(mdict PRIVATE mdictminiz mdictbase64)
 
 # Executable target: mydict (for development/testing purposes only)
 ADD_EXECUTABLE(mydict src/mydict.cc)
-TARGET_LINK_LIBRARIES(mydict PRIVATE mdict Miniz base64)
+TARGET_LINK_LIBRARIES(mydict PRIVATE mdict mdictminiz mdictbase64)
 
 # Define installation behavior for the mdict library
 OPTION(INSTALL_TO_SYSTEM "Install the mdict library to the system" OFF)
@@ -89,11 +89,15 @@ if(INSTALL_TO_SYSTEM)
         RUNTIME DESTINATION ${BIN_INSTALL_DIR}
         COMPONENT mdict
     )
-    
+
+    install(FILES ${LIBRARY_OUTPUT_PATH}/libmdictminiz${CMAKE_STATIC_LIBRARY_SUFFIX} DESTINATION ${LIB_INSTALL_DIR})
+    install(FILES ${LIBRARY_OUTPUT_PATH}/libmdictbase64${CMAKE_STATIC_LIBRARY_SUFFIX} DESTINATION ${LIB_INSTALL_DIR})
+
     # Install headers
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/include DESTINATION include/mdict
-        FILES_MATCHING PATTERN "*.h"
-    )
+    install(FILES ${CMAKE_SOURCE_DIR}/src/include/mdict.h DESTINATION include/mdict)
+    install(FILES ${CMAKE_SOURCE_DIR}/src/include/mdict_extern.h DESTINATION include/mdict)
+
+
 
     # Install mydict executable
     install(TARGETS mydict

@@ -17,6 +17,7 @@ ExternalProject_Add(turbobase64
     BUILD_COMMAND ${CMAKE_COMMAND} --build .
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TARGET_LIBS}
     COMMAND ${CMAKE_COMMAND} -E copy ${TARGET_PREFIX}/src/turbobase64/libbase64${CMAKE_STATIC_LIBRARY_SUFFIX} ${TARGET_LIBS}/libbase64${CMAKE_STATIC_LIBRARY_SUFFIX}
+    COMMAND ${CMAKE_COMMAND} -E copy ${TARGET_PREFIX}/src/turbobase64/libbase64${CMAKE_STATIC_LIBRARY_SUFFIX} ${TARGET_LIBS}/libmdictbase64${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 # define imported library libturbobase64

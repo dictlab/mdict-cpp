@@ -17,6 +17,7 @@ ExternalProject_Add(miniz
     BUILD_COMMAND ${CMAKE_COMMAND} --build . --target miniz
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TARGET_LIBS}
     COMMAND ${CMAKE_COMMAND} -E copy ${TARGET_PREFIX}/src/miniz/libminiz${CMAKE_STATIC_LIBRARY_SUFFIX} ${TARGET_LIBS}/libminiz${CMAKE_STATIC_LIBRARY_SUFFIX}
+    COMMAND ${CMAKE_COMMAND} -E copy ${TARGET_PREFIX}/src/miniz/libminiz${CMAKE_STATIC_LIBRARY_SUFFIX} ${TARGET_LIBS}/libmdictminiz${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 # define imported library libminiz

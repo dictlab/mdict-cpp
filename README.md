@@ -82,20 +82,6 @@ cd build
 cmake ..
 make mydict
 ```
-
-### How to use library
-```bash
-mkdir build
-cd build
-cmake -DINSTALL_TO_SYSTEM=ON ..
-make
-sudo make install
-
-cd src
-g++ 
-g++ -std=c++17 -I/usr/local/ -I. -L/usr/local/lib -lmdict -lmdictminiz -lmdictbase64 mydict.cc -o mmdict
-```
-
 The executable will be generated at `build/bin/mydict`
 
 ### Running the Dictionary Tool
@@ -130,7 +116,7 @@ make mdict
 
 The library will be generated at `target/lib/libmdict.a`
 
-### Using the Library in Your Project
+### Using the Library in Your Project with CMake
 
 1. Include the header files:
 ```cpp
@@ -140,6 +126,14 @@ The library will be generated at `target/lib/libmdict.a`
 2. Link against the library:
 ```cmake
 target_link_libraries(your_project mdict)
+```
+
+### Or use g++ directly
+
+```bash
+# after make install
+cd src
+g++ -std=c++17 -I/usr/local/ -I. -L/usr/local/lib -lmdict -lmdictminiz -lmdictbase64 mydict.cc -o mmdict
 ```
 
 ## MDX File Format

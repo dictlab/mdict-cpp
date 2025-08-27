@@ -166,6 +166,16 @@ int mdict_destory(void *dict) {
   return 0;
 }
 
+
+const char* c_mime_detect(const char* filename) {
+    static std::string result;       // keep it alive after return
+    result = mime_detect(filename);  
+    return result.c_str();
+}
+
+  
+
+
 #ifdef __cplusplus
 }
 #endif

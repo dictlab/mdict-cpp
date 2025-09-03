@@ -14,7 +14,14 @@ A C++ implementation for interpreting MDX/MDD dictionary files. This library pro
 - Extract dictionary entries and definitions
 - Support for both MDX (dictionary content) and MDD (resource files)
 - Simple and efficient C++ implementation
+- in-memory base64 encoding/decoding
+- UTF8 global output for any dictionary
+- low-level optimizations using advanced data structures
 
+## Notable Projects using MDict-cpp:
+- [Wazajisho](https://git.ajattix.org/hashirama/wazajisho): a in-memory, functional MDict viewer
+- [MDict-hs](https://git.ajattix.org/hashirama/mdict-hs): the haskell bindings for MDict-cpp
+ 
 ## Installation
 
 ### Prerequisites
@@ -87,7 +94,7 @@ The executable will be generated at `build/bin/mydict`
 ### Running the Dictionary Tool
 
 #### Query a word
-
+*Warning:* Make sure to include backslashs at the end of each query, otherwise lookup can fail.
 ```bash
 ./build/bin/mydict your_mdx_file.mdx yourword
 # output the resource binary as base64 format

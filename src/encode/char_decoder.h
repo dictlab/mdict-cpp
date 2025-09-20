@@ -141,7 +141,7 @@ inline ssize_t utf16le_to_utf8(const unsigned char *utf16le_data, size_t utf16le
              fprintf(stderr, "Error: Failed to allocate memory for UTF-8 buffer\n");
              return -1;
           }
-              utf8_buf = new_buf;
+             utf8_buf = reinterpret_cast<unsigned char*>(new_buf);
              utf8_buf_len = new_len;
 	}
 

@@ -191,6 +191,36 @@ const char* c_mime_detect(const char* filename) {
     return result.c_str();
 }
 
+// this is a variant of mdict_lookup with does "atomic" lookups.
+// by atomic, we mean that each lookup is done isolated from each other, preventing memory bugs
+extern "C" char* mdict_atomic_lookup(const char* dictPath, const char* key) {
+    try {
+        mdict::Mdict dict(dictPath);
+        dict.init();
+
+        std::string html = dict.lookup(key);
+      
+        // Copy to heap 
+        char* result = (char*)malloc(html.size() + 1);
+        std::memcpy(result, html.c_str(), html.size() + 1);
+        return result;
+
+    } catch (const std::exception& e) {
+        // Catch anything derived from std::exception
+        const std::string msg = std::string("ERROR: ") + e.what();
+        char* result = (char*)malloc(msg.size() + 1);
+        std::memcpy(result, msg.c_str(), msg.size() + 1);
+        result[msg.size()] = '\0';
+        return result;
+
+    } catch (...) {
+        // Catch everything else
+        const char* msg = "ERROR: unknown exception";
+        char* result = (char*)malloc(strlen(msg) + 1);
+        strcpy(result, msg);
+        return result;
+    }
+}
   
 
 

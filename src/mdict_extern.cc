@@ -70,29 +70,47 @@ void *mdict_init(const char *dictionary_path) {
 /**
  lookup a word
  */
-void mdict_lookup(void *dict, const char *word, char **result) {
-  auto *self = (mdict::Mdict *)dict;
-  std::string queryWord(word);
-  std::string s = self->lookup(queryWord);
 
-  (*result) = (char *)calloc(sizeof(char), s.size() + 1);
-  std::copy(s.begin(), s.end(), (*result));
-  (*result)[s.size()] = '\0';
+void mdict_lookup(void *dict, const char *word, char **result) {
+    auto *self = (mdict::Mdict *)dict;
+    std::string queryWord(word);
+
+    std::string s = self->lookup(queryWord);
+
+    // Create vector with null terminator
+    std::vector<char> buf(s.begin(), s.end());
+    buf.push_back('\0');
+
+    // Allocate result buffer once, copy vector content
+    *result = (char*)malloc(buf.size());
+    if (!*result) {
+        perror("malloc");
+        return;
+    }
+    memcpy(*result, buf.data(), buf.size());
 }
+
 
 /**
  locate a word
  */
-void mdict_locate(void *dict, const char *word, char **result,
-                  mdict_encoding_t encoding) {
-  auto *self = (mdict::Mdict *)dict;
-  std::string queryWord(word);
-  std::string s = self->locate(queryWord, encoding);
+void mdict_locate(void *dict, const char *word, char **result, mdict_encoding_t encoding) {
+    auto *self = (mdict::Mdict *)dict;
+    std::string queryWord(word);
 
-  (*result) = (char *)calloc(sizeof(char), s.size() + 1);
-  std::copy(s.begin(), s.end(), (*result));
-  (*result)[s.size()] = '\0';
+    std::string s = self->locate(queryWord, encoding);
+
+    std::vector<char> buf(s.begin(), s.end());
+    buf.push_back('\0');
+
+    *result = (char*)malloc(buf.size());
+    if (!*result) {
+        perror("malloc");
+        return;
+    }
+    memcpy(*result, buf.data(), buf.size());
 }
+
 
 void mdict_parse_definition(void *dict, const char *word,
                             unsigned long record_start, char **result) {

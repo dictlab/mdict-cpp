@@ -134,11 +134,17 @@ inline ssize_t utf16le_to_utf8(const unsigned char *utf16le_data, size_t utf16le
 
         // Check buffer space *before* writing
         // Need space for the bytes + 1 for potential null terminator later
-        if (utf8_idx + bytes_needed >= utf8_buf_len) { // Use >= to ensure space for null term
-             fprintf(stderr, "Error: Output UTF-8 buffer (size %zu) too small. Needs at least %zu bytes (+ null).\n",
-                     utf8_buf_len, utf8_idx + bytes_needed + 1);
-             return -1; // Buffer overflow
-        }
+        if (utf8_idx + bytes_needed >= utf8_buf_len) {
+            size_t new_len = (utf8_idx + bytes_needed) * 2; // grow a bit more to reduce future reallocs
+             char* new_buf = (char*)realloc(utf8_buf, new_len);
+           if (!new_buf) {
+             fprintf(stderr, "Error: Failed to allocate memory for UTF-8 buffer\n");
+             return -1;
+          }
+             utf8_buf = reinterpret_cast<unsigned char*>(new_buf);
+             utf8_buf_len = new_len;
+	}
+
 
         // Write the UTF-8 bytes
         if (bytes_needed == 1) {

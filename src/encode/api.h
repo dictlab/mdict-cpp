@@ -11,6 +11,8 @@
 #include <string>
 #pragma once
 #include "char_decoder.h"
+#include <cstdlib> // for size_t
+#include <climits> // for INT_MAX
 
 // Safe casting wrapper
 static inline unsigned char* malloc_uc(size_t size) {
@@ -91,6 +93,8 @@ inline std::string trim_nulls(const std::string& s) {
     return s.substr(0, end + 1);
 }
 
+// c++ territory
+
 // meant to be used when checking dictionary headers
 inline bool utf16_to_utf8_header(const char* src, size_t src_len, std::string& out) {
     if (!src) return false;
@@ -117,4 +121,3 @@ inline bool utf16_to_utf8_header(const char* src, size_t src_len, std::string& o
     out.resize(static_cast<size_t>(written));
     return true;
 }
-

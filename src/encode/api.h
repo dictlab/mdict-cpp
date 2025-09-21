@@ -11,6 +11,8 @@
 #include <string>
 #pragma once
 #include "char_decoder.h"
+#include <cstdlib> // for size_t
+#include <climits> // for INT_MAX
 
 // Safe casting wrapper
 static inline unsigned char* malloc_uc(size_t size) {
@@ -89,4 +91,37 @@ inline std::string trim_nulls(const std::string& s) {
     size_t end = s.find_last_not_of('\0');
     if (end == std::string::npos) return ""; // all nulls
     return s.substr(0, end + 1);
+}
+
+// c++ territory
+
+// meant to be used when checking dictionary headers
+inline bool utf16_to_utf8_header(const unsigned char* src, size_t src_len, std::string& out) {
+    if (!src) return false;
+    if (src_len == 0) { out.clear(); return true; }
+
+    // worst-case: 4 bytes per UTF16 unit
+    size_t out_capacity = src_len * 4;
+
+    // sanity check against API limits
+    if (out_capacity > static_cast<size_t>(INT_MAX) || src_len > static_cast<size_t>(INT_MAX)) {
+        return false;
+    }
+
+    // allocate string buffer with null characters
+    out.assign(out_capacity, '\0');
+
+    // cast internally only where needed
+    ssize_t written = utf16le_to_utf8_compat(
+        reinterpret_cast<const char*>(src), src_len, &out[0], out_capacity
+    );
+
+    if (written < 0 || static_cast<size_t>(written) > out_capacity) {
+        out.clear();
+        return false;
+    }
+
+    // shrink to actual written size
+    out.resize(static_cast<size_t>(written));
+    return true;
 }

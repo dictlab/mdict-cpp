@@ -23,7 +23,7 @@ SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall --std=c++17 ")
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
-ADD_COMPILE_OPTIONS(-Wno-unused-variable -fpermissive -Wno-sign-compare)
+ADD_COMPILE_OPTIONS(-Wno-unused-variable -fpermissive -Wno-sign-compare -Wno-error=sign-compare)
 
 # Add cmake modules path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

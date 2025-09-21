@@ -96,7 +96,7 @@ inline std::string trim_nulls(const std::string& s) {
 // c++ territory
 
 // meant to be used when checking dictionary headers
-inline bool utf16_to_utf8_header(const char* src, size_t src_len, std::string& out) {
+inline bool utf16_to_utf8_header(const unsigned char* src, size_t src_len, std::string& out) {
     if (!src) return false;
     if (src_len == 0) { out.clear(); return true; }
 
@@ -111,7 +111,11 @@ inline bool utf16_to_utf8_header(const char* src, size_t src_len, std::string& o
     // allocate string buffer with null characters
     out.assign(out_capacity, '\0');
 
-    ssize_t written = utf16le_to_utf8_compat(src, src_len, &out[0], out_capacity);
+    // cast internally only where needed
+    ssize_t written = utf16le_to_utf8_compat(
+        reinterpret_cast<const char*>(src), src_len, &out[0], out_capacity
+    );
+
     if (written < 0 || static_cast<size_t>(written) > out_capacity) {
         out.clear();
         return false;

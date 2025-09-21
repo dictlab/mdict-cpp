@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "encode/char_decoder.h"
+#include "encode/api.h"
 #include "include/adler32.h"
 #include "include/binutils.h"
 #include "include/mdict_extern.h"
@@ -109,26 +110,21 @@ void Mdict::read_header() {
   // -----------------------------------------
 
   // header text utf16
-  unsigned char *utf8_buffer =
-      (unsigned char *)std::calloc(header_bytes_size, sizeof(unsigned char));
-  int utf8_len = utf16le_to_utf8(head_buffer, header_bytes_size, utf8_buffer,
-                                 header_bytes_size);
 
-  this->header_buffer =
-      std::string(reinterpret_cast<char *>(utf8_buffer), utf8_len);
-
-  if (utf8_len == -1) {
-    std::cout << "this mdx file is invalid" << " len:" << header_bytes_size
-              << std::endl;
+  std::string utf8_temp;
+  if (!utf16_to_utf8_header(reinterpret_cast<const unsigned char*>(head_buffer),
+                          header_bytes_size, utf8_temp)) {
+    std::cout << "this mdx file is invalid len:" << header_bytes_size << std::endl;
     return;
-  }
-  /// passed
+}
 
-  // -----------------------------------------
-  // 5. parse xml string into map
-  // -----------------------------------------
 
-  std::string header_text(reinterpret_cast<char *>(utf8_buffer), utf8_len);
+  unsigned char* utf8_buffer = reinterpret_cast<unsigned char*>(&utf8_temp[0]);
+  int utf8_len = static_cast<int>(utf8_temp.size());
+
+  this->header_buffer = std::move(utf8_temp);
+
+  std::string header_text(reinterpret_cast<char*>(utf8_buffer), utf8_len);
   std::map<std::string, std::string> headinfo;
   parse_xml_header(header_text, headinfo);
   /// passed
@@ -176,9 +172,40 @@ void Mdict::read_header() {
   // version 2.0 and above use 8 bytes
   std::string sver = headinfo["GeneratedByEngineVersion"];
   std::string::size_type sz; // alias of size_t
+  
+  auto parse_version = [](const std::string& s, float fallback = 0.0f) -> float {
+    float v = fallback;
+    size_t i = 0;
 
-  float version = std::stof(sver, &sz);
-  this->version = version;
+    // skip leading whitespace
+    while (i < s.size() && std::isspace(static_cast<unsigned char>(s[i]))) ++i;
+    if (i == s.size()) return fallback;
+
+    // parse digits before decimal
+    float int_part = 0;
+    while (i < s.size() && std::isdigit(static_cast<unsigned char>(s[i]))) {
+        int_part = int_part * 10 + (s[i] - '0');
+        ++i;
+    }
+
+    float frac_part = 0;
+    if (i < s.size() && s[i] == '.') {
+        ++i;
+        float divisor = 10.0f;
+        while (i < s.size() && std::isdigit(static_cast<unsigned char>(s[i]))) {
+            frac_part += (s[i] - '0') / divisor;
+            divisor *= 10.0f;
+            ++i;
+        }
+    }
+
+    v = int_part + frac_part;
+    return v;
+};
+
+  // we fallback to less than 2.
+  this->version = parse_version(sver, 0.0f); // default < 2.0
+  
 
   if (this->version >= 2.0) {
     this->number_width = 8;
@@ -563,7 +590,7 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
     if (i >= key_block_len) {
       throw std::runtime_error("key start idx > key block length");
     }
-    while (i < key_block_len) {
+    while (static_cast<size_t>(i) < key_block_len) {
       if (encoding == 1 /*ENCODING_UTF16*/) {
         if ((key_block[i] & 0x0f) == 0 &&        /* delimiter = '0000' */
             ((key_block[i] & 0xf0) >> 4) == 0 && /* delimiter = '0000' */
@@ -588,7 +615,7 @@ std::vector<key_list_item *> Mdict::split_key_block(unsigned char *key_block,
     }
     /// passed
 
-    if (key_end_idx >= key_block_len) {
+    if (static_cast<size_t>(key_end_idx) >= key_block_len) {
       key_end_idx = static_cast<int>(key_block_len);
     }
 
@@ -738,7 +765,7 @@ int Mdict::decode_key_block(unsigned char *key_block_buffer,
                             unsigned long kb_buff_len) {
   int i = 0;
 
-  for (long idx = 0; idx < this->key_block_info_list.size(); idx++) {
+  for (long idx = 0; idx < static_cast<long>(this->key_block_info_list.size()); idx++) {
     unsigned long comp_size =
         this->key_block_info_list[idx]->key_block_comp_size;
     unsigned long decomp_size =
@@ -1047,7 +1074,7 @@ int Mdict::decode_record_block() {
   std::vector<uint8_t> record_block_uncompressed_v;
   unsigned char *record_block_uncompressed_b;
   uint64_t checksum = 0l;
-  for (int idx = 0; idx < this->record_header.size(); idx++) {
+  for (int idx = 0; idx < static_cast<int>(this->record_header.size()); idx++) {
     uint64_t comp_size = record_header[idx]->compressed_size;
     uint64_t uncomp_size = record_header[idx]->decompressed_size;
     char *record_block_cmp_buffer = (char *)calloc(comp_size, sizeof(char));

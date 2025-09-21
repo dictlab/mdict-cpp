@@ -112,12 +112,10 @@ void Mdict::read_header() {
   // header text utf16
 
   std::string utf8_temp;
-  if (!utf16_to_utf8_header(reinterpret_cast<const unsigned char*>(head_buffer),
-                          header_bytes_size, utf8_temp)) {
+  if (!utf16_to_utf8_header(head_buffer, header_bytes_size, utf8_temp)) {
     std::cout << "this mdx file is invalid len:" << header_bytes_size << std::endl;
     return;
-}
-
+  }
 
   unsigned char* utf8_buffer = reinterpret_cast<unsigned char*>(&utf8_temp[0]);
   int utf8_len = static_cast<int>(utf8_temp.size());

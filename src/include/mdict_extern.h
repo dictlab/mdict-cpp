@@ -118,6 +118,8 @@ void mdict_stem(void *dict, char *word, char **suggested_words, int length);
  */
 int mdict_destory(void *dict);
 
+char* mdict_atomic_lookup(const char* dictPath, const char* key);
+
 // C wrapper for mime_detect
 const char* c_mime_detect(const char* filename);
   

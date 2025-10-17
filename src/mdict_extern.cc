@@ -136,7 +136,6 @@ simple_key_item **mdict_keylist(void *dict, uint64_t *len) {
     auto key_size = keylist[i]->key_word.size() + 1;
     items[i]->key_word = (char *)malloc(sizeof(char) * key_size);
     strcpy(items[i]->key_word, key_word);
-    items[i]->key_word[key_size] = '\0';
     items[i]->record_start = keylist[i]->record_start;
   }
 

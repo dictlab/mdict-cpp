@@ -124,23 +124,93 @@ void mdict_parse_definition(void *dict, const char *word,
 }
 
 simple_key_item **mdict_keylist(void *dict, uint64_t *len) {
-  auto *self = (mdict::Mdict *)dict;
-  auto keylist = self->keyList();
+    auto *self = reinterpret_cast<mdict::Mdict*>(dict);
+    auto keylist = self->keyList();              // copy of whatever keyList() returns
+    const std::size_t n = keylist.size();
+    *len = static_cast<uint64_t>(n);
 
-  *len = keylist.size();
-  auto *items = new simple_key_item *[keylist.size()];
+    // allocate array of pointers (new T[0] is fine in C++).
+    simple_key_item **items = new simple_key_item*[n];
 
-  for (auto i = 0; i < keylist.size(); i++) {
-    items[i] = new simple_key_item;
-    auto key_word = (const char *)keylist[i]->key_word.c_str();
-    auto key_size = keylist[i]->key_word.size() + 1;
-    items[i]->key_word = (char *)malloc(sizeof(char) * key_size);
-    strcpy(items[i]->key_word, key_word);
-    items[i]->record_start = keylist[i]->record_start;
-  }
+    // safe_strdup: always returns a pointer you may free() or nullptr on catastrophic failure.
+    auto safe_strdup = [](const char* s, std::size_t len) -> char* {
+        if (!s || len == 0) {
+            char* p = static_cast<char*>(std::malloc(1));
+            if (p) p[0] = '\0';
+            return p;
+        }
 
-  return items;
+        if (len >= SIZE_MAX / 2) len = 0; // paranoia guard
+        std::size_t alloc_size = len + 1;
+        char* p = static_cast<char*>(std::malloc(alloc_size));
+        if (!p) {
+            // Try to return an allocated marker string "<OOM>" (so caller can free it)
+            const char oom_marker[] = "<OOM>";
+            std::size_t oml = sizeof(oom_marker) - 1;
+            char* q = static_cast<char*>(std::malloc(oml + 1));
+            if (q) {
+                std::memcpy(q, oom_marker, oml + 1);
+                return q;
+            }
+            // Last-ditch: allocate 1 byte and return empty string (may still fail)
+            p = static_cast<char*>(std::malloc(1));
+            if (p) p[0] = '\0';
+            return p; // maybe nullptr if even this failed
+        }
+
+        std::memcpy(p, s, len);
+        p[len] = '\0';
+        return p;
+    };
+
+    // make_item expects a pointer to a source element type with fields:
+    //  - record_start (uint64_t)
+    //  - key_word (something with .data() and .size())
+    // We'll accept a pointer (const auto*) so it works uniformly.
+    auto make_item = [&](const auto* src) -> simple_key_item* {
+        simple_key_item* item = new simple_key_item;
+        item->record_start = src ? src->record_start : 0;
+
+        if (!src) {
+            item->key_word = safe_strdup("<NULL>", 6);
+            return item;
+        }
+
+        constexpr std::size_t MAX_KEY = 10 * 1024; // 10 KB per key
+        std::size_t ksize = src->key_word.size();
+        if (ksize > MAX_KEY) {
+            item->key_word = safe_strdup("<TOO_LONG>", 10);
+            return item;
+        }
+
+        item->key_word = safe_strdup(src->key_word.data(), ksize);
+        if (!item->key_word) {
+            // catastrophic; safe_strdup already tried to return "<OOM>" or "".
+            // To be safe, allocate an empty string if possible:
+            item->key_word = static_cast<char*>(std::malloc(1));
+            if (item->key_word) item->key_word[0] = '\0';
+        }
+        return item;
+    };
+
+    // Detect element type of keylist and call make_item appropriately.
+    using KeyListType = decltype(keylist);
+    using Elem = typename KeyListType::value_type;
+    constexpr bool elem_is_ptr = std::is_pointer_v<Elem>;
+
+    for (std::size_t i = 0; i < n; ++i) {
+        if constexpr (elem_is_ptr) {
+            // keylist holds pointer elements already
+            items[i] = make_item(keylist[i]);
+        } else {
+            // keylist holds elements by value; pass address
+            items[i] = make_item(&keylist[i]);
+        }
+    }
+
+    return items;
 }
+
 
 int free_simple_key_list(simple_key_item **key_items, uint64_t len) {
   if (key_items == nullptr) {

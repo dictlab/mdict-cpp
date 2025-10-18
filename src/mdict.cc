@@ -1380,7 +1380,15 @@ int Mdict::decode_key_block_info(char *key_block_info_buffer,
       //          break;
     }
     assert(counter == this->key_block_num);
-    assert(num_entries_counter == this->entries_num);
+
+    // this allows us to handle some cases of malformed dictionaries without crashing.
+    if (num_entries_counter != this->entries_num) {
+    std::cerr << "[Warning] Key entry count mismatch: "
+              << num_entries_counter << " (found) vs "
+              << this->entries_num << " (expected)"
+              << std::endl;
+    }
+ 
 
   } else {
     // doesn't compression

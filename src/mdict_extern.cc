@@ -203,14 +203,9 @@ simple_key_item **mdict_keylist(void *dict, uint64_t *len) {
     constexpr bool elem_is_ptr = std::is_pointer_v<Elem>;
 
     for (std::size_t i = 0; i < n; ++i) {
-        if constexpr (elem_is_ptr) {
-            // keylist holds pointer elements already
-            items[i] = make_item(keylist[i]);
-        } else {
-            // keylist holds elements by value; pass address
-            items[i] = make_item(&keylist[i]);
-        }
-    }
+      items[i] = make_item(keylist[i]); 
+}
+
 
     return items;
 }

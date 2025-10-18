@@ -11,7 +11,11 @@
 #include <algorithm>
 #include <string>
 #include <unordered_map>
-
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <type_traits>
 #include "include/mdict.h"
 
 /**

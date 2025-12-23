@@ -7,6 +7,8 @@
  */
 
 #pragma once
+
+#ifdef __cplusplus
 #include <string>
 
 // C++ function declarations
@@ -17,7 +19,6 @@
  */
 std::string mime_detect(const std::string &filename);
 
-#ifdef __cplusplus
 extern "C" {
 #endif
 

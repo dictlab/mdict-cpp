@@ -8,6 +8,9 @@
 
 A C++ implementation for interpreting MDX/MDD dictionary files. This library provides functionality to read and parse MDX/MDD dictionary files commonly used in electronic dictionaries.
 
+## DISCLAIMER
+functions for the users are contained within ```mdict_extern.h``` we will ignore any issues from low-level functions, since those are for internal usage and do not target end-users.
+
 ## Features
 
 - Parse MDX/MDD dictionary files

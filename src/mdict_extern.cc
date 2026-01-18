@@ -246,7 +246,7 @@ void mdict_suggest(void *dict, char *word, char **suggested_words, int length) {
  */
 void mdict_stem(void *dict, char *word, char **suggested_words, int length) {}
 
-int mdict_destory(void *dict) {
+int mdict_destroy(void *dict) {
   auto *self = (mdict::Mdict *)dict;
   delete self;
   return 0;

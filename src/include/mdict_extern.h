@@ -116,7 +116,7 @@ void mdict_stem(void *dict, char *word, char **suggested_words, int length);
  * @param dict Dictionary object pointer returned by mdict_init
  * @return 0 on success, non-zero on failure
  */
-int mdict_destory(void *dict);
+int mdict_destroy(void *dict);
 
 // C wrapper for mime_detect
 const char* c_mime_detect(const char* filename);

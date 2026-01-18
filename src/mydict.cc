@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
 
     if (key_list_len == 0) {
       std::cerr << "No keys in dictionary\n";
-      mdict_destory(dict);
+      mdict_destroy(dict);
       return 1;
     }
 
@@ -265,6 +265,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  mdict_destory(dict);
+  mdict_destroy(dict);
   return 0;
 }

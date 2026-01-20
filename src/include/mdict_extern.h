@@ -23,6 +23,17 @@ extern "C" {
 
 #include "mdict_simple_key.h"
 
+// Macro to wrap a pointer + size into SizedData
+typedef struct {
+    const void *data;
+    size_t size;
+} SizedData;
+
+#define WRAP_SIZED(ptr, len) ((SizedData){ .data = (ptr), .size = (len) })
+#define RETURN_SIZED(ptr, len) return WRAP_SIZED((ptr), (len))
+  
+
+  
 /**
  * Encoding type for locate function
  */
@@ -37,7 +48,7 @@ typedef enum {
  * @return A pointer to the initialized dictionary object, or NULL if
  * initialization fails
  */
-void *mdict_init(const char *dictionary_path);
+SizedData mdict_init(const char *dictionary_path);
 
 /**
  * Look up a word in the dictionary and get its definition
@@ -46,7 +57,7 @@ void *mdict_init(const char *dictionary_path);
  * @param result Pointer to store the definition result (memory will be
  * allocated)
  */
-void mdict_lookup(void *dict, const char *word, char **result);
+SizedData mdict_lookup(void *dict, const char *word);
 
 /**
  * Locate a word in the dictionary without getting its definition
@@ -56,8 +67,7 @@ void mdict_lookup(void *dict, const char *word, char **result);
  * @param encoding The encoding type for the result (MDICT_ENCODING_BASE64 or
  * MDICT_ENCODING_HEX)
  */
-void mdict_locate(void *dict, const char *word, char **result,
-                  mdict_encoding_t encoding);
+SizedData mdict_locate(void *dict, const char *word, mdict_encoding_t encoding);
 
 /**
  * Parse a word's definition from its record start position
@@ -67,8 +77,7 @@ void mdict_locate(void *dict, const char *word, char **result,
  * @param result Pointer to store the parsed definition (memory will be
  * allocated)
  */
-void mdict_parse_definition(void *dict, const char *word,
-                            unsigned long record_start, char **result);
+SizedData mdict_parse_definition(void *dict, const char *word, unsigned long record_start);
 
 /**
  * Get a list of all keys in the dictionary
@@ -116,10 +125,10 @@ void mdict_stem(void *dict, char *word, char **suggested_words, int length);
  * @param dict Dictionary object pointer returned by mdict_init
  * @return 0 on success, non-zero on failure
  */
-int mdict_destory(void *dict);
+int mdict_destroy(void *dict);
 
 // C wrapper for mime_detect
-const char* c_mime_detect(const char* filename);
+SizedData c_mime_detect(const char* filename);
   
 //-------------------------
 

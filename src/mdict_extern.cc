@@ -15,8 +15,12 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <new>
+#include <cstdio>
 #include <type_traits>
 #include "include/mdict.h"
+
+
 
 /**
   实现 mdict_extern.h中的方法
@@ -64,67 +68,100 @@ extern "C" {
 /**
  init the dictionary
  */
-void *mdict_init(const char *dictionary_path) {
-  std::string dict_file_path(dictionary_path);
-  auto *mydict = new mdict::Mdict(dict_file_path);
-  mydict->init();
-  return mydict;
+SizedData mdict_init(const char *dictionary_path) {
+    if (!dictionary_path) {
+        fprintf(stderr, "mdict_init: null dictionary path\n");
+        RETURN_SIZED(nullptr, 0);
+    }
+    std::string dict_file_path(dictionary_path);
+    // Allocate dictionary safely on the heap
+    mdict::Mdict *dict = new (std::nothrow) mdict::Mdict(dict_file_path);
+    if (!dict) {
+        perror("mdict_init: allocation failed");
+        RETURN_SIZED(nullptr, 0);
+    }
+    // Initialize the dictionary
+    try {
+        dict->init();
+    } catch (const std::exception &e) {
+        fprintf(stderr, "mdict_init: exception during init: %s\n", e.what());
+        delete dict;
+        RETURN_SIZED(nullptr, 0);
+    } catch (...) {
+        fprintf(stderr, "mdict_init: unknown exception during init\n");
+        delete dict;
+        RETURN_SIZED(nullptr, 0);
+    }
+    // No copy; return the single allocated handle safely
+    RETURN_SIZED(dict, sizeof(mdict::Mdict*));
 }
 
+  
 /**
  lookup a word
  */
 
-void mdict_lookup(void *dict, const char *word, char **result) {
+SizedData mdict_lookup(void *dict, const char *word) {
     auto *self = (mdict::Mdict *)dict;
     std::string queryWord(word);
 
+    // Get the lookup result as std::string
     std::string s = self->lookup(queryWord);
 
-    // Create vector with null terminator
-    std::vector<char> buf(s.begin(), s.end());
-    buf.push_back('\0');
-
-    // Allocate result buffer once, copy vector content
-    *result = (char*)malloc(buf.size());
-    if (!*result) {
+    // Allocate a buffer that survives after return
+    char *buf = (char *)malloc(s.size() + 1);
+    if (!buf) {
         perror("malloc");
-        return;
+        RETURN_SIZED(NULL, 0); // return empty SizedData on allocation failure
     }
-    memcpy(*result, buf.data(), buf.size());
+
+    // Copy string data and null-terminate
+    std::copy(s.begin(), s.end(), buf);
+    buf[s.size()] = '\0';
+
+    // Wrap pointer + size into SizedData and return
+    RETURN_SIZED(buf, s.size());
 }
 
 
 /**
  locate a word
  */
-void mdict_locate(void *dict, const char *word, char **result, mdict_encoding_t encoding) {
+SizedData mdict_locate(void *dict, const char *word, mdict_encoding_t encoding) {
     auto *self = (mdict::Mdict *)dict;
     std::string queryWord(word);
 
+    // Call the original locate function
     std::string s = self->locate(queryWord, encoding);
 
-    std::vector<char> buf(s.begin(), s.end());
-    buf.push_back('\0');
-
-    *result = (char*)malloc(buf.size());
-    if (!*result) {
+    // Allocate a buffer that survives after function returns
+    char *buf = (char *)malloc(s.size() + 1);
+    if (!buf) {
         perror("malloc");
-        return;
+        RETURN_SIZED(NULL, 0); // return empty SizedData on error
     }
-    memcpy(*result, buf.data(), buf.size());
+
+    // Copy string data into the buffer and null-terminate
+    std::copy(s.begin(), s.end(), buf);
+    buf[s.size()] = '\0';
+
+    // Wrap pointer + size into SizedData and return
+    RETURN_SIZED(buf, s.size());
 }
 
 
-void mdict_parse_definition(void *dict, const char *word,
-                            unsigned long record_start, char **result) {
-  auto *self = (mdict::Mdict *)dict;
-  std::string queryWord(word);
-  std::string s = self->parse_definition(queryWord, record_start);
+SizedData mdict_parse_definition(void *dict, const char *word, unsigned long record_start) {
+    auto *self = (mdict::Mdict *)dict;
+    std::string queryWord(word);
+    std::string s = self->parse_definition(queryWord, record_start);
 
-  (*result) = (char *)calloc(sizeof(char), s.size() + 1);
-  std::copy(s.begin(), s.end(), (*result));
-  (*result)[s.size()] = '\0';
+    // Allocate memory for a C string copy so it survives after function returns
+    char *buf = (char *)malloc(s.size() + 1);
+    std::copy(s.begin(), s.end(), buf);
+    buf[s.size()] = '\0';
+
+    // Wrap pointer + size into SizedData and return
+    RETURN_SIZED(buf, s.size());
 }
 
 simple_key_item **mdict_keylist(void *dict, uint64_t *len) {
@@ -246,19 +283,22 @@ void mdict_suggest(void *dict, char *word, char **suggested_words, int length) {
  */
 void mdict_stem(void *dict, char *word, char **suggested_words, int length) {}
 
-int mdict_destory(void *dict) {
-  auto *self = (mdict::Mdict *)dict;
-  delete self;
-  return 0;
+int mdict_destroy(void *dict) {
+    if (!dict) return -1; // nothing to free
+
+    auto *self = (mdict::Mdict *)dict;
+    delete self;
+    return 0;
 }
 
-
-const char* c_mime_detect(const char* filename) {
+SizedData c_mime_detect(const char* filename) {
     static std::string result;       // keep it alive after return
-    result = mime_detect(filename);  
-    return result.c_str();
+    result = mime_detect(filename);
+    // Wrap pointer + size into SizedData
+    RETURN_SIZED(result.c_str(), result.size());
 }
 
+  
 // this is a variant of mdict_lookup with does "atomic" lookups.
 // by atomic, we mean that each lookup is done isolated from each other, preventing memory bugs
 extern "C" char* mdict_atomic_lookup(const char* dictPath, const char* key) {

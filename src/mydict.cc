@@ -27,11 +27,11 @@ bool ends_with(const std::string &str, const std::string &suffix) {
     return false;
   }
   return str.compare(str.length() - suffix.length(), suffix.length(), suffix) ==
-         0;
+    0;
 }
 
 class Timetool {
- public:
+public:
   static int64 getSystemTime() {
     timeval tv;
     gettimeofday(&tv, NULL);
@@ -108,27 +108,27 @@ int main(int argc, char **argv) {
   // Parse command line options
   while ((opt = getopt(argc, argv, "lhvxnt")) != -1) {
     switch (opt) {
-      case 'l':
-        list_keys = true;
-        break;
-      case 'v':
-        verbose = true;
-        break;
-      case 'x':
-        hex_output = true;
-        break;
-      case 'n':
-        no_content = true;
-        break;
-      case 't':
-        show_timing = true;
-        break;
-      case 'h':
-        print_usage(argv[0]);
-        return 0;
-      default:
-        print_usage(argv[0]);
-        return 1;
+    case 'l':
+      list_keys = true;
+      break;
+    case 'v':
+      verbose = true;
+      break;
+    case 'x':
+      hex_output = true;
+      break;
+    case 'n':
+      no_content = true;
+      break;
+    case 't':
+      show_timing = true;
+      break;
+    case 'h':
+      print_usage(argv[0]);
+      return 0;
+    default:
+      print_usage(argv[0]);
+      return 1;
     }
   }
 
@@ -160,7 +160,8 @@ int main(int argc, char **argv) {
   }
 
   int64 t1 = Timetool::getSystemTime();
-  void *dict = mdict_init(dict_file);
+  SizedData dict_handle = mdict_init(dict_file);
+  void *dict = const_cast<void*>(dict_handle.data);  // extract the pointer
 
   int64 t2 = Timetool::getSystemTime();
   if (verbose) {
@@ -175,7 +176,7 @@ int main(int argc, char **argv) {
 
     if (key_list_len == 0) {
       std::cerr << "No keys in dictionary\n";
-      mdict_destory(dict);
+      mdict_destroy(dict);
       return 1;
     }
 
@@ -205,58 +206,59 @@ int main(int argc, char **argv) {
 
     free_simple_key_list(key_list_result, key_list_len);
   } else {
-    char *result[0];
+    SizedData lookup_result = { nullptr, 0 };  // default empty
     int64 lookup_start = Timetool::getSystemTime();
+
     if (!is_mdd) {
-      mdict_lookup(dict, query_key, result);
+      lookup_result = mdict_lookup(dict, query_key);
     } else {
-      // For MDD files, use hex encoding if -x option is specified, otherwise
-      // use base64
-      mdict_encoding_t encoding =
-          hex_output ? MDICT_ENCODING_HEX : MDICT_ENCODING_BASE64;
-      mdict_locate(dict, query_key, result, encoding);
+      mdict_encoding_t encoding = hex_output ? MDICT_ENCODING_HEX : MDICT_ENCODING_BASE64;
+      lookup_result = mdict_locate(dict, query_key, encoding);
     }
+
     int64 lookup_end = Timetool::getSystemTime();
-    
+
     if (show_timing) {
       std::cout << "Lookup/Locate time: " << (lookup_end - lookup_start) << "ms" << std::endl;
     }
-    
-    std::string definition(*result);
-    
+
+    // Example: convert to string if needed
+    std::string definition((const char*)lookup_result.data, lookup_result.size);
+
     if (verbose) {
       std::cout << ">>[definition start] [" << query_key
-                << "] length: " << definition.length() << " >>" << std::endl;
+		<< "] length: " << definition.length() << " >>" << std::endl;
     }
+
 
     if (no_content) {
       if (definition.empty()) {
-        std::cout << "-1" << std::endl;
+	std::cout << "-1" << std::endl;
       } else {
-        std::cout << definition.length() << std::endl;
+	std::cout << definition.length() << std::endl;
       }
     } else {
       std::string ext;
       const char *dot = strrchr(query_key, '.');
       if (dot && *(dot + 1)) {
-        ext = dot + 1;
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+	ext = dot + 1;
+	std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
       }
 
       std::string mime_type = mime_detect(query_key);
       if (mime_type != "application/octet-stream") {
-        if (is_mdd && hex_output) {
-          std::cout << definition << std::endl;  // Output raw hex for MDD with -x option
-        } else {
-          std::cout << "data:" << mime_type << ";base64," << definition << std::endl;
-        }
+	if (is_mdd && hex_output) {
+	  std::cout << definition << std::endl;
+	} else {
+	  std::cout << "data:" << mime_type << ";base64," << definition << std::endl;
+	}
       } else {
-        std::cout << "query key:" << query_key << " | def:" << definition << std::endl;
+	std::cout << "query key:" << query_key << " | def:\n\n" << definition << "\n\n" << std::endl;
       }
     }
 
     if (verbose) {
-      std::cout << "<<[definition   end] [" << query_key << "]" << " <<" << std::endl;
+      std::cout << "<<[definition   end] [" << query_key << "] <<" << std::endl;
     }
 
     int64 t3 = Timetool::getSystemTime();
@@ -265,6 +267,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  mdict_destory(dict);
+  mdict_destroy(dict);
   return 0;
 }

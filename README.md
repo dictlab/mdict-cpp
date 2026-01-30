@@ -21,6 +21,7 @@ A C++ implementation for interpreting MDX/MDD dictionary files. This library pro
 ## Notable Projects using MDict-cpp:
 - [Wazajisho](https://git.ajattix.org/hashirama/wazajisho): a in-memory, functional MDict viewer
 - [MDict-hs](https://git.ajattix.org/hashirama/mdict-hs): the haskell bindings for MDict-cpp
+- [Monastery](https://git.ajattix.org/Jamno/monastery): the Common Lisp bindings for MDict-cpp
  
 ## Installation
 

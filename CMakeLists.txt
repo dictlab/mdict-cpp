@@ -48,8 +48,16 @@ LINK_DIRECTORIES(/usr/local/lib ${CMAKE_CURRENT_BINARY_DIR}/lib)
 # Add subdirectories
 ADD_SUBDIRECTORY(tests)
 
+# Set the option to static or shared library
+OPTION(BUILD_SHARED "Build mdict as a shared library instead of static" OFF)
+
 # Library target: mdict
-ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler32.cc src/mdict_extern.cc)
+if(BUILD_SHARED)
+	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+	ADD_LIBRARY(mdict SHARED src/mdict.cc src/binutils.cc src/ripemd128.c src/adler32.cc src/mdict_extern.cc)
+else()
+	ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler32.cc src/mdict_extern.cc)
+endif()
 TARGET_LINK_LIBRARIES(mdict PRIVATE mdictminiz mdictbase64)
 
 # Executable target: mydict (for development/testing purposes only)
@@ -105,5 +113,3 @@ if(INSTALL_TO_SYSTEM)
         COMPONENT mydict
     )
 endif()
-
-

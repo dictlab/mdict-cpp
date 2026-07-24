@@ -176,6 +176,9 @@ int main(int argc, char **argv) {
   }
 
   bool is_mdd = is_mdd_file(dict_file);
+  if (is_mdd) {
+    std::cout << "mdd detected" << std::endl;
+  }
 
   if (list_keys) {
     uint64_t key_list_len = 0;
@@ -255,8 +258,8 @@ int main(int argc, char **argv) {
 
 
       std::string mime_type = mime_detect(query_key);
+
       if (bench_base64) {
-	
 	ankerl::nanobench::Bench bench;
 	bench.timeUnit(std::chrono::milliseconds(1), "ms");
 	bench.output(nullptr);
@@ -266,28 +269,37 @@ int main(int argc, char **argv) {
 			      lookup_result.size);
 	  ankerl::nanobench::doNotOptimizeAway(base64_from_hex(hex_str));
 	});
-        auto const& r = bench.results()[0];
 
-        double ms  = r.median(ankerl::nanobench::Result::Measure::elapsed) * 1000.0;
+	auto const& r = bench.results()[0];
+	double ms  = r.median(ankerl::nanobench::Result::Measure::elapsed) * 1000.0;
 	double ops = 1.0 / r.median(ankerl::nanobench::Result::Measure::elapsed);
-	double err = r.medianAbsolutePercentError(ankerl::nanobench::Result::Measure::elapsed) * 100.0;
+	double err = r.medianAbsolutePercentError(
+						  ankerl::nanobench::Result::Measure::elapsed) * 100.0;
+
 	char msbuf[32];
 	snprintf(msbuf, sizeof(msbuf), "%8.3f", ms);
-        printf("| %-18s | %8s | %10s | %7s |\n",
+
+	printf("| %-18s | %8s | %10s | %7s |\n",
 	       "benchmark", "ms/op", "op/s", "err");
 	printf("|--------------------|---------:|-----------:|-------:|\n");
 	printf("| %-18s | \033[32m%s\033[0m | %10.2f | %6.2f%% |\n",
 	       "base64_from_hex", msbuf, ops, err);
-	
+
 	return 0;
-	
-      } else if (mime_type != "application/octet-stream") {
-	if (is_mdd && hex_output) {
+      }
+
+      if (is_mdd) {
+	if (hex_output) {
 	  std::cout << definition << std::endl;
+	} else {
+	  std::cout << "data:" << mime_type
+		    << ";base64," << definition << std::endl;
 	}
       } else {
-	std::cout << "data:" << mime_type << ";base64," << definition << std::endl;
-      } 
+	std::cout << "query key:" << query_key
+		  << " | def:\n\n"
+		  << definition << "\n\n";
+      }
     }
 
     if (verbose) {

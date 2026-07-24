@@ -10,7 +10,9 @@
 
 #include <sys/time.h>
 #include <unistd.h>  // for getopt
-
+#include <encode/base64.h>
+#include <nanobench.h>
+#include <iomanip>
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -100,14 +102,19 @@ int main(int argc, char **argv) {
   bool hex_output = false;
   bool no_content = false;
   bool show_timing = false;
+  bool bench_base64 = false;
   int opt;
 
   std::string definition;
   std::string definition_hex;
 
   // Parse command line options
-  while ((opt = getopt(argc, argv, "lhvxnt")) != -1) {
+  while ((opt = getopt(argc, argv, "blhvxnt")) != -1) {
     switch (opt) {
+    case 'b':
+      bench_base64 = true;
+      hex_output = true; // required for benchmark
+      break;  
     case 'l':
       list_keys = true;
       break;
@@ -212,6 +219,7 @@ int main(int argc, char **argv) {
     if (!is_mdd) {
       lookup_result = mdict_lookup(dict, query_key);
     } else {
+      // ternay operator, hex_output = true, then first option is used.
       mdict_encoding_t encoding = hex_output ? MDICT_ENCODING_HEX : MDICT_ENCODING_BASE64;
       lookup_result = mdict_locate(dict, query_key, encoding);
     }
@@ -245,16 +253,41 @@ int main(int argc, char **argv) {
 	std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
       }
 
+
       std::string mime_type = mime_detect(query_key);
-      if (mime_type != "application/octet-stream") {
+      if (bench_base64) {
+	
+	ankerl::nanobench::Bench bench;
+	bench.timeUnit(std::chrono::milliseconds(1), "ms");
+	bench.output(nullptr);
+
+	bench.run("base64_from_hex", [&] {
+	  std::string hex_str(reinterpret_cast<const char*>(lookup_result.data),
+			      lookup_result.size);
+	  ankerl::nanobench::doNotOptimizeAway(base64_from_hex(hex_str));
+	});
+        auto const& r = bench.results()[0];
+
+        double ms  = r.median(ankerl::nanobench::Result::Measure::elapsed) * 1000.0;
+	double ops = 1.0 / r.median(ankerl::nanobench::Result::Measure::elapsed);
+	double err = r.medianAbsolutePercentError(ankerl::nanobench::Result::Measure::elapsed) * 100.0;
+	char msbuf[32];
+	snprintf(msbuf, sizeof(msbuf), "%8.3f", ms);
+        printf("| %-18s | %8s | %10s | %7s |\n",
+	       "benchmark", "ms/op", "op/s", "err");
+	printf("|--------------------|---------:|-----------:|-------:|\n");
+	printf("| %-18s | \033[32m%s\033[0m | %10.2f | %6.2f%% |\n",
+	       "base64_from_hex", msbuf, ops, err);
+	
+	return 0;
+	
+      } else if (mime_type != "application/octet-stream") {
 	if (is_mdd && hex_output) {
 	  std::cout << definition << std::endl;
-	} else {
-	  std::cout << "data:" << mime_type << ";base64," << definition << std::endl;
 	}
       } else {
-	std::cout << "query key:" << query_key << " | def:\n\n" << definition << "\n\n" << std::endl;
-      }
+	std::cout << "data:" << mime_type << ";base64," << definition << std::endl;
+      } 
     }
 
     if (verbose) {

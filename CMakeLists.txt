@@ -64,8 +64,9 @@ ADD_LIBRARY(mdict STATIC src/mdict.cc src/binutils.cc src/ripemd128.c src/adler3
 TARGET_LINK_LIBRARIES(mdict PRIVATE mdictminiz mdictbase64)
 
 # Executable target: mydict (for development/testing purposes only)
-ADD_EXECUTABLE(mydict src/mydict.cc)
+ADD_EXECUTABLE(mydict src/mydict.cc deps/nanobench/nanobench.cpp)
 TARGET_LINK_LIBRARIES(mydict PRIVATE mdict mdictminiz mdictbase64)
+TARGET_INCLUDE_DIRECTORIES(mydict PRIVATE ${CMAKE_SOURCE_DIR}/deps/nanobench)
 
 # Define installation behavior for the mdict library
 OPTION(INSTALL_TO_SYSTEM "Install the mdict library to the system" OFF)

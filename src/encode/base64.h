@@ -21,7 +21,7 @@ constexpr char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123
 
 static std::vector<uint8_t> hex_to_bytes(const std::string& hex_str);
 
-std::vector<uint8_t> hex_to_binary(const std::string& hex_str) {
+inline std::vector<uint8_t> hex_to_binary(const std::string& hex_str) {
     std::vector<uint8_t> binary;
     binary.reserve(hex_str.size());
 
@@ -42,7 +42,7 @@ std::vector<uint8_t> hex_to_binary(const std::string& hex_str) {
     return binary;
 }
 
-void fix_padding(std::string &base64, size_t orig_size) {
+inline void fix_padding(std::string &base64, size_t orig_size) {
     // Remove existing padding
     while (!base64.empty() && base64.back() == '=') {
         base64.pop_back();
@@ -58,7 +58,7 @@ void fix_padding(std::string &base64, size_t orig_size) {
 }
 
 
-std::string base64_from_hex(const std::string& hex_str) {
+inline std::string base64_from_hex(const std::string& hex_str) {
     std::vector<uint8_t> bytes = hex_to_bytes(hex_str);
 
     size_t encoded_size = tb64enclen(bytes.size());
@@ -76,7 +76,7 @@ std::string base64_from_hex(const std::string& hex_str) {
 
 
 // Base64 encode binary data to string
-std::string encode_base64(const std::vector<uint8_t>& data) {
+inline std::string encode_base64(const std::vector<uint8_t>& data) {
     return std::string(data.begin(), data.end());
 
     const size_t encoded_size = tb64enclen(data.size());
@@ -93,7 +93,7 @@ std::string encode_base64(const std::vector<uint8_t>& data) {
 }
 
 // Base64 decode for string input
-std::string decode_base64(const std::string& encoded_input) {
+inline std::string decode_base64(const std::string& encoded_input) {
 
 
     const size_t decoded_size = tb64declen(
@@ -113,7 +113,7 @@ std::string decode_base64(const std::string& encoded_input) {
 
 
 // Overload for vector<uint8_t> input
-std::string decode_base64(const std::vector<uint8_t>& encoded_input) {
+inline std::string decode_base64(const std::vector<uint8_t>& encoded_input) {
     // Convert vector to string
     std::string encoded_str(encoded_input.begin(), encoded_input.end());
     return decode_base64(encoded_str);
@@ -145,7 +145,7 @@ static std::vector<uint8_t> hex_to_bytes(const std::string& hex_str) {
 }
 
 // Binary to hex string conversion (for verification)
-std::string bytes_to_hex(const std::vector<uint8_t>& bytes) {
+inline std::string bytes_to_hex(const std::vector<uint8_t>& bytes) {
     static const char* hex_chars = "0123456789ABCDEF";
     std::string hex_str;
     hex_str.reserve(bytes.size() * 2);

@@ -19,6 +19,8 @@
 
 constexpr char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+static std::vector<uint8_t> hex_to_bytes(const std::string& hex_str);
+
 std::vector<uint8_t> hex_to_binary(const std::string& hex_str) {
     std::vector<uint8_t> binary;
     binary.reserve(hex_str.size());
@@ -57,26 +59,19 @@ void fix_padding(std::string &base64, size_t orig_size) {
 
 
 std::string base64_from_hex(const std::string& hex_str) {
-    std::vector<uint8_t> binary = hex_to_binary(hex_str);
-    const size_t orig_size = binary.size();
-    std::string base64;
-    base64.reserve(static_cast<size_t>(std::ceil(orig_size * 4 / 6.0)) + 2);
+    std::vector<uint8_t> bytes = hex_to_bytes(hex_str);
 
-    size_t i = 0;
-    for(; i < orig_size; i += 3) {
-        uint8_t byte1 = binary[i];
-        uint8_t byte2 = (i + 1 < orig_size) ? binary[i + 1] : 0;
-        uint8_t byte3 = (i + 2 < orig_size) ? binary[i + 2] : 0;
+    size_t encoded_size = tb64enclen(bytes.size());
 
-        uint8_t index1 = (byte1 << 2) | (byte2 >> 2);
-        uint8_t index2 = ((byte2 & 0x3) << 4) | byte3;
-        
-        base64 += b64[index1];
-        base64 += b64[index2];
-    }
+    std::string output(encoded_size, '\0');
 
-    //  fix_padding(base64, orig_size); doesnt work as by now, gives wrong output
-    return base64;
+    tb64enc(
+        bytes.data(),
+        bytes.size(),
+        reinterpret_cast<uint8_t*>(output.data())
+    );
+
+    return output;
 }
 
 
@@ -125,7 +120,7 @@ std::string decode_base64(const std::vector<uint8_t>& encoded_input) {
 }
 
 // Hex string to binary conversion
-std::vector<uint8_t> hex_to_bytes(const std::string& hex_str) {
+static std::vector<uint8_t> hex_to_bytes(const std::string& hex_str) {
     if (hex_str.length() % 2 != 0) {
         throw std::runtime_error("Invalid hex string: odd length");
     }

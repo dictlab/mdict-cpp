@@ -2,7 +2,18 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10) # for windows XP compatibility
 # Set the project name
 PROJECT(mdict-cpp VERSION 1.0.0)
+if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    include(ProcessorCount)
+    ProcessorCount(NPROC)
 
+    if(NPROC EQUAL 0)
+        set(NPROC 1)
+    endif()
+
+    set(EP_BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j${NPROC})
+else()
+    set(EP_BUILD_COMMAND ${CMAKE_MAKE_PROGRAM})
+endif()
 # Suppress developer warnings
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS TRUE)
 

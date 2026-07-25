@@ -47,10 +47,12 @@ git submodule update --recursive
 
 3. Build the project:
 ```bash
-mkdir build
-cd build
-cmake ..
-make
+$ mkdir build
+$ cd build
+$ cmake ..
+$ cmake --build .
+# additionally if you want a single static file:
+$ cmake --build . --target mdict-fat
 ```
 
 ### System Installation

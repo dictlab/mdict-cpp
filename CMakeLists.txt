@@ -36,6 +36,16 @@ SET(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 ADD_COMPILE_OPTIONS(-Wno-unused-variable -fpermissive -Wno-sign-compare -Wno-error=sign-compare)
 
+
+add_custom_target(mdict-fat 
+    COMMAND ${CMAKE_COMMAND}
+        -DROOT=${CMAKE_CURRENT_BINARY_DIR}
+        -DOUTDIR=${LIBRARY_OUTPUT_PATH}
+        -DAR=${CMAKE_AR}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/merge_static.cmake
+    DEPENDS mdict
+)
+
 # Add cmake modules path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -117,5 +127,6 @@ if(INSTALL_TO_SYSTEM)
         COMPONENT mydict
     )
 endif()
+
 
 

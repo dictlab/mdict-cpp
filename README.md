@@ -14,6 +14,7 @@ A C++ implementation for interpreting MDX/MDD dictionary files. This library pro
 - Extract dictionary entries and definitions
 - Support for both MDX (dictionary content) and MDD (resource files)
 - Simple and efficient C++ implementation
+- ARM support
 - in-memory base64 encoding/decoding
 - UTF8 global output for any dictionary
 - low-level optimizations using advanced data structures

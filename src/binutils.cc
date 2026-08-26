@@ -13,7 +13,6 @@
 #include <cstring>
 #include <locale>  // For std::wstring_convert
 // #include "deps/miniz/miniz.h"
-#include <zlib.h>
 
 #include <codecvt>
 #include <string>

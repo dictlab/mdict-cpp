@@ -77,16 +77,10 @@ inline std::string base64_from_hex(const std::string& hex_str) {
 
 // Base64 encode binary data to string
 inline std::string encode_base64(const std::vector<uint8_t>& data) {
-    return [&](const std::vector<uint8_t>& data) -> std::string {
-        const size_t encoded_size = tb64enclen(data.size());
-        std::string output(encoded_size, '\0');
-
-        tb64enc(
-            data.data(),
-            data.size(),
-            reinterpret_cast<uint8_t*>(output.data())
-        );
-
+    return [](const std::vector<uint8_t>& data) {
+        std::string output(tb64enclen(data.size()), '\0');
+        tb64enc(data.data(), data.size(),
+                reinterpret_cast<uint8_t*>(output.data()));
         return output;
     }(data);
 }

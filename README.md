@@ -28,6 +28,12 @@ A C++ implementation for interpreting MDX/MDD dictionary files. This library pro
 
 this library supports the following operating systems (all tested) :
 - macOS Monterey or later
+  <details>
+   <summary>Show screenshot</summary>
+
+   <img width="1920" height="1080" alt="Screenshot 2026-09-30 at 12 53 57" src="https://github.com/user-attachments/assets/da43a5a7-2d80-43a3-ab5b-fe4426f1e476" />
+
+  </details>
 - FreeBSD
 - linux based distros
 

@@ -26,6 +26,11 @@ A C++ implementation for interpreting MDX/MDD dictionary files. This library pro
  
 ## Installation
 
+this library supports the following operating systems (all tested) :
+- macOS Monterey or later
+- FreeBSD
+- linux based distros
+
 ### Prerequisites
 
 - CMake (version 3.10 or higher)
